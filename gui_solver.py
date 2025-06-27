@@ -818,19 +818,67 @@ class SimpleNumericalMethodsGUI:
         control_frame = ttk.LabelFrame(comp_frame, text="🔍 Compare All Methods", padding=10)
         control_frame.pack(fill='x', padx=10, pady=10)
         
-        comp_select_label = ttk.Label(control_frame, text="Select function to compare:", style='Body.TLabel')
-        comp_select_label.pack(anchor='w')
+        # Create tabbed interface for predefined vs custom functions
+        input_notebook = ttk.Notebook(control_frame)
+        input_notebook.pack(fill='x', pady=5)
+        
+        # Predefined Functions Tab
+        predefined_frame = ttk.Frame(input_notebook)
+        input_notebook.add(predefined_frame, text="📋 Predefined Functions")
+        
+        comp_select_label = ttk.Label(predefined_frame, text="Select function to compare:", style='Body.TLabel')
+        comp_select_label.pack(anchor='w', pady=(5, 2))
         self.comp_func_var = tk.StringVar()
-        self.comp_func_combo = ttk.Combobox(control_frame, textvariable=self.comp_func_var,
+        self.comp_func_combo = ttk.Combobox(predefined_frame, textvariable=self.comp_func_var,
                                            values=list(self.predefined_functions.keys()),
                                            state='readonly', width=50)
         self.comp_func_combo.pack(pady=5, anchor='w')
         
+        # Custom Function Tab
+        custom_frame = ttk.Frame(input_notebook)
+        input_notebook.add(custom_frame, text="✏️ Custom Function")
+        
+        # Custom function input
+        comp_func_label = ttk.Label(custom_frame, text="Function f(x) =", style='Body.TLabel')
+        comp_func_label.pack(anchor='w', pady=(5, 2))
+        self.comp_custom_func_var = tk.StringVar(value="x**3 - x - 1")
+        comp_func_entry = ttk.Entry(custom_frame, textvariable=self.comp_custom_func_var, width=50)
+        comp_func_entry.pack(pady=2, anchor='w')
+        
+        # Custom derivative input
+        comp_deriv_label = ttk.Label(custom_frame, text="Derivative f'(x) =", style='Body.TLabel')
+        comp_deriv_label.pack(anchor='w', pady=(5, 2))
+        self.comp_custom_deriv_var = tk.StringVar(value="3*x**2 - 1")
+        comp_deriv_entry = ttk.Entry(custom_frame, textvariable=self.comp_custom_deriv_var, width=50)
+        comp_deriv_entry.pack(pady=2, anchor='w')
+        
+        # Parameters for custom function
+        params_frame = tk.Frame(custom_frame)
+        params_frame.pack(fill='x', pady=5)
+        
+        interval_label = ttk.Label(params_frame, text="Interval [a, b]:", style='Body.TLabel')
+        interval_label.pack(side='left', padx=(0, 5))
+        self.comp_a_var = tk.StringVar(value="1.0")
+        comp_a_entry = ttk.Entry(params_frame, textvariable=self.comp_a_var, width=8)
+        comp_a_entry.pack(side='left', padx=2)
+        to_label = ttk.Label(params_frame, text="to", style='Body.TLabel')
+        to_label.pack(side='left', padx=2)
+        self.comp_b_var = tk.StringVar(value="2.0")
+        comp_b_entry = ttk.Entry(params_frame, textvariable=self.comp_b_var, width=8)
+        comp_b_entry.pack(side='left', padx=2)
+        
+        guess_label = ttk.Label(params_frame, text="Initial Guess:", style='Body.TLabel')
+        guess_label.pack(side='left', padx=(15, 5))
+        self.comp_guess_var = tk.StringVar(value="1.5")
+        comp_guess_entry = ttk.Entry(params_frame, textvariable=self.comp_guess_var, width=8)
+        comp_guess_entry.pack(side='left', padx=2)
+        
+        # Compare button (outside the notebook)
         compare_btn = tk.Button(control_frame, text="🔍 COMPARE ALL METHODS", 
                  command=self.compare_all_methods, bg='#27ae60', fg='#ffffff',
                  font=('Segoe UI', 10, 'bold'), relief='flat', cursor='hand2',
                  padx=15, pady=6)
-        compare_btn.pack(pady=5, anchor='w')
+        compare_btn.pack(pady=(10, 5), anchor='w')
         
         # Results table
         table_frame = ttk.LabelFrame(comp_frame, text="📈 Comparison Results", padding=10)
@@ -1799,12 +1847,7 @@ class SimpleNumericalMethodsGUI:
             print(f"Error generating plots: {e}")
         
     def compare_all_methods(self):
-        """Compare all methods on selected function."""
-        func_name = self.comp_func_var.get()
-        if not func_name or func_name not in self.predefined_functions:
-            messagebox.showerror("Error", "Please select a function to compare!")
-            return
-        
+        """Compare all methods on selected or custom function."""
         # Clear previous results
         for item in self.comparison_tree.get_children():
             self.comparison_tree.delete(item)
@@ -1812,20 +1855,68 @@ class SimpleNumericalMethodsGUI:
         self.status_var.set("🔍 Comparing all methods...")
         self.root.update()
         
-        func_info = self.predefined_functions[func_name]
-        function = self.create_function_from_expression(func_info['expression'])
-        derivative = self.create_function_from_expression(func_info['derivative'])
-        a, b = func_info['interval']
-        x0 = func_info['guess']
+        # Determine if using predefined or custom function
+        current_tab = self.comp_func_combo.winfo_parent()  # Get the parent to determine active tab
         
+        # Check if custom function tab is active by checking if custom variables have values
+        custom_func_expr = self.comp_custom_func_var.get().strip()
+        predefined_func = self.comp_func_var.get()
+        
+        if custom_func_expr and len(custom_func_expr) > 0:
+            # Use custom function
+            try:
+                function = self.create_function_from_expression(custom_func_expr)
+                if function is None:
+                    messagebox.showerror("Error", f"Invalid custom function syntax: {custom_func_expr}")
+                    return
+                
+                derivative_expr = self.comp_custom_deriv_var.get().strip()
+                derivative = None
+                if derivative_expr:
+                    derivative = self.create_function_from_expression(derivative_expr)
+                    if derivative is None:
+                        messagebox.showwarning("Warning", f"Invalid derivative syntax: {derivative_expr}\nNewton-Raphson method will be skipped.")
+                
+                # Get custom parameters
+                try:
+                    a = float(self.comp_a_var.get())
+                    b = float(self.comp_b_var.get())
+                    x0 = float(self.comp_guess_var.get())
+                except ValueError as e:
+                    messagebox.showerror("Error", f"Invalid parameter values: {str(e)}")
+                    return
+                
+                func_name = f"Custom: {custom_func_expr}"
+                
+            except Exception as e:
+                messagebox.showerror("Error", f"Error processing custom function: {str(e)}")
+                return
+                
+        elif predefined_func and predefined_func in self.predefined_functions:
+            # Use predefined function
+            func_info = self.predefined_functions[predefined_func]
+            function = self.create_function_from_expression(func_info['expression'])
+            derivative = self.create_function_from_expression(func_info['derivative'])
+            a, b = func_info['interval']
+            x0 = func_info['guess']
+            func_name = predefined_func
+            
+        else:
+            messagebox.showerror("Error", "Please select a predefined function or enter a custom function!")
+            return
+        
+        # Define methods - handle case where derivative might be None
         methods = [
             ("Bisection", lambda: BisectionSolver(function, a, b, tolerance=1e-6)),
             ("False Position", lambda: FalsePositionSolver(function, a, b, tolerance=1e-6)),
-            ("Newton-Raphson", lambda: NewtonRaphsonSolver(function, derivative, x0, tolerance=1e-6)),
             ("Secant", lambda: SecantSolver(function, a, b, tolerance=1e-6)),
             ("Fixed Point", lambda: FixedPointSolver(lambda x: x - 0.1 * function(x), x0, tolerance=1e-6)),
             ("Muller", lambda: MullerSolver(function, a, (a+b)/2, b, tolerance=1e-6))
         ]
+        
+        # Add Newton-Raphson only if derivative is available
+        if derivative is not None:
+            methods.insert(2, ("Newton-Raphson", lambda: NewtonRaphsonSolver(function, derivative, x0, tolerance=1e-6)))
         
         # Collect results for plotting
         comparison_results = []
