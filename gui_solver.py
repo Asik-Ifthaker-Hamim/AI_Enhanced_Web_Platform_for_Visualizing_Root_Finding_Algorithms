@@ -726,14 +726,14 @@ class SimpleNumericalMethodsGUI:
         right_panel = tk.Frame(paned, bg='#ffffff', relief='raised', bd=2)
         paned.add(right_panel, weight=2)
         
-        # Right panel header - Reduced by 50%
-        right_header = tk.Frame(right_panel, bg='#27ae60', height=20)
+        # Right panel header - Increased size for better visibility
+        right_header = tk.Frame(right_panel, bg='#27ae60', height=45)
         right_header.pack(fill='x')
         right_header.pack_propagate(False)
         
         right_title = tk.Label(right_header, text="📊 Results & Visualization",
-                              font=('Segoe UI', 12, 'bold'), fg='#ffffff', bg='#27ae60')
-        right_title.pack(pady=5)
+                              font=('Segoe UI', 14, 'bold'), fg='#ffffff', bg='#27ae60')
+        right_title.pack(pady=12)
         
         # Create modern notebook for results
         right_notebook = ttk.Notebook(right_panel)
@@ -842,7 +842,7 @@ class SimpleNumericalMethodsGUI:
         
         # Left: Results table
         tree_frame = ttk.Frame(table_paned)
-        table_paned.add(tree_frame, weight=1)
+        table_paned.add(tree_frame, weight=3)  # Give more space to table
         
         # Create treeview
         columns = ('Method', 'Root', 'Iterations', 'Time (s)', 'Function Evals', 'Status')
@@ -861,9 +861,9 @@ class SimpleNumericalMethodsGUI:
         
         # Right: Comparison chart
         chart_frame = ttk.Frame(table_paned)
-        table_paned.add(chart_frame, weight=1)
+        table_paned.add(chart_frame, weight=2)  # Give less space to chart
         
-        self.comparison_fig = Figure(figsize=(8, 6), dpi=100)
+        self.comparison_fig = Figure(figsize=(10, 7), dpi=100)
         self.comparison_canvas = FigureCanvasTkAgg(self.comparison_fig, chart_frame)
         self.comparison_canvas.get_tk_widget().pack(fill='both', expand=True, padx=5, pady=5)
         
@@ -992,32 +992,7 @@ class SimpleNumericalMethodsGUI:
             'text_light': '#85929e'
         }
         
-        # Hero Header Section - Reduced size
-        hero_section = tk.Frame(team_frame, bg=team_colors['hero_bg'], height=80)
-        hero_section.pack(fill='x', pady=0)
-        hero_section.pack_propagate(False)
-        
-        # Project title - Reduced size
-        project_title = tk.Label(hero_section, 
-                                text="Solution of Non-linear Equations",
-                                font=('Segoe UI', 18, 'bold'),
-                                fg='#ffffff',
-                                bg=team_colors['hero_bg'])
-        project_title.pack(pady=(15, 3))
-        
-        subtitle = tk.Label(hero_section,
-                           text="Advanced Numerical Methods Implementation Project",
-                           font=('Segoe UI', 10),
-                           fg='#bdc3c7',
-                           bg=team_colors['hero_bg'])
-        subtitle.pack()
-        
-        team_badge = tk.Label(hero_section,
-                             text="Team: The Epsilon Chasers",
-                             font=('Segoe UI', 10, 'bold'),
-                             fg=team_colors['hero_accent'],
-                             bg=team_colors['hero_bg'])
-        team_badge.pack(pady=(3, 10))
+
         
         # Main content container - With scrolling for responsiveness
         canvas_main = tk.Canvas(team_frame, bg='#f8f9fa', highlightthickness=0)
@@ -1044,17 +1019,17 @@ class SimpleNumericalMethodsGUI:
         # Main container for grid layout
         main_container = scrollable_main
 
-        # Configure main_container grid weights for equal column distribution
-        main_container.grid_columnconfigure(0, weight=1)
-        main_container.grid_columnconfigure(1, weight=1)
-        main_container.grid_columnconfigure(2, weight=1)
-        main_container.grid_columnconfigure(3, weight=1)
+        # Configure main_container grid weights for optimized column distribution
+        main_container.grid_columnconfigure(0, weight=2)  # Team Info - larger
+        main_container.grid_columnconfigure(1, weight=2)  # Course Info - larger
+        main_container.grid_columnconfigure(2, weight=1)  # Project Features - smaller
+        main_container.grid_columnconfigure(3, weight=1)  # Technology Stack - smaller
         main_container.grid_rowconfigure(0, weight=1)
         main_container.grid_rowconfigure(1, weight=0)  # Methods row - auto height
         
-        # LEFT COLUMN - Reduced padding for better width distribution
+        # LEFT COLUMN - Team Information (larger width)
         left_column = tk.Frame(main_container, bg='#f8f9fa')
-        left_column.grid(row=0, column=0, sticky='nsew', padx=(0, 2), pady=10)
+        left_column.grid(row=0, column=0, sticky='nsew', padx=(0, 5), pady=10)
         
         # Team Information Card
         team_card = self.create_professional_card(left_column, "🎓 Team Information", team_colors['accent_blue'])
@@ -1086,9 +1061,9 @@ class SimpleNumericalMethodsGUI:
                                   font=('Segoe UI', 11), fg=team_colors['text_medium'], bg=member_bg)
             member_label.pack(anchor='w', padx=15, pady=6)
         
-        # MIDDLE COLUMN - Minimal padding
+        # MIDDLE COLUMN - Course Information (larger width)
         middle_column = tk.Frame(main_container, bg='#f8f9fa')
-        middle_column.grid(row=0, column=1, sticky='nsew', padx=2, pady=10)
+        middle_column.grid(row=0, column=1, sticky='nsew', padx=5, pady=10)
         
         # Course Information Card
         course_card = self.create_professional_card(middle_column, "📚 Course Information", team_colors['accent_green'])
@@ -1130,9 +1105,9 @@ class SimpleNumericalMethodsGUI:
                                font=('Segoe UI', 10), fg=team_colors['text_medium'], bg='#e8f5e8', justify='left')
         teacher_quals.pack(anchor='w', padx=15, pady=(0, 10))
         
-        # THIRD COLUMN - Minimal padding
+        # THIRD COLUMN - Project Features (compact)
         third_column = tk.Frame(main_container, bg='#f8f9fa')
-        third_column.grid(row=0, column=2, sticky='nsew', padx=2, pady=10)
+        third_column.grid(row=0, column=2, sticky='nsew', padx=3, pady=10)
         
         # Project Features Card
         features_card = self.create_professional_card(third_column, "🚀 Project Features", team_colors['accent_orange'])
@@ -1155,9 +1130,9 @@ class SimpleNumericalMethodsGUI:
                                    fg=team_colors['text_medium'], bg=feature_bg, anchor='w')
             feature_label.pack(anchor='w', padx=10, pady=5)
             
-        # FOURTH COLUMN - Minimal padding
+        # FOURTH COLUMN - Technology Stack (compact)
         fourth_column = tk.Frame(main_container, bg='#f8f9fa')
-        fourth_column.grid(row=0, column=3, sticky='nsew', padx=(2, 0), pady=10)
+        fourth_column.grid(row=0, column=3, sticky='nsew', padx=(3, 0), pady=10)
         
         # Technology Stack Card
         tech_card = self.create_professional_card(fourth_column, "💻 Technology Stack", team_colors['accent_red'])
@@ -1229,20 +1204,20 @@ class SimpleNumericalMethodsGUI:
         footer_text.pack(expand=True, pady=15)
     
     def create_professional_card(self, parent, title, header_color):
-        """Create a professional card with header - reduced by 50%."""
+        """Create a professional card with larger, more prominent header."""
         card = tk.Frame(parent, bg='#ffffff', relief='raised', bd=1)
         card.pack(fill='both', expand=True, pady=(0, 8))
         
-        # Card header - reduced height by 50% (from 30 to 15)
-        header = tk.Frame(card, bg=header_color, height=15)
+        # Card header - increased height and font size for better prominence
+        header = tk.Frame(card, bg=header_color, height=35)
         header.pack(fill='x')
         header.pack_propagate(False)
         
-        title_label = tk.Label(header, text=title, font=('Segoe UI', 9, 'bold'),
+        title_label = tk.Label(header, text=title, font=('Segoe UI', 12, 'bold'),
                              fg='#ffffff', bg=header_color)
-        title_label.pack(pady=2)
+        title_label.pack(pady=8)
         
-        # Card content area - reduced padding
+        # Card content area
         content = tk.Frame(card, bg='#ffffff')
         content.pack(fill='both', expand=True, padx=10, pady=10)
         
@@ -1564,40 +1539,43 @@ class SimpleNumericalMethodsGUI:
             
             # Plot 1: Iterations
             bars1 = ax1.bar(methods, iterations, color=colors[:len(methods)])
-            ax1.set_title('Iterations to Converge', fontweight='bold')
-            ax1.set_ylabel('Iterations')
-            ax1.tick_params(axis='x', rotation=45)
+            ax1.set_title('Iterations to Converge', fontweight='bold', fontsize=10)
+            ax1.set_ylabel('Iterations', fontsize=9)
+            ax1.tick_params(axis='x', rotation=45, labelsize=8)
+            ax1.tick_params(axis='y', labelsize=8)
             
             # Add value labels on bars
             for bar, value in zip(bars1, iterations):
                 if value > 0:
                     ax1.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 0.5, 
-                            str(value), ha='center', va='bottom', fontsize=8)
+                            str(value), ha='center', va='bottom', fontsize=7)
             
             # Plot 2: Execution Time
             bars2 = ax2.bar(methods, times, color=colors[:len(methods)])
-            ax2.set_title('Execution Time', fontweight='bold')
-            ax2.set_ylabel('Time (seconds)')
-            ax2.tick_params(axis='x', rotation=45)
+            ax2.set_title('Execution Time', fontweight='bold', fontsize=10)
+            ax2.set_ylabel('Time (seconds)', fontsize=9)
+            ax2.tick_params(axis='x', rotation=45, labelsize=8)
+            ax2.tick_params(axis='y', labelsize=8)
             
             # Add value labels on bars
             for bar, value in zip(bars2, times):
                 if value > 0:
                     ax2.text(bar.get_x() + bar.get_width()/2, bar.get_height() + value*0.01, 
-                            f'{value:.4f}', ha='center', va='bottom', fontsize=8)
+                            f'{value:.4f}', ha='center', va='bottom', fontsize=7)
             
             # Plot 3: Convergence Success Rate
             bars3 = ax3.bar(methods, convergences, color=colors[:len(methods)])
-            ax3.set_title('Convergence Success', fontweight='bold')
-            ax3.set_ylabel('Success (1=Yes, 0=No)')
+            ax3.set_title('Convergence Success', fontweight='bold', fontsize=10)
+            ax3.set_ylabel('Success (1=Yes, 0=No)', fontsize=9)
             ax3.set_ylim(0, 1.2)
-            ax3.tick_params(axis='x', rotation=45)
+            ax3.tick_params(axis='x', rotation=45, labelsize=8)
+            ax3.tick_params(axis='y', labelsize=8)
             
             # Add value labels on bars
             for bar, value in zip(bars3, convergences):
                 label = 'Success' if value == 1 else 'Failed'
                 ax3.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 0.05, 
-                        label, ha='center', va='bottom', fontsize=8)
+                        label, ha='center', va='bottom', fontsize=7)
             
             # Plot 4: Method Performance Score (lower is better)
             scores = []
@@ -1612,18 +1590,19 @@ class SimpleNumericalMethodsGUI:
                 scores.append(score)
             
             bars4 = ax4.bar(methods, scores, color=colors[:len(methods)])
-            ax4.set_title('Performance Score (Lower = Better)', fontweight='bold')
-            ax4.set_ylabel('Score')
+            ax4.set_title('Performance Score (Lower = Better)', fontweight='bold', fontsize=10)
+            ax4.set_ylabel('Score', fontsize=9)
             ax4.set_ylim(0, 1.2)
-            ax4.tick_params(axis='x', rotation=45)
+            ax4.tick_params(axis='x', rotation=45, labelsize=8)
+            ax4.tick_params(axis='y', labelsize=8)
             
             # Add value labels on bars
             for bar, value in zip(bars4, scores):
                 ax4.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 0.05, 
                         f'{value:.3f}', ha='center', va='bottom', fontsize=8)
             
-            self.comparison_fig.suptitle('Method Comparison Analysis', fontsize=14, fontweight='bold')
-            self.comparison_fig.tight_layout()
+            self.comparison_fig.suptitle('Method Comparison Analysis', fontsize=12, fontweight='bold')
+            self.comparison_fig.tight_layout(rect=[0, 0.03, 1, 0.92])  # Adjust layout with title spacing
             self.comparison_canvas.draw()
             
         except Exception as e:
@@ -1751,26 +1730,55 @@ class SimpleNumericalMethodsGUI:
             verification_tag = "success" if abs(verification) < 1e-6 else "error"
             self.results_text.insert(tk.END, f"{verification:.2e}\n", verification_tag)
         
-        # Show iteration history (first 15 iterations)
+        # Show complete iteration history in a visual table
         if hasattr(result, 'iteration_history') and result.iteration_history:
             self.results_text.insert(tk.END, "\n" + "═" * 70 + "\n", "header")
-            self.results_text.insert(tk.END, "  ITERATION HISTORY (First 15 iterations)\n", "header")
-            self.results_text.insert(tk.END, "═" * 70 + "\n\n", "header")
+            self.results_text.insert(tk.END, "  ITERATION HISTORY (Complete)\n", "header")
+            self.results_text.insert(tk.END, "═" * 70 + "\n", "header")
             
-            # Table header
-            header_text = f"{'Iter':<6} {'x':<15} {'f(x)':<15} {'Error':<15}\n"
-            self.results_text.insert(tk.END, header_text, "emphasis")
-            self.results_text.insert(tk.END, "─" * 70 + "\n", "header")
+            # Create a frame to hold the iteration table
+            table_frame = tk.Frame(self.results_text.master, bg='#ffffff', relief='solid', bd=1)
+            self.results_text.window_create(tk.END, window=table_frame)
             
-            # Table rows
-            for i, iter_result in enumerate(result.iteration_history[:15]):
-                error_str = f"{iter_result.error:.2e}" if iter_result.error is not None else "N/A"
-                row_text = f"{i:<6} {iter_result.x_value:<15.8f} {iter_result.f_value:<15.2e} {error_str:<15}\n"
-                self.results_text.insert(tk.END, row_text, "normal")
+            # Create Treeview for iteration history
+            columns = ('Iteration', 'x Value', 'f(x)', 'Error')
+            iteration_tree = ttk.Treeview(table_frame, columns=columns, show='headings', height=min(15, len(result.iteration_history)))
             
-            if len(result.iteration_history) > 15:
-                remaining_text = f"\n... ({len(result.iteration_history) - 15} more iterations)\n"
-                self.results_text.insert(tk.END, remaining_text, "info")
+            # Configure column headings and widths
+            iteration_tree.heading('Iteration', text='Iteration')
+            iteration_tree.heading('x Value', text='x Value')
+            iteration_tree.heading('f(x)', text='f(x)')
+            iteration_tree.heading('Error', text='Error')
+            
+            iteration_tree.column('Iteration', width=80, anchor='center')
+            iteration_tree.column('x Value', width=150, anchor='center')
+            iteration_tree.column('f(x)', width=150, anchor='center')
+            iteration_tree.column('Error', width=120, anchor='center')
+            
+            # Add scrollbar for iteration table
+            iter_scrollbar = ttk.Scrollbar(table_frame, orient='vertical', command=iteration_tree.yview)
+            iteration_tree.configure(yscrollcommand=iter_scrollbar.set)
+            
+            # Pack the table and scrollbar
+            iteration_tree.pack(side='left', fill='both', expand=True, padx=5, pady=5)
+            iter_scrollbar.pack(side='right', fill='y', pady=5)
+            
+            # Add all iteration data
+            for i, iter_result in enumerate(result.iteration_history):
+                error_str = f"{iter_result.error:.6e}" if iter_result.error is not None else "N/A"
+                x_str = f"{iter_result.x_value:.10f}"
+                f_str = f"{iter_result.f_value:.6e}"
+                
+                # Alternate row colors for better readability
+                tag = 'oddrow' if i % 2 == 1 else 'evenrow'
+                iteration_tree.insert('', 'end', values=(i+1, x_str, f_str, error_str), tags=(tag,))
+            
+            # Configure row colors
+            iteration_tree.tag_configure('oddrow', background='#f8f9fa')
+            iteration_tree.tag_configure('evenrow', background='#ffffff')
+            
+            # Add summary after the table
+            self.results_text.insert(tk.END, f"\n\n📊 Total Iterations: {len(result.iteration_history)}\n", "info")
         
         # Generate plots
         try:
