@@ -33,7 +33,8 @@ import {
   LinearProgress,
   Stepper,
   Step,
-  StepLabel
+  StepLabel,
+  CircularProgress
 } from '@mui/material';
 import {
   ExpandMore as ExpandMoreIcon,
@@ -61,6 +62,11 @@ import {
   PlayArrow as PlayIcon
 } from '@mui/icons-material';
 import { motion } from 'framer-motion';
+import { safeEvaluate } from '../utils/numericalMethods';
+import { initializeGemini, validateSolutionWithGemini, isGeminiInitialized } from '../utils/geminiService';
+
+// Default API key for immediate use
+const DEFAULT_API_KEY = "AIzaSyBs0VFXBg7WEh0RjqOnUvdBSG2j6PH6hjQ";
 
 function TabPanel({ children, value, index, ...other }) {
   return (
@@ -542,7 +548,7 @@ function QuizModal({ quizType, onClose }) {
   };
 
   return (
-    <Dialog open={true} onClose={onClose} maxWidth="md" fullWidth>
+    <Dialog open={true} onClose={onClose} maxWidth="lg" fullWidth>
       <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Typography variant="h6">{quizTitles[quizType]}</Typography>
         <IconButton onClick={onClose}>
@@ -649,6 +655,11 @@ function PracticeModal({ exercise, onClose }) {
   const [currentProblem, setCurrentProblem] = useState(0);
   const [userSolution, setUserSolution] = useState('');
   const [showHint, setShowHint] = useState(false);
+  const [validationResult, setValidationResult] = useState(null);
+  const [showCorrectAnswer, setShowCorrectAnswer] = useState(false);
+  const [apiKey, setApiKey] = useState(localStorage.getItem('gemini_api_key') || DEFAULT_API_KEY);
+  const [isValidating, setIsValidating] = useState(false);
+  const [showApiKeyDialog, setShowApiKeyDialog] = useState(false);
 
   const practiceProblems = {
     'Basic Root Finding': [
@@ -671,14 +682,26 @@ function PracticeModal({ exercise, onClose }) {
         hint: 'Compare convergence rates. Start with interval [2, 3] for bracketing methods',
         solution: 'x ≈ 2.0946',
         method: 'Compare Bisection, Newton-Raphson, and Secant methods'
+      },
+      {
+        equation: 'e^x - 3x = 0',
+        hint: 'This transcendental equation requires numerical methods. Try different initial guesses to compare methods.',
+        solution: 'x ≈ 1.5121',
+        method: 'Compare Newton-Raphson vs Secant method convergence'
       }
     ],
     'Advanced Applications': [
       {
-        equation: 'Stress Analysis: σ = E×ε - σ₀×sin(πε) = 0',
-        hint: 'This represents material stress-strain relationship under cyclic loading',
-        solution: 'Depends on material properties E and σ₀',
+        equation: 'x·ln(x) - 1 = 0',
+        hint: 'This equation appears in optimization problems. Use x₀ = 2 as initial guess.',
+        solution: 'x ≈ 1.7632',
         method: 'Use Newton-Raphson for engineering precision'
+      },
+      {
+        equation: 'cos(x) - x = 0',
+        hint: 'This transcendental equation has a unique solution. The root is where y=cos(x) intersects y=x.',
+        solution: 'x ≈ 0.7391',
+        method: 'Fixed point iteration or Newton-Raphson method'
       }
     ]
   };
@@ -686,13 +709,155 @@ function PracticeModal({ exercise, onClose }) {
   const problems = practiceProblems[exercise.title] || [];
   const currentProb = problems[currentProblem];
 
+  // Function to save API key
+  const saveApiKey = () => {
+    if (apiKey.trim()) {
+      localStorage.setItem('gemini_api_key', apiKey.trim());
+      try {
+        initializeGemini(apiKey.trim());
+        setShowApiKeyDialog(false);
+      } catch (error) {
+        setValidationResult({
+          type: 'error',
+          message: 'Invalid API key. Please check and try again.'
+        });
+      }
+    }
+  };
+
+  // Function to handle solution checking with Gemini
+  const checkSolution = async () => {
+    if (!userSolution.trim()) {
+      setValidationResult({
+        type: 'error',
+        message: 'Please provide your solution before checking.'
+      });
+      return;
+    }
+
+    // Check if API key is available
+    if (!isGeminiInitialized()) {
+      // Try to initialize with current API key
+      try {
+        initializeGemini(apiKey);
+      } catch (error) {
+        setShowApiKeyDialog(true);
+        return;
+      }
+    }
+
+    setIsValidating(true);
+    setValidationResult(null);
+
+    try {
+      const evaluation = await validateSolutionWithGemini(
+        currentProb.equation,
+        userSolution,
+        currentProb.solution
+      );
+
+      // Check if this is an error response from the service
+      if (evaluation.error) {
+        const alertType = evaluation.error === 'QUOTA_EXCEEDED' ? 'warning' : 'error';
+        setValidationResult({
+          type: alertType,
+          message: evaluation.feedback,
+          details: evaluation.error === 'QUOTA_EXCEEDED' ? 
+            'The free API tier has daily limits. Please try again in a few minutes.' : 
+            'Technical issue detected.',
+          score: evaluation.score,
+          suggestions: evaluation.suggestions || [],
+          nextSteps: evaluation.nextSteps
+        });
+        setShowCorrectAnswer(false);
+      } else if (evaluation.isCorrect) {
+        setValidationResult({
+          type: 'success',
+          message: '🎉 Congratulations! Your solution is correct!',
+          details: evaluation.feedback,
+          score: evaluation.score,
+          methodUsed: evaluation.methodUsed,
+          suggestions: evaluation.suggestions || [],
+          strengths: evaluation.strengths || [],
+          nextSteps: evaluation.nextSteps
+        });
+        setShowCorrectAnswer(false);
+      } else {
+        setValidationResult({
+          type: 'error',
+          message: 'Your solution needs improvement.',
+          details: evaluation.feedback,
+          score: evaluation.score,
+          methodUsed: evaluation.methodUsed,
+          suggestions: evaluation.suggestions || [],
+          correctRoots: evaluation.correctRoots || [],
+          strengths: evaluation.strengths || [],
+          nextSteps: evaluation.nextSteps
+        });
+        setShowCorrectAnswer(true);
+      }
+    } catch (error) {
+      setValidationResult({
+        type: 'error',
+        message: '🔧 Unexpected error occurred.',
+        details: 'Please check your connection and try again.'
+      });
+    } finally {
+      setIsValidating(false);
+    }
+  };
+
+  // Initialize Gemini on component mount
+  React.useEffect(() => {
+    const storedApiKey = localStorage.getItem('gemini_api_key');
+    const keyToUse = storedApiKey || DEFAULT_API_KEY;
+    
+    if (!isGeminiInitialized()) {
+      try {
+        initializeGemini(keyToUse);
+        setApiKey(keyToUse);
+        
+        // Save default API key to localStorage if not already stored
+        if (!storedApiKey) {
+          localStorage.setItem('gemini_api_key', DEFAULT_API_KEY);
+        }
+      } catch (error) {
+        console.error('Failed to initialize Gemini:', error);
+      }
+    }
+  }, []);
+
+  // Reset validation when problem changes
+  React.useEffect(() => {
+    setValidationResult(null);
+    setShowCorrectAnswer(false);
+    setUserSolution('');
+  }, [currentProblem]);
+
   return (
     <Dialog open={true} onClose={onClose} maxWidth="lg" fullWidth>
-      <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Typography variant="h6">
-          {exercise.title} - {exercise.difficulty} Level
-        </Typography>
-        <IconButton onClick={onClose}>
+      <DialogTitle sx={{ 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'center',
+        bgcolor: 'primary.main',
+        color: 'white'
+      }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          <Typography variant="h6">
+            🎯 {exercise.title}
+          </Typography>
+          <Chip 
+            label={exercise.difficulty} 
+            size="small"
+            sx={{ 
+              bgcolor: 'white', 
+              color: 'primary.main',
+              fontWeight: 'bold'
+            }}
+          />
+        </Box>
+        <IconButton onClick={onClose} sx={{ color: 'white' }}>
           <CloseIcon />
         </IconButton>
       </DialogTitle>
@@ -702,9 +867,18 @@ function PracticeModal({ exercise, onClose }) {
           <Grid item xs={12} md={6}>
             <Card>
               <CardContent>
-                <Typography variant="h6" gutterBottom color="primary">
-                  Problem {currentProblem + 1}
-                </Typography>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                  <Typography variant="h6" color="primary">
+                    📝 Problem {currentProblem + 1} of {problems.length}
+                  </Typography>
+                  <Chip 
+                    label={`${exercise.difficulty} Level`}
+                    size="small"
+                    color={exercise.difficulty === 'Beginner' ? 'success' : 
+                           exercise.difficulty === 'Intermediate' ? 'warning' : 'error'}
+                    variant="outlined"
+                  />
+                </Box>
                 <Paper sx={{ p: 2, bgcolor: 'grey.50', mb: 2 }}>
                   <Typography variant="h6" sx={{ fontFamily: 'monospace', textAlign: 'center' }}>
                     {currentProb?.equation || 'No problem available'}
@@ -734,6 +908,21 @@ function PracticeModal({ exercise, onClose }) {
                 <Typography variant="body2" color="text.secondary">
                   <strong>Recommended Method:</strong> {currentProb?.method}
                 </Typography>
+
+                <Divider sx={{ my: 2 }} />
+
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                  <Typography variant="body2" color="text.secondary">
+                    AI Validation: {isGeminiInitialized() ? '✅ Ready (Pre-configured)' : '❌ Not configured'}
+                  </Typography>
+                  <Button 
+                    size="small" 
+                    variant="outlined" 
+                    onClick={() => setShowApiKeyDialog(true)}
+                  >
+                    {isGeminiInitialized() ? 'Change API Key' : 'Setup API Key'}
+                  </Button>
+                </Box>
               </CardContent>
             </Card>
           </Grid>
@@ -760,40 +949,194 @@ function PracticeModal({ exercise, onClose }) {
                   sx={{ mb: 2 }}
                 />
 
-                <Alert severity="success">
-                  <Typography variant="body2">
-                    <strong>Expected Answer:</strong> {currentProb?.solution}
-                  </Typography>
-                </Alert>
+                {!showCorrectAnswer && (
+                  <Alert severity="info" sx={{ mb: 2 }}>
+                    <Typography variant="body2">
+                      💡 <strong>Tip:</strong> Write your complete solution including the method used and final answer.
+                    </Typography>
+                  </Alert>
+                )}
+
+                {showCorrectAnswer && (
+                  <Alert severity="success">
+                    <Typography variant="body2">
+                      <strong>Expected Answer:</strong> {currentProb?.solution}
+                    </Typography>
+                  </Alert>
+                )}
+
+                {/* Validation Results */}
+                {validationResult && (
+                  <Alert 
+                    severity={validationResult.type === 'success' ? 'success' : validationResult.type === 'warning' ? 'warning' : validationResult.type === 'partial' ? 'warning' : 'error'}
+                    sx={{ mt: 2 }}
+                  >
+                    <Typography variant="body2" sx={{ fontWeight: 'bold', mb: 1 }}>
+                      {validationResult.message}
+                    </Typography>
+                    {validationResult.score !== undefined && (
+                      <Typography variant="body2" sx={{ mb: 1 }}>
+                        <strong>Score:</strong> {validationResult.score}/100
+                      </Typography>
+                    )}
+                    {validationResult.methodUsed && (
+                      <Typography variant="body2" sx={{ mb: 1 }}>
+                        <strong>Method Identified:</strong> {validationResult.methodUsed}
+                      </Typography>
+                    )}
+                    <Typography variant="body2" sx={{ mb: 1 }}>
+                      {validationResult.details}
+                    </Typography>
+                    {validationResult.strengths && validationResult.strengths.length > 0 && (
+                      <Box sx={{ mt: 1 }}>
+                        <Typography variant="body2" sx={{ fontWeight: 'bold', color: 'success.main' }}>✨ Strengths:</Typography>
+                        <ul style={{ margin: '0.5em 0', paddingLeft: '1.5em' }}>
+                          {validationResult.strengths.map((strength, index) => (
+                            <li key={index}>
+                              <Typography variant="body2" color="success.dark">{strength}</Typography>
+                            </li>
+                          ))}
+                        </ul>
+                      </Box>
+                    )}
+                    {validationResult.suggestions && validationResult.suggestions.length > 0 && (
+                      <Box sx={{ mt: 1 }}>
+                        <Typography variant="body2" sx={{ fontWeight: 'bold', color: 'warning.main' }}>💡 Suggestions for Improvement:</Typography>
+                        <ul style={{ margin: '0.5em 0', paddingLeft: '1.5em' }}>
+                          {validationResult.suggestions.map((suggestion, index) => (
+                            <li key={index}>
+                              <Typography variant="body2">{suggestion}</Typography>
+                            </li>
+                          ))}
+                        </ul>
+                      </Box>
+                    )}
+                    {validationResult.nextSteps && (
+                      <Box sx={{ mt: 1, p: 1, bgcolor: 'info.light', borderRadius: 1 }}>
+                        <Typography variant="body2" sx={{ fontWeight: 'bold', color: 'info.dark' }}>🎯 Next Steps:</Typography>
+                        <Typography variant="body2" color="info.dark">{validationResult.nextSteps}</Typography>
+                        {validationResult.type === 'warning' && (
+                          <Button 
+                            size="small" 
+                            variant="outlined" 
+                            onClick={checkSolution}
+                            disabled={isValidating}
+                            sx={{ mt: 1 }}
+                          >
+                            Try Again
+                          </Button>
+                        )}
+                      </Box>
+                    )}
+                    {validationResult.correctRoots && validationResult.correctRoots.length > 0 && (
+                      <Typography variant="body2" sx={{ mt: 1, fontWeight: 'bold' }}>
+                        ✅ Correct roots: {validationResult.correctRoots.join(', ')}
+                      </Typography>
+                    )}
+                  </Alert>
+                )}
               </CardContent>
             </Card>
           </Grid>
         </Grid>
 
-        <Box sx={{ mt: 3, display: 'flex', justifyContent: 'center', gap: 2 }}>
-          <Button 
-            onClick={() => setCurrentProblem(Math.max(0, currentProblem - 1))}
-            disabled={currentProblem === 0}
-            startIcon={<PrevIcon />}
-          >
-            Previous Problem
-          </Button>
-          <Button 
-            onClick={() => setCurrentProblem(Math.min(problems.length - 1, currentProblem + 1))}
-            disabled={currentProblem === problems.length - 1}
-            endIcon={<NextIcon />}
-          >
-            Next Problem
-          </Button>
-        </Box>
+        {/* Problem Navigation */}
+        <Card sx={{ mt: 3, bgcolor: 'grey.50' }}>
+          <CardContent>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+              <Typography variant="h6" color="primary.main">
+                📚 Problem Navigation
+              </Typography>
+              <LinearProgress 
+                variant="determinate" 
+                value={((currentProblem + 1) / problems.length) * 100}
+                sx={{ width: 100, height: 8, borderRadius: 4 }}
+              />
+            </Box>
+            
+            <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2 }}>
+              <Button 
+                variant="outlined"
+                onClick={() => setCurrentProblem(Math.max(0, currentProblem - 1))}
+                disabled={currentProblem === 0}
+                startIcon={<PrevIcon />}
+                sx={{ minWidth: 150 }}
+              >
+                Previous
+              </Button>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 2 }}>
+                {[...Array(problems.length)].map((_, idx) => (
+                  <Box
+                    key={idx}
+                    sx={{
+                      width: 12,
+                      height: 12,
+                      borderRadius: '50%',
+                      bgcolor: idx === currentProblem ? 'primary.main' : 'grey.300',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s',
+                      '&:hover': { transform: 'scale(1.2)' }
+                    }}
+                    onClick={() => setCurrentProblem(idx)}
+                  />
+                ))}
+              </Box>
+              <Button 
+                variant="outlined"
+                onClick={() => setCurrentProblem(Math.min(problems.length - 1, currentProblem + 1))}
+                disabled={currentProblem === problems.length - 1}
+                endIcon={<NextIcon />}
+                sx={{ minWidth: 150 }}
+              >
+                Next
+              </Button>
+            </Box>
+          </CardContent>
+        </Card>
       </DialogContent>
       
       <DialogActions>
         <Button onClick={onClose}>Close</Button>
-        <Button variant="contained" color="success">
-          Check Solution
+        <Button 
+          variant="contained" 
+          color="success"
+          onClick={checkSolution}
+          disabled={isValidating || !userSolution.trim()}
+          startIcon={isValidating ? <CircularProgress size={20} /> : <PlayIcon />}
+        >
+          {isValidating ? 'Checking with AI...' : 'Check Solution'}
         </Button>
       </DialogActions>
+
+      {/* API Key Configuration Dialog */}
+      <Dialog open={showApiKeyDialog} onClose={() => setShowApiKeyDialog(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>
+          Configure Gemini AI API Key
+        </DialogTitle>
+        <DialogContent>
+          <Alert severity="success" sx={{ mb: 2 }}>
+            ✅ A Gemini API key is already pre-configured and working!
+            <br />
+            You can optionally use your own key from: <Link href="https://aistudio.google.com/app/apikey" target="_blank">Google AI Studio</Link>
+          </Alert>
+          <TextField
+            fullWidth
+            label="Gemini API Key"
+            type="password"
+            value={apiKey}
+            onChange={(e) => setApiKey(e.target.value)}
+            placeholder="AIza..."
+            sx={{ mt: 2 }}
+            helperText="Your API key will be stored locally and used only for solution validation"
+          />
+        </DialogContent>
+                  <DialogActions>
+            <Button onClick={() => setShowApiKeyDialog(false)}>Use Pre-configured Key</Button>
+            <Button onClick={saveApiKey} variant="contained" disabled={!apiKey.trim()}>
+              Use This Key Instead
+            </Button>
+          </DialogActions>
+      </Dialog>
     </Dialog>
   );
 }
@@ -887,8 +1230,10 @@ function LearningCenter() {
 
           <Grid container spacing={3}>
             {methodsData.map((method, index) => (
-              <Grid item xs={12} key={index}>
+              <Grid item xs={12} md={6} key={index}>
                 <Card sx={{ 
+                  height: '100%',
+                  minHeight: 300,
                   border: '1px solid rgba(0,0,0,0.1)',
                   '&:hover': { boxShadow: 4, transform: 'translateY(-2px)' },
                   transition: 'all 0.3s ease'
@@ -1005,7 +1350,7 @@ function LearningCenter() {
           <Grid container spacing={3} sx={{ mb: 4 }}>
             {practicalExamples.map((example, index) => (
               <Grid item xs={12} md={6} key={index}>
-                <Card sx={{ height: '100%', border: '1px solid rgba(0,0,0,0.1)' }}>
+                <Card sx={{ height: '100%', minHeight: 280, border: '1px solid rgba(0,0,0,0.1)' }}>
                   <CardContent>
                     <Typography variant="h6" gutterBottom color="primary.main">
                       {example.title}
@@ -1033,7 +1378,7 @@ function LearningCenter() {
           
           <Grid container spacing={3}>
             <Grid item xs={12} md={6}>
-              <Card>
+              <Card sx={{ height: '100%', minHeight: 320 }}>
                 <CardContent>
                   <Typography variant="h6" gutterBottom color="primary.main">
                     🎯 What are Non-linear Equations?
@@ -1058,7 +1403,7 @@ function LearningCenter() {
             </Grid>
 
             <Grid item xs={12} md={6}>
-              <Card>
+              <Card sx={{ height: '100%', minHeight: 320 }}>
                 <CardContent>
                   <Typography variant="h6" gutterBottom color="success.main">
                     🔧 Why Numerical Methods?
@@ -1090,8 +1435,8 @@ function LearningCenter() {
         <TabPanel value={activeTab} index={2}>
           <Grid container spacing={3}>
             {studyResources.map((category, index) => (
-              <Grid item xs={12} md={6} key={index}>
-                <Card sx={{ height: '100%' }}>
+              <Grid item xs={12} sm={6} md={4} key={index}>
+                <Card sx={{ height: '100%', minHeight: 350 }}>
                   <CardContent>
                     <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                       {category.icon}
@@ -1145,8 +1490,8 @@ function LearningCenter() {
           </Typography>
           
           <Grid container spacing={3}>
-            <Grid item xs={12} md={4}>
-              <Card>
+            <Grid item xs={12} sm={6} md={4}>
+              <Card sx={{ height: '100%', minHeight: 280 }}>
                 <CardContent>
                   <Typography variant="h6" gutterBottom color="primary.main">
                     📱 Interactive Tools
@@ -1173,8 +1518,8 @@ function LearningCenter() {
               </Card>
             </Grid>
 
-            <Grid item xs={12} md={4}>
-              <Card>
+            <Grid item xs={12} sm={6} md={4}>
+              <Card sx={{ height: '100%', minHeight: 280 }}>
                 <CardContent>
                   <Typography variant="h6" gutterBottom color="success.main">
                     📖 Documentation
@@ -1201,8 +1546,8 @@ function LearningCenter() {
               </Card>
             </Grid>
 
-            <Grid item xs={12} md={4}>
-              <Card>
+            <Grid item xs={12} sm={6} md={4}>
+              <Card sx={{ height: '100%', minHeight: 280 }}>
                 <CardContent>
                   <Typography variant="h6" gutterBottom color="warning.main">
                     🎓 Academic Resources
@@ -1239,8 +1584,8 @@ function LearningCenter() {
           
           <Grid container spacing={3} sx={{ mb: 4 }}>
             {interactiveExercises.map((exercise, index) => (
-              <Grid item xs={12} md={4} key={index}>
-                <Card sx={{ height: '100%' }}>
+              <Grid item xs={12} sm={6} md={4} key={index}>
+                <Card sx={{ height: '100%', minHeight: 360 }}>
                   <CardContent>
                     <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                       <Typography variant="h6" sx={{ flex: 1 }}>{exercise.title}</Typography>
@@ -1286,7 +1631,7 @@ function LearningCenter() {
             📊 Self-Assessment Quiz
           </Typography>
           
-          <Card sx={{ mb: 3 }}>
+          <Card sx={{ mb: 3, minHeight: 200 }}>
             <CardContent>
               <Typography variant="h6" gutterBottom>
                 Test Your Knowledge
@@ -1299,6 +1644,7 @@ function LearningCenter() {
                    <Button 
                      variant="contained" 
                      fullWidth
+                     sx={{ minHeight: 56 }}
                      onClick={() => handleStartQuiz('basic')}
                    >
                      📝 Basic Concepts (10 Questions)
@@ -1309,6 +1655,7 @@ function LearningCenter() {
                      variant="contained" 
                      fullWidth 
                      color="warning"
+                     sx={{ minHeight: 56 }}
                      onClick={() => handleStartQuiz('selection')}
                    >
                      🧮 Method Selection (15 Questions)
@@ -1319,6 +1666,7 @@ function LearningCenter() {
                      variant="contained" 
                      fullWidth 
                      color="success"
+                     sx={{ minHeight: 56 }}
                      onClick={() => handleStartQuiz('implementation')}
                    >
                      🔧 Implementation (20 Questions)
@@ -1329,6 +1677,7 @@ function LearningCenter() {
                      variant="contained" 
                      fullWidth 
                      color="error"
+                     sx={{ minHeight: 56 }}
                      onClick={() => handleStartQuiz('advanced')}
                    >
                      🎯 Advanced Topics (25 Questions)
