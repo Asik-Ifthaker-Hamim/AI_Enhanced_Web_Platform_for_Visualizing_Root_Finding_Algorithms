@@ -18,8 +18,8 @@ Leader: C221012 A.M Asik Ifthaker Hamim
 Members: C221022 Adrishikhar Barua, C221011 Sheikh Mohammad Rajking
 
 Course: Numerical Methods
-Institution: [Your Institution Name]
-Date: 2024
+Institution: [International Islamic University Chittagong]
+Date: 2025
 
 License: Educational Use Only
 """
