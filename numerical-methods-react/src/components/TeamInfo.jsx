@@ -29,7 +29,7 @@ import {
   Timeline as TimelineIcon,
   EmojiEvents as TrophyIcon
 } from '@mui/icons-material';
-import { motion } from 'framer-motion';
+
 
 const projectInfo = {
   title: 'Solution of Non-linear Equations',
@@ -38,7 +38,7 @@ const projectInfo = {
   developmentTeam: 'The Epsilon Chasers',
   projectType: 'Educational Software Development',
   status: 'Completed',
-  lastUpdated: 'January 2025',
+  lastUpdated: 'June 2025',
   technicalLead: 'A.M Asik Ifthaker Hamim (Associate AI Engineer)'
 };
 
@@ -48,7 +48,7 @@ const teamMembers = [
     studentId: 'C221012',
     role: 'Team Leader & Lead Developer',
     professionalTitle: 'Associate AI Engineer, Liberate Labs',
-    avatar: '👨‍💻',
+    avatar: '/leader-image.jpg',
     email: 'asikifthakerhamim75@gmail.com',
     academicEmail: 'c221012@ugrad.iiuc.ac.bd',
     description: 'Computer Science student and Associate AI Engineer specializing in numerical computing, AI systems, and modern web development',
@@ -184,11 +184,7 @@ const projectStats = [
 function TeamInfo() {
   return (
     <Box sx={{ width: '100%', maxWidth: 'none' }}>
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
+      <div>
         <Typography variant="h4" gutterBottom sx={{ mb: 4, fontWeight: 600, textAlign: 'center' }}>
           👥 Project Information
         </Typography>
@@ -199,9 +195,6 @@ function TeamInfo() {
             <Box sx={{ textAlign: 'center', mb: 3 }}>
               <Typography variant="h5" gutterBottom sx={{ fontWeight: 700, color: 'primary.main' }}>
                 {projectInfo.title}
-              </Typography>
-              <Typography variant="h6" color="text.secondary" gutterBottom>
-                Version {projectInfo.version} - {projectInfo.status}
               </Typography>
               <Typography variant="body1" paragraph sx={{ maxWidth: 'none', mx: 'auto' }}>
                 {projectInfo.description}
@@ -243,13 +236,15 @@ function TeamInfo() {
                       <Paper sx={{ p: 3, mb: 2, border: '1px solid rgba(0, 0, 0, 0.1)' }}>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 3, mb: 3 }}>
                           <Avatar sx={{ 
-                            bgcolor: index === 0 ? 'primary.main' : index === 1 ? 'success.main' : 'warning.main', 
+                            bgcolor: member.avatar.startsWith('/') ? 'transparent' : (index === 0 ? 'primary.main' : index === 1 ? 'success.main' : 'warning.main'), 
                             width: 60, 
                             height: 60, 
-                            fontSize: '28px',
+                            fontSize: member.avatar.startsWith('/') ? '0px' : '28px',
                             boxShadow: 2
-                          }}>
-                            {member.avatar}
+                          }}
+                          src={member.avatar.startsWith('/') ? member.avatar : undefined}
+                          >
+                            {!member.avatar.startsWith('/') && member.avatar}
                           </Avatar>
                           <Box sx={{ flex: 1 }}>
                                                     <Typography variant="h6" sx={{ fontWeight: 700 }}>
@@ -524,11 +519,7 @@ function TeamInfo() {
                 <Grid container spacing={3}>
                   {features.map((feature, index) => (
                     <Grid item xs={12} md={6} lg={4} key={index}>
-                      <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.5, delay: index * 0.1 }}
-                      >
+                      <div>
                         <Paper sx={{ p: 3, height: '100%', textAlign: 'center' }}>
                           <Box sx={{ mb: 2 }}>
                             {feature.icon}
@@ -546,7 +537,7 @@ function TeamInfo() {
                             icon={<StarIcon />}
                           />
                         </Paper>
-                      </motion.div>
+                      </div>
                     </Grid>
                   ))}
                 </Grid>
@@ -565,7 +556,7 @@ function TeamInfo() {
             clarity while maintaining computational efficiency.
           </Typography>
         </Alert>
-      </motion.div>
+      </div>
     </Box>
   );
 }

@@ -69,6 +69,85 @@ A comprehensive, interactive web application for solving non-linear equations us
 4. **Open your browser**
    Navigate to `http://localhost:5173` to see the application
 
+## 🔐 Environment Setup & API Key Security
+
+### 🚨 **CRITICAL SECURITY NOTICE**
+**Never commit API keys to version control!** This guide shows you how to properly secure your Gemini API key.
+
+### 📋 **Quick Setup**
+
+#### 1. Copy the Environment Template
+```bash
+cp .env.example .env
+```
+
+#### 2. Get Your Gemini API Key
+1. Visit [Google AI Studio](https://aistudio.google.com/app/apikey)
+2. Sign in with your Google account
+3. Click "Create API Key"
+4. Copy the generated key
+
+#### 3. Configure Your API Key
+Open `.env` file and replace the placeholder:
+```env
+VITE_GEMINI_API_KEY=your_actual_api_key_here
+```
+
+#### 4. Verify Setup
+```bash
+npm run dev
+```
+
+### 📁 **File Structure**
+```
+project/
+├── .env                 # Your actual API keys (NEVER commit this!)
+├── .env.example         # Template file (safe to commit)
+└── .gitignore          # Protects .env from being committed
+```
+
+### 🔒 **Security Best Practices**
+
+#### ✅ **What's Protected:**
+- `.env` files are automatically ignored by Git
+- API keys use environment variables (`import.meta.env.VITE_GEMINI_API_KEY`)
+- No hardcoded credentials in source code
+- Template file (`.env.example`) helps other developers set up safely
+
+#### 🚨 **Security Warnings:**
+- **NEVER** commit `.env` files to version control
+- **NEVER** share API keys in chat, email, or documentation
+- **ALWAYS** use environment variables for sensitive data
+- **ROTATE** API keys if accidentally exposed
+
+#### 🛠️ **For Developers:**
+```bash
+# Setting up a new environment
+cp .env.example .env          # Copy template
+# Edit .env with your API key
+npm run dev                   # Start development
+
+# Verify security
+git status                    # .env should NOT appear in modified files
+```
+
+#### 📝 **Environment Variables Reference:**
+```env
+# Gemini API Configuration
+# Get your API key from: https://aistudio.google.com/app/apikey
+VITE_GEMINI_API_KEY=your_gemini_api_key_here
+
+# Application Configuration (optional)
+VITE_APP_TITLE=Numerical Methods - Root Finding GUI
+VITE_APP_VERSION=1.0.0
+```
+
+#### 🚨 **If You Accidentally Exposed Your Key:**
+1. **Immediately revoke** the key at [Google AI Studio](https://aistudio.google.com/app/apikey)
+2. **Generate a new key**
+3. **Update your `.env` file**
+4. **Check Git history** and contact GitHub support if needed to remove from history
+
 ### 🤖 AI-Powered Solution Validation
 
 ✅ **Ready to Use Immediately!** The AI validation is pre-configured with a working API key and robust error handling.

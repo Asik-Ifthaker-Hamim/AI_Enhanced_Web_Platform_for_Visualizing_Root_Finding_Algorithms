@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useMemo } from 'react';
+import React, { useRef, useMemo } from 'react';
 import { Box, Typography } from '@mui/material';
 import {
   Chart as ChartJS,
@@ -57,7 +57,7 @@ function FunctionPlot({ functionExpression, interval = [-5, 5], root = null, ite
             functionPoints.push({ x, y });
             labels.push(x.toFixed(3));
           }
-        } catch (error) {
+        } catch (_error) { // eslint-disable-line no-unused-vars
           // Skip points where function can't be evaluated
         }
       }
@@ -126,7 +126,7 @@ function FunctionPlot({ functionExpression, interval = [-5, 5], root = null, ite
       // Add iteration points
       if (iterationHistory && iterationHistory.length > 0) {
         const iterationPoints = [];
-        iterationHistory.forEach((iteration, index) => {
+        iterationHistory.forEach((iteration, _index) => { // eslint-disable-line no-unused-vars
           try {
             const y = f(iteration.xValue);
             if (isFinite(y) && Math.abs(y) < 1e6) {
@@ -136,7 +136,7 @@ function FunctionPlot({ functionExpression, interval = [-5, 5], root = null, ite
                 iteration: iteration.iteration
               });
             }
-          } catch (error) {
+          } catch (_error) { // eslint-disable-line no-unused-vars
             // Skip invalid points
           }
         });

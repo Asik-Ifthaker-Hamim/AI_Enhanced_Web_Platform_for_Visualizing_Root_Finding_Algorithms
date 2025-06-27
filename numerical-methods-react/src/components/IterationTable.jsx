@@ -20,7 +20,7 @@ import {
   ExpandLess as ExpandLessIcon,
   Info as InfoIcon
 } from '@mui/icons-material';
-import { motion } from 'framer-motion';
+
 
 function IterationTable({ iterations = [] }) {
   const [page, setPage] = useState(0);
@@ -155,11 +155,7 @@ function IterationTable({ iterations = [] }) {
               
               return (
                 <React.Fragment key={actualIndex}>
-                  <motion.tr
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.2, delay: index * 0.05 }}
-                    component={TableRow}
+                  <TableRow
                     sx={{
                       '&:nth-of-type(odd)': { bgcolor: 'rgba(0, 0, 0, 0.02)' },
                       '&:hover': { bgcolor: 'rgba(25, 118, 210, 0.04)' },
@@ -202,7 +198,7 @@ function IterationTable({ iterations = [] }) {
                         </Tooltip>
                       )}
                     </TableCell>
-                  </motion.tr>
+                  </TableRow>
                   
                   {/* Expanded Details Row */}
                   {iteration.additionalData && Object.keys(iteration.additionalData).length > 0 && (

@@ -61,12 +61,11 @@ import {
   Cancel as IncorrectIcon,
   PlayArrow as PlayIcon
 } from '@mui/icons-material';
-import { motion } from 'framer-motion';
-import { safeEvaluate } from '../utils/numericalMethods';
+
 import { initializeGemini, validateSolutionWithGemini, isGeminiInitialized } from '../utils/geminiService';
 
-// Default API key for immediate use
-const DEFAULT_API_KEY = "AIzaSyBs0VFXBg7WEh0RjqOnUvdBSG2j6PH6hjQ";
+// Get API key from environment variables
+const DEFAULT_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 
 function TabPanel({ children, value, index, ...other }) {
   return (
@@ -86,109 +85,7 @@ function TabPanel({ children, value, index, ...other }) {
   );
 }
 
-const methodsInfo = {
-  bisection: {
-    name: 'Bisection Method',
-    difficulty: 'Beginner',
-    color: '#1976d2',
-    description: 'A reliable root-finding method that repeatedly divides an interval in half',
-    algorithm: [
-      'Start with an interval [a, b] where f(a) and f(b) have opposite signs',
-      'Calculate the midpoint c = (a + b) / 2',
-      'Evaluate f(c)',
-      'If f(c) = 0, then c is the root',
-      'If f(a) and f(c) have opposite signs, set b = c',
-      'Otherwise, set a = c',
-      'Repeat until convergence'
-    ],
-    pros: [
-      'Always converges if initial conditions are met',
-      'Simple to understand and implement',
-      'Robust and stable',
-      'Guaranteed to find a root'
-    ],
-    cons: [
-      'Slow convergence (linear)',
-      'Requires a bracketing interval',
-      'Only finds one root at a time',
-      'Cannot find multiple roots or complex roots'
-    ],
-    useWhen: [
-      'You need a guaranteed solution',
-      'Function is continuous',
-      'You have a bracketing interval',
-      'Simplicity is preferred over speed'
-    ],
-    convergence: 'Linear (slow but steady)',
-    example: 'Find root of x³ - x - 1 = 0 in [1, 2]'
-  },
-  newtonRaphson: {
-    name: 'Newton-Raphson Method',
-    difficulty: 'Intermediate',
-    color: '#f57c00',
-    description: 'Fast iterative method using function derivatives for rapid convergence',
-    algorithm: [
-      'Start with an initial guess x₀',
-      'Calculate f(xₙ) and f\'(xₙ)',
-      'Update: xₙ₊₁ = xₙ - f(xₙ) / f\'(xₙ)',
-      'Check for convergence',
-      'Repeat until desired accuracy'
-    ],
-    pros: [
-      'Quadratic convergence (very fast)',
-      'Efficient for most functions',
-      'Can handle complex roots',
-      'Widely applicable'
-    ],
-    cons: [
-      'Requires derivative calculation',
-      'May not converge if poor initial guess',
-      'Fails when derivative is zero',
-      'Sensitive to starting point'
-    ],
-    useWhen: [
-      'Derivative is easily calculated',
-      'Good initial guess available',
-      'Speed is important',
-      'Function is well-behaved near root'
-    ],
-    convergence: 'Quadratic (very fast)',
-    example: 'Newton\'s method for x² - 2 = 0 starting from x₀ = 1'
-  },
-  secant: {
-    name: 'Secant Method',
-    difficulty: 'Intermediate',
-    color: '#7b1fa2',
-    description: 'Newton-like method without derivatives using secant line approximation',
-    algorithm: [
-      'Start with two initial points x₀ and x₁',
-      'Calculate f(x₀) and f(x₁)',
-      'Update: x₂ = x₁ - f(x₁) × (x₁ - x₀) / (f(x₁) - f(x₀))',
-      'Shift points: x₀ = x₁, x₁ = x₂',
-      'Repeat until convergence'
-    ],
-    pros: [
-      'No derivative required',
-      'Faster than bisection',
-      'Super-linear convergence',
-      'Simple to implement'
-    ],
-    cons: [
-      'May not converge',
-      'Needs two initial points',
-      'Can be unstable',
-      'Slower than Newton-Raphson'
-    ],
-    useWhen: [
-      'Derivative is difficult to calculate',
-      'Good initial estimates available',
-      'Faster convergence needed than bisection',
-      'Function evaluations are cheap'
-    ],
-    convergence: 'Super-linear (fast)',
-    example: 'Secant method for cos(x) - x = 0 with x₀ = 0, x₁ = 1'
-  }
-};
+
 
 const methodsData = [
   {
@@ -716,7 +613,7 @@ function PracticeModal({ exercise, onClose }) {
       try {
         initializeGemini(apiKey.trim());
         setShowApiKeyDialog(false);
-      } catch (error) {
+      } catch (_error) { // eslint-disable-line no-unused-vars
         setValidationResult({
           type: 'error',
           message: 'Invalid API key. Please check and try again.'
@@ -740,7 +637,7 @@ function PracticeModal({ exercise, onClose }) {
       // Try to initialize with current API key
       try {
         initializeGemini(apiKey);
-      } catch (error) {
+      } catch (_error) { // eslint-disable-line no-unused-vars
         setShowApiKeyDialog(true);
         return;
       }
@@ -796,7 +693,7 @@ function PracticeModal({ exercise, onClose }) {
         });
         setShowCorrectAnswer(true);
       }
-    } catch (error) {
+    } catch (_error) { // eslint-disable-line no-unused-vars
       setValidationResult({
         type: 'error',
         message: '🔧 Unexpected error occurred.',
@@ -1146,7 +1043,6 @@ function LearningCenter() {
   const [expandedMethod, setExpandedMethod] = useState(null);
   const [currentQuiz, setCurrentQuiz] = useState(null);
   const [practiceMode, setPracticeMode] = useState(null);
-  const [selectedResource, setSelectedResource] = useState(null);
 
   const handleTabChange = (event, newValue) => {
     setActiveTab(newValue);
@@ -1165,7 +1061,6 @@ function LearningCenter() {
   };
 
   const handleResourceClick = (resource) => {
-    setSelectedResource(resource);
     // In a real app, this would open external links or detailed views
     window.open(getResourceUrl(resource.title), '_blank');
   };
@@ -1192,11 +1087,7 @@ function LearningCenter() {
 
   return (
     <Box sx={{ width: '100%', maxWidth: 'none' }}>
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
+      <div>
         <Typography variant="h4" gutterBottom sx={{ mb: 4, fontWeight: 600, textAlign: 'center' }}>
           📚 Learning Hub: Non-linear Equations
         </Typography>
@@ -1265,12 +1156,7 @@ function LearningCenter() {
                     </Typography>
 
                     {expandedMethod === index && (
-                      <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: 'auto' }}
-                        exit={{ opacity: 0, height: 0 }}
-                        transition={{ duration: 0.3 }}
-                      >
+                      <div>
                         <Divider sx={{ my: 2 }} />
                         
                         <Grid container spacing={3}>
@@ -1332,7 +1218,7 @@ function LearningCenter() {
                             </List>
                           </Grid>
                         </Grid>
-                      </motion.div>
+                      </div>
                     )}
                   </CardContent>
                 </Card>
@@ -1710,7 +1596,7 @@ function LearningCenter() {
              onClose={() => setPracticeMode(null)} 
            />
          )}
-       </motion.div>
+       </div>
      </Box>
    );
  }

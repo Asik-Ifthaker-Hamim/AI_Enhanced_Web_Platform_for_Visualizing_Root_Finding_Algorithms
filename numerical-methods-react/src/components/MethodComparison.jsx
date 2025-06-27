@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   Box,
   Card,
@@ -48,7 +48,7 @@ import {
   Tooltip,
   Legend,
 } from 'chart.js';
-import { motion, AnimatePresence } from 'framer-motion';
+
 import { compareAllMethods, predefinedFunctions } from '../utils/numericalMethods';
 
 ChartJS.register(
@@ -158,7 +158,16 @@ function MethodComparison() {
     const iterations = validResults.map(method => results[method].iterations || 0);
     const times = validResults.map(method => results[method].executionTime || 0);
     const functionEvals = validResults.map(method => results[method].functionEvaluations || 0);
-    const errors = validResults.map(method => results[method].finalError || 0);
+    
+    // Handle errors specially for logarithmic scale - filter out invalid values
+    const errors = validResults.map(method => {
+      const error = results[method].finalError;
+      if (error === null || error === undefined || error <= 0 || isNaN(error)) {
+        // Use a very small positive number for log scale instead of 0
+        return 1e-16;
+      }
+      return error;
+    });
 
     const colors = [
       '#1976d2', '#388e3c', '#f57c00', '#7b1fa2', '#d32f2f', '#0288d1'
@@ -250,11 +259,7 @@ function MethodComparison() {
       <Grid container spacing={3} sx={{ width: '100%', m: 0 }}>
         {/* Configuration Panel */}
         <Grid item xs={12} lg={4}>
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5 }}
-          >
+          <div>
             <Card>
               <CardContent>
                 <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -387,24 +392,15 @@ function MethodComparison() {
                 {isComparing && <LinearProgress sx={{ mt: 2 }} />}
               </CardContent>
             </Card>
-          </motion.div>
+          </div>
         </Grid>
 
         {/* Results Panel */}
         <Grid item xs={12} lg={8}>
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-          >
-            <AnimatePresence>
+          <div>
+            
               {results && (
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  transition={{ duration: 0.3 }}
-                >
+                <div>
                   <Card sx={{ mb: 3 }}>
                     <CardContent>
                       <Typography variant="h6" gutterBottom>
@@ -496,6 +492,13 @@ function MethodComparison() {
                           <Tab label="Final Error" />
                         </Tabs>
 
+                        {/* Add safety check for chart data */}
+                        {!chartData.errors || chartData.errors.datasets[0].data.length === 0 ? (
+                          <Alert severity="warning" sx={{ mt: 2 }}>
+                            No valid error data available for logarithmic chart. This may occur when all methods failed to converge or had invalid error values.
+                          </Alert>
+                        ) : null}
+
                         <TabPanel value={activeTab} index={0}>
                           <Box sx={{ height: 300 }}>
                             <Bar data={chartData.iterations} options={{...chartOptions, scales: {...chartOptions.scales, y: {...chartOptions.scales.y, title: {display: true, text: 'Number of Iterations'}}}}} />
@@ -516,7 +519,30 @@ function MethodComparison() {
 
                         <TabPanel value={activeTab} index={3}>
                           <Box sx={{ height: 300 }}>
-                            <Bar data={chartData.errors} options={{...chartOptions, scales: {...chartOptions.scales, y: {...chartOptions.scales.y, type: 'logarithmic', title: {display: true, text: 'Final Error (log scale)'}}}}} />
+                            <Bar 
+                              data={chartData.errors} 
+                              options={{
+                                ...chartOptions, 
+                                scales: {
+                                  ...chartOptions.scales, 
+                                  y: {
+                                    ...chartOptions.scales.y, 
+                                    type: 'logarithmic',
+                                    beginAtZero: false,
+                                    min: 1e-16,
+                                    title: {
+                                      display: true, 
+                                      text: 'Final Error (log scale)'
+                                    },
+                                    ticks: {
+                                      callback: function(value) {
+                                        return value.toExponential(1);
+                                      }
+                                    }
+                                  }
+                                }
+                              }} 
+                            />
                           </Box>
                         </TabPanel>
                       </CardContent>
@@ -540,9 +566,9 @@ function MethodComparison() {
                       </CardContent>
                     </Card>
                   )}
-                </motion.div>
+                </div>
               )}
-            </AnimatePresence>
+            
 
             {!results && !isComparing && (
               <Card>
@@ -559,7 +585,7 @@ function MethodComparison() {
                 </CardContent>
               </Card>
             )}
-          </motion.div>
+          </div>
         </Grid>
       </Grid>
     </Box>

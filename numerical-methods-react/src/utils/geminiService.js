@@ -1,7 +1,7 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-// Default API key - can be overridden by user
-const DEFAULT_API_KEY = "AIzaSyBs0VFXBg7WEh0RjqOnUvdBSG2j6PH6hjQ";
+// Get API key from environment variables - can be overridden by user
+const DEFAULT_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 
 let genAI = null;
 

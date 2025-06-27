@@ -1,4 +1,4 @@
-import { evaluate, derivative } from 'mathjs';
+import { evaluate } from 'mathjs';
 
 // Base class for numerical method results
 export class NumericalResult {

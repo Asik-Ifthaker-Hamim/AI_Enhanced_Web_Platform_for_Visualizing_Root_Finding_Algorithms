@@ -30,10 +30,9 @@ import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import FunctionsIcon from '@mui/icons-material/Functions';
 import CalculateIcon from '@mui/icons-material/Calculate';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
-import { motion } from 'framer-motion';
+
 import { incrementalSearch } from '../utils/incrementalSearch';
 import { 
-  hornersRule, 
   hornersRuleDetailed, 
   polynomialDeflation, 
   successiveDeflation,
@@ -177,11 +176,7 @@ function Utilities() {
 
   return (
     <Box sx={{ width: '100%', maxWidth: 'none' }}>
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
+              <div>
         <Typography variant="h4" gutterBottom sx={{ mb: 3, textAlign: 'center', fontWeight: 600 }}>
           🔧 Mathematical Utilities
         </Typography>
@@ -631,7 +626,7 @@ function Utilities() {
             </CardContent>
           </Card>
         )}
-      </motion.div>
+              </div>
     </Box>
   );
 }
