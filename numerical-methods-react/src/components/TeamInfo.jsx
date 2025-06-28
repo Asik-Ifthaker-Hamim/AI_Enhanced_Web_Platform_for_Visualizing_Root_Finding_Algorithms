@@ -87,8 +87,8 @@ const teamMembers = [
     name: 'Adrishikhar Barua',
     studentId: 'C221022',
     role: 'Algorithm Developer',
-    avatar: <CalculateIcon className="icon-matrix icon-breathe" sx={{ fontSize: '28px' }} />,
-    email: 'adrishikhar@iiuc.ac.bd',
+    avatar: '/adri.png',
+    email: 'c221022@ugrad.iiuc.ac.bd',
     description: 'Focused on mathematical algorithm implementation and optimization',
     contributions: [
       'Algorithm Research',
@@ -103,8 +103,8 @@ const teamMembers = [
     name: 'Sheikh Mohammad Rajking',
     studentId: 'C221011',
     role: 'Quality Assurance & Testing',
-    avatar: <ScienceIcon className="icon-float-gentle icon-glow-soft" sx={{ fontSize: '28px' }} />,
-    email: 'rajking@iiuc.ac.bd',
+    avatar: '/rajking.png',
+    email: 'c221011@ugrad.iiuc.ac.bd',
     description: 'Specializes in software testing and quality assurance for numerical applications',
     contributions: [
       'Quality Assurance',
@@ -176,8 +176,8 @@ const features = [
 
 const courseInfo = {
   course: 'Numerical Methods',
-  code: 'CSE / MATH',
-  semester: 'Spring 2025',
+  code: 'CSE',
+  semester: 'Spring',
   academicYear: '2025',
   instructor: 'Prof. Mohammed Shamsul Alam',
   qualifications: 'B.Sc.(Hons), M.Sc. in Electronics & Computer Science (SUST), Pursuing PhD (SUST)',
@@ -257,14 +257,35 @@ function TeamInfo() {
                     <Grid item xs={12} key={index}>
                       <Paper sx={{ p: 3, mb: 2, border: '1px solid rgba(0, 0, 0, 0.1)' }}>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 3, mb: 3 }}>
-                          <Avatar sx={{ 
-                            bgcolor: (typeof member.avatar === 'string' && member.avatar.startsWith('/')) ? 'transparent' : (index === 0 ? 'primary.main' : index === 1 ? 'success.main' : 'warning.main'), 
-                            width: 60, 
-                            height: 60, 
-                            fontSize: (typeof member.avatar === 'string' && member.avatar.startsWith('/')) ? '0px' : '28px',
-                            boxShadow: 2
-                          }}
-                          src={(typeof member.avatar === 'string' && member.avatar.startsWith('/')) ? member.avatar : undefined}
+                          <Avatar 
+                            className="icon-glow-soft"
+                            sx={{ 
+                              bgcolor: (typeof member.avatar === 'string' && member.avatar.startsWith('/')) ? 'transparent' : (index === 0 ? 'primary.main' : index === 1 ? 'success.main' : 'warning.main'), 
+                              width: 60, 
+                              height: 60, 
+                              fontSize: (typeof member.avatar === 'string' && member.avatar.startsWith('/')) ? '0px' : '28px',
+                              border: '2px solid',
+                              borderColor: 'primary.main',
+                              boxShadow: '0 0 15px rgba(0, 0, 0, 0.2)',
+                              '&:hover': {
+                                animation: 'pulseAnimation 1.5s ease-in-out infinite',
+                                '@keyframes pulseAnimation': {
+                                  '0%': {
+                                    transform: 'scale(1)',
+                                    boxShadow: '0 0 15px rgba(0, 0, 0, 0.2)',
+                                  },
+                                  '50%': {
+                                    transform: 'scale(1.05)',
+                                    boxShadow: '0 0 20px rgba(25, 118, 210, 0.4)',
+                                  },
+                                  '100%': {
+                                    transform: 'scale(1)',
+                                    boxShadow: '0 0 15px rgba(0, 0, 0, 0.2)',
+                                  },
+                                },
+                              },
+                            }}
+                            src={(typeof member.avatar === 'string' && member.avatar.startsWith('/')) ? member.avatar : undefined}
                           >
                             {(typeof member.avatar === 'string' && !member.avatar.startsWith('/')) ? member.avatar : (typeof member.avatar !== 'string' ? member.avatar : null)}
                           </Avatar>
@@ -343,7 +364,7 @@ function TeamInfo() {
           </Grid>
 
           {/* Course Information */}
-          <Grid item xs={12} lg={6}>
+          <Grid item xs={12} lg={4}>
             <Card className="fade-in-right card-hover-lift" sx={{ height: '100%', minHeight: 500, bgcolor: 'background.paper' }}>
               <CardContent>
                 <Typography variant="h5" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
@@ -401,27 +422,6 @@ function TeamInfo() {
                       secondary={`${courseInfo.semester} ${courseInfo.academicYear}`}
                     />
                   </ListItem>
-                  
-                  <ListItem>
-                    <ListItemIcon>
-                      <PersonIcon className="icon-float-gentle icon-fade-pulse" color="success" />
-                    </ListItemIcon>
-                    <ListItemText 
-                      primary="Course Instructor" 
-                      secondary={`${courseInfo.instructor}`}
-                      secondaryTypographyProps={{ component: 'div' }}
-                    />
-                  </ListItem>
-                  
-                  <ListItem>
-                    <ListItemIcon>
-                      <SchoolIcon className="icon-soft-bounce icon-calm-wave" color="primary" />
-                    </ListItemIcon>
-                    <ListItemText 
-                      primary="Qualifications" 
-                      secondary={courseInfo.qualifications}
-                    />
-                  </ListItem>
                 </List>
 
                 <Divider sx={{ my: 2 }} />
@@ -439,6 +439,113 @@ function TeamInfo() {
                     </ListItem>
                   ))}
                 </List>
+              </CardContent>
+            </Card>
+          </Grid>
+
+          {/* Instructor Information */}
+          <Grid item xs={12} lg={2}>
+            <Card className="fade-in-right card-hover-lift" sx={{ height: '100%', minHeight: 500, bgcolor: 'background.paper' }}>
+              <CardContent>
+                <Typography variant="h5" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
+                  <PersonIcon className="icon-float-gentle icon-fade-pulse" color="success" />
+                  Course Instructor
+                </Typography>
+
+                <Box sx={{ textAlign: 'center', mb: 3 }}>
+                  <Avatar
+                    src="/Sir.jpg"
+                    className="icon-glow-soft"
+                    sx={{
+                      width: 120,
+                      height: 120,
+                      margin: '0 auto',
+                      mb: 2,
+                      border: '3px solid',
+                      borderColor: 'primary.main',
+                      boxShadow: '0 0 15px rgba(0, 0, 0, 0.2)',
+                      '&:hover': {
+                        animation: 'pulseAnimation 1.5s ease-in-out infinite',
+                        '@keyframes pulseAnimation': {
+                          '0%': {
+                            transform: 'scale(1)',
+                            boxShadow: '0 0 15px rgba(0, 0, 0, 0.2)',
+                          },
+                          '50%': {
+                            transform: 'scale(1.05)',
+                            boxShadow: '0 0 20px rgba(25, 118, 210, 0.4)',
+                          },
+                          '100%': {
+                            transform: 'scale(1)',
+                            boxShadow: '0 0 15px rgba(0, 0, 0, 0.2)',
+                          },
+                        },
+                      },
+                    }}
+                  />
+                  <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
+                    {courseInfo.instructor}
+                  </Typography>
+                  <Typography variant="subtitle1" color="primary.main" sx={{ fontWeight: 500, mb: 1 }}>
+                    Professor of Computer Science
+                  </Typography>
+                  <Typography variant="subtitle2" color="secondary.main" sx={{ fontWeight: 500, mb: 2 }}>
+                    Dean, Faculty of Science & Engineering, IIUC
+                  </Typography>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, alignItems: 'center', mb: 2 }}>
+                    <Typography 
+                      variant="body2" 
+                      className="icon-slide-gentle"
+                      sx={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        gap: 1,
+                        color: 'text.secondary'
+                      }}
+                    >
+                      <EmailIcon fontSize="small" className="icon-spin-slow" color="primary" />
+                      alam_cse@yahoo.com
+                    </Typography>
+                    <Typography 
+                      variant="body2"
+                      className="icon-slide-gentle" 
+                      sx={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        gap: 1,
+                        color: 'text.secondary'
+                      }}
+                    >
+                      <EmailIcon fontSize="small" className="icon-spin-slow" color="secondary" />
+                      msa@iiuc.ac.bd
+                    </Typography>
+                  </Box>
+                </Box>
+
+                <Divider sx={{ my: 2 }} />
+
+                <Typography variant="subtitle2" gutterBottom sx={{ fontWeight: 600, mb: 2 }}>
+                  Qualifications:
+                </Typography>
+                <List dense>
+                  {courseInfo.qualifications.split(',').map((qual, index) => (
+                    <ListItem key={index}>
+                      <ListItemIcon>
+                        <SchoolIcon color="primary" fontSize="small" />
+                      </ListItemIcon>
+                      <ListItemText 
+                        primary={qual.trim()}
+                        sx={{ '& .MuiListItemText-primary': { fontSize: '0.9rem' } }}
+                      />
+                    </ListItem>
+                  ))}
+                </List>
+
+                <Divider sx={{ my: 2 }} />
+
+                <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', fontStyle: 'italic' }}>
+                  {courseInfo.university}
+                </Typography>
               </CardContent>
             </Card>
           </Grid>
