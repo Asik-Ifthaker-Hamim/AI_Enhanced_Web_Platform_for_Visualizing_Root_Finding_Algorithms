@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    .symbol {
+      fill: #2563eb;
+      animation: pulse 2s infinite, rotate 4s infinite, colorChange 4s infinite;
+      transform-origin: center;
+    }
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+      100% { transform: scale(1); }
+    }
+    @keyframes rotate {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    @keyframes colorChange {
+      0% { stroke: #2563eb; }
+      33% { stroke: #3b82f6; }
+      66% { stroke: #1d4ed8; }
+      100% { stroke: #2563eb; }
+    }
+    .background {
+      fill: #ffffff;
+      animation: backgroundPulse 4s infinite;
+    }
+    @keyframes backgroundPulse {
+      0% { fill: #ffffff; }
+      50% { fill: #f0f9ff; }
+      100% { fill: #ffffff; }
+    }
+    .text {
+      animation: textBounce 2s infinite;
+      transform-origin: center;
+    }
+    @keyframes textBounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-2px); }
+    }
+  </style>
+  <rect class="background" width="32" height="32" rx="6"/>
+  <path class="symbol" d="M8 16 L24 16 M16 8 L16 24 M10 10 L22 22" stroke="#2563eb" stroke-width="2.5" fill="none"/>
+  <text class="text" x="16" y="21" text-anchor="middle" fill="#2563eb" font-size="8">f(x)</text>
+</svg> 
