@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import './animations.css';
 import {
   Box,
   Card,
@@ -59,7 +60,28 @@ import {
   NavigateBefore as PrevIcon,
   CheckCircleOutline as CorrectIcon,
   Cancel as IncorrectIcon,
-  PlayArrow as PlayIcon
+  PlayArrow as PlayIcon,
+  Psychology as PsychologyIcon,
+  Science as ScienceIcon,
+  AutoFixHigh as AutoFixHighIcon,
+  Insights as InsightsIcon,
+  Quiz as QuizIcon,
+  Apps as AppsIcon,
+  Language as LanguageIcon,
+  Description as DescriptionIcon,
+  Lightbulb as LightbulbIcon,
+  Balance as BalanceIcon,
+  Straighten as RulerIcon,
+  GpsFixed as GpsFixedIcon,
+  Loop as LoopIcon,
+  BlurOn as BlurOnIcon,
+  Celebration as CelebrationIcon,
+  EmojiEvents as TrophyIcon,
+  AssignmentTurnedIn as AssignmentDoneIcon,
+  LightbulbOutlined as LightIcon,
+  SchoolOutlined as EducationIcon,
+  FolderOpen as FolderIcon,
+  Quiz as ProblemIcon
 } from '@mui/icons-material';
 
 import { initializeGemini, validateSolutionWithGemini, isGeminiInitialized } from '../utils/geminiService';
@@ -90,7 +112,7 @@ function TabPanel({ children, value, index, ...other }) {
 const methodsData = [
   {
     name: 'Bisection Method',
-    icon: '⚖️',
+    icon: <BalanceIcon className="icon-sway" sx={{ fontSize: '2.5rem' }} />,
     complexity: 'O(log n)',
     convergence: 'Linear',
     reliability: 'Very High',
@@ -109,7 +131,7 @@ const methodsData = [
   },
   {
     name: 'Newton-Raphson Method',
-    icon: '🧮',
+    icon: <CalculateIcon className="icon-pulse-gentle" sx={{ fontSize: '2.5rem' }} />,
     complexity: 'O(n)',
     convergence: 'Quadratic',
     reliability: 'High (with good initial guess)',
@@ -128,7 +150,7 @@ const methodsData = [
   },
   {
     name: 'Secant Method',
-    icon: '📐',
+    icon: <TimelineIcon className="icon-float-gentle" sx={{ fontSize: '2.5rem' }} />,
     complexity: 'O(n)',
     convergence: 'Superlinear',
     reliability: 'Good',
@@ -147,7 +169,7 @@ const methodsData = [
   },
   {
     name: 'False Position Method',
-    icon: '📏',
+    icon: <RulerIcon className="icon-sway" sx={{ fontSize: '2.5rem' }} />,
     complexity: 'O(n)',
     convergence: 'Linear',
     reliability: 'High',
@@ -166,7 +188,7 @@ const methodsData = [
   },
   {
     name: 'Fixed Point Method',
-    icon: '🎯',
+    icon: <GpsFixedIcon className="icon-pulse-gentle" sx={{ fontSize: '2.5rem' }} />,
     complexity: 'O(n)',
     convergence: 'Linear',
     reliability: 'Moderate',
@@ -185,7 +207,7 @@ const methodsData = [
   },
   {
     name: 'Muller\'s Method',
-    icon: '🌐',
+    icon: <BlurOnIcon className="icon-rotate-slow" sx={{ fontSize: '2.5rem' }} />,
     complexity: 'O(n)',
     convergence: 'Quadratic',
     reliability: 'Good',
@@ -487,7 +509,9 @@ function QuizModal({ quizType, onClose }) {
         ) : (
           <Box textAlign="center">
             <Typography variant="h4" gutterBottom>
-              Quiz Complete! 🎉
+                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  Quiz Complete! <CelebrationIcon className="icon-bounce-soft" />
+                </Box>
             </Typography>
             <Typography variant="h5" color={getScoreColor()} gutterBottom>
               Score: {score}/{questions.length} ({Math.round((score/questions.length)*100)}%)
@@ -670,7 +694,8 @@ function PracticeModal({ exercise, onClose }) {
       } else if (evaluation.isCorrect) {
         setValidationResult({
           type: 'success',
-          message: '🎉 Congratulations! Your solution is correct!',
+                      message: 'Congratulations! Your solution is correct!',
+            icon: <CelebrationIcon className="icon-bounce-soft" />,
           details: evaluation.feedback,
           score: evaluation.score,
           methodUsed: evaluation.methodUsed,
@@ -741,8 +766,8 @@ function PracticeModal({ exercise, onClose }) {
         color: 'white'
       }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <Typography variant="h6">
-            🎯 {exercise.title}
+          <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <GpsFixedIcon className="icon-pulse-gentle" /> {exercise.title}
           </Typography>
           <Chip 
             label={exercise.difficulty} 
@@ -765,8 +790,8 @@ function PracticeModal({ exercise, onClose }) {
             <Card>
               <CardContent>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                  <Typography variant="h6" color="primary">
-                    📝 Problem {currentProblem + 1} of {problems.length}
+                  <Typography variant="h6" color="primary" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <AssignmentIcon className="icon-soft-bounce" /> Problem {currentProblem + 1} of {problems.length}
                   </Typography>
                   <Chip 
                     label={`${exercise.difficulty} Level`}
@@ -806,20 +831,7 @@ function PracticeModal({ exercise, onClose }) {
                   <strong>Recommended Method:</strong> {currentProb?.method}
                 </Typography>
 
-                <Divider sx={{ my: 2 }} />
 
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                  <Typography variant="body2" color="text.secondary">
-                    AI Validation: {isGeminiInitialized() ? '✅ Ready (Pre-configured)' : '❌ Not configured'}
-                  </Typography>
-                  <Button 
-                    size="small" 
-                    variant="outlined" 
-                    onClick={() => setShowApiKeyDialog(true)}
-                  >
-                    {isGeminiInitialized() ? 'Change API Key' : 'Setup API Key'}
-                  </Button>
-                </Box>
               </CardContent>
             </Card>
           </Grid>
@@ -849,7 +861,7 @@ function PracticeModal({ exercise, onClose }) {
                 {!showCorrectAnswer && (
                   <Alert severity="info" sx={{ mb: 2 }}>
                     <Typography variant="body2">
-                      💡 <strong>Tip:</strong> Write your complete solution including the method used and final answer.
+                      <LightbulbIcon className="icon-glow-soft" sx={{ fontSize: 16, mr: 0.5 }} /> <strong>Tip:</strong> Write your complete solution including the method used and final answer.
                     </Typography>
                   </Alert>
                 )}
@@ -886,7 +898,9 @@ function PracticeModal({ exercise, onClose }) {
                     </Typography>
                     {validationResult.strengths && validationResult.strengths.length > 0 && (
                       <Box sx={{ mt: 1 }}>
-                        <Typography variant="body2" sx={{ fontWeight: 'bold', color: 'success.main' }}>✨ Strengths:</Typography>
+                        <Typography variant="body2" sx={{ fontWeight: 'bold', color: 'success.main', display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                          <StarIcon className="icon-sparkle" sx={{ fontSize: 16 }} /> Strengths:
+                        </Typography>
                         <ul style={{ margin: '0.5em 0', paddingLeft: '1.5em' }}>
                           {validationResult.strengths.map((strength, index) => (
                             <li key={index}>
@@ -898,7 +912,9 @@ function PracticeModal({ exercise, onClose }) {
                     )}
                     {validationResult.suggestions && validationResult.suggestions.length > 0 && (
                       <Box sx={{ mt: 1 }}>
-                        <Typography variant="body2" sx={{ fontWeight: 'bold', color: 'warning.main' }}>💡 Suggestions for Improvement:</Typography>
+                        <Typography variant="body2" sx={{ fontWeight: 'bold', color: 'warning.main', display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                          <LightbulbIcon className="icon-glow-soft" sx={{ fontSize: 16 }} /> Suggestions for Improvement:
+                        </Typography>
                         <ul style={{ margin: '0.5em 0', paddingLeft: '1.5em' }}>
                           {validationResult.suggestions.map((suggestion, index) => (
                             <li key={index}>
@@ -910,7 +926,9 @@ function PracticeModal({ exercise, onClose }) {
                     )}
                     {validationResult.nextSteps && (
                       <Box sx={{ mt: 1, p: 1, bgcolor: 'info.light', borderRadius: 1 }}>
-                        <Typography variant="body2" sx={{ fontWeight: 'bold', color: 'info.dark' }}>🎯 Next Steps:</Typography>
+                        <Typography variant="body2" sx={{ fontWeight: 'bold', color: 'info.dark', display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                          <GpsFixedIcon className="icon-pulse-gentle" sx={{ fontSize: 16 }} /> Next Steps:
+                        </Typography>
                         <Typography variant="body2" color="info.dark">{validationResult.nextSteps}</Typography>
                         {validationResult.type === 'warning' && (
                           <Button 
@@ -927,7 +945,8 @@ function PracticeModal({ exercise, onClose }) {
                     )}
                     {validationResult.correctRoots && validationResult.correctRoots.length > 0 && (
                       <Typography variant="body2" sx={{ mt: 1, fontWeight: 'bold' }}>
-                        ✅ Correct roots: {validationResult.correctRoots.join(', ')}
+                        <CheckIcon className="icon-bounce-soft" sx={{ fontSize: 16, mr: 0.5, verticalAlign: 'middle' }} />
+                        Correct roots: {validationResult.correctRoots.join(', ')}
                       </Typography>
                     )}
                   </Alert>
@@ -941,8 +960,8 @@ function PracticeModal({ exercise, onClose }) {
         <Card sx={{ mt: 3, bgcolor: 'grey.50' }}>
           <CardContent>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-              <Typography variant="h6" color="primary.main">
-                📚 Problem Navigation
+              <Typography variant="h6" color="primary.main" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <FolderIcon className="icon-float-gentle" /> Problem Navigation
               </Typography>
               <LinearProgress 
                 variant="determinate" 
@@ -1012,7 +1031,8 @@ function PracticeModal({ exercise, onClose }) {
         </DialogTitle>
         <DialogContent>
           <Alert severity="success" sx={{ mb: 2 }}>
-            ✅ A Gemini API key is already pre-configured and working!
+                              <CheckIcon className="icon-bounce-soft" sx={{ fontSize: 16, mr: 0.5, verticalAlign: 'middle' }} />
+                  A Gemini API key is already pre-configured and working!
             <br />
             You can optionally use your own key from: <Link href="https://aistudio.google.com/app/apikey" target="_blank">Google AI Studio</Link>
           </Alert>
@@ -1088,11 +1108,12 @@ function LearningCenter() {
   return (
     <Box sx={{ width: '100%', maxWidth: 'none' }}>
       <div>
-        <Typography variant="h4" gutterBottom sx={{ mb: 4, fontWeight: 600, textAlign: 'center' }}>
-          📚 Learning Hub: Non-linear Equations
+        <Typography variant="h4" gutterBottom className="fade-in-up glow-text" sx={{ mb: 4, fontWeight: 600, textAlign: 'center' }}>
+          <SchoolIcon className="icon-pendulum icon-comet" sx={{ fontSize: '1.2em', marginRight: '10px' }} />
+          Learning Hub: Non-linear Equations
         </Typography>
 
-        <Paper elevation={3} sx={{ mb: 4, borderRadius: 2 }}>
+        <Paper elevation={3} className="fade-in-left" sx={{ mb: 4, borderRadius: 2 }}>
           <Tabs
             value={activeTab}
             onChange={handleTabChange}
@@ -1104,10 +1125,10 @@ function LearningCenter() {
               }
             }}
           >
-            <Tab icon={<FunctionsIcon />} label="Methods Overview" />
-            <Tab icon={<SchoolIcon />} label="Theory & Examples" />
-            <Tab icon={<BookIcon />} label="Resources" />
-            <Tab icon={<QAIcon />} label="Practice" />
+            <Tab icon={<FunctionsIcon className="icon-spiral icon-breathe" />} label="Methods Overview" />
+            <Tab icon={<SchoolIcon className="icon-morph icon-levitate" />} label="Theory & Examples" />
+            <Tab icon={<BookIcon className="icon-quantum icon-ripple" />} label="Resources" />
+            <Tab icon={<QAIcon className="icon-orbit icon-shimmer" />} label="Practice" />
           </Tabs>
         </Paper>
 
@@ -1122,16 +1143,27 @@ function LearningCenter() {
           <Grid container spacing={3}>
             {methodsData.map((method, index) => (
               <Grid item xs={12} md={6} key={index}>
-                <Card sx={{ 
+                <Card className="scale-in card-hover-lift" sx={{ 
                   height: '100%',
-                  minHeight: 300,
+                  minHeight: 380,
                   border: '1px solid rgba(0,0,0,0.1)',
-                  '&:hover': { boxShadow: 4, transform: 'translateY(-2px)' },
+                  bgcolor: 'background.paper',
                   transition: 'all 0.3s ease'
                 }}>
                   <CardContent>
                     <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                      <Typography variant="h4" sx={{ mr: 2 }}>{method.icon}</Typography>
+                      <Box sx={{ 
+                        mr: 2, 
+                        fontSize: '2.5rem', 
+                        display: 'flex', 
+                        alignItems: 'center',
+                        '& .MuiSvgIcon-root': {
+                          fontSize: '2.5rem',
+                          color: 'primary.main'
+                        }
+                      }}>
+                        {method.icon}
+                      </Box>
                       <Box sx={{ flex: 1 }}>
                         <Typography variant="h5" sx={{ fontWeight: 600 }}>
                           {method.name}
@@ -1145,7 +1177,15 @@ function LearningCenter() {
                       <Button 
                         variant="outlined" 
                         onClick={() => handleMethodExpand(index)}
-                        endIcon={<ExpandMoreIcon />}
+                        endIcon={<ExpandMoreIcon className="icon-bounce" />}
+                        className="nav-item-hover"
+                        sx={{
+                          transition: 'all 0.3s ease',
+                          '&:hover': {
+                            transform: 'scale(1.05)',
+                            boxShadow: '0 4px 15px rgba(21, 101, 192, 0.2)',
+                          }
+                        }}
                       >
                         {expandedMethod === index ? 'Hide Details' : 'Learn More'}
                       </Button>
@@ -1162,14 +1202,16 @@ function LearningCenter() {
                         <Grid container spacing={3}>
                           <Grid item xs={12} md={6}>
                             <Typography variant="h6" gutterBottom color="primary.main">
-                              📖 Theory
+                              <BookIcon className="icon-wave icon-magnetic" sx={{ marginRight: '8px' }} />
+                              Theory
                             </Typography>
                             <Typography variant="body2" paragraph>
                               {method.theory}
                             </Typography>
 
                             <Typography variant="h6" gutterBottom color="primary.main">
-                              🔄 Algorithm Steps
+                              <AutoFixHighIcon className="icon-elastic icon-glitch" sx={{ marginRight: '8px' }} />
+                              Algorithm Steps
                             </Typography>
                             <List dense>
                               {method.algorithm.map((step, idx) => (
@@ -1182,19 +1224,21 @@ function LearningCenter() {
 
                           <Grid item xs={12} md={6}>
                             <Typography variant="h6" gutterBottom color="success.main">
-                              ✅ Advantages
+                              <CheckIcon className="icon-pendulum icon-ripple" sx={{ marginRight: '8px' }} />
+                              Advantages
                             </Typography>
                             <List dense>
                               {method.advantages.map((advantage, idx) => (
                                 <ListItem key={idx}>
-                                  <ListItemIcon><StarIcon color="success" fontSize="small" /></ListItemIcon>
+                                  <ListItemIcon><StarIcon className="icon-twist icon-glow-pulse" color="success" fontSize="small" /></ListItemIcon>
                                   <ListItemText primary={advantage} />
                                 </ListItem>
                               ))}
                             </List>
 
                             <Typography variant="h6" gutterBottom color="warning.main" sx={{ mt: 2 }}>
-                              ⚠️ Disadvantages
+                              <WarningIcon className="icon-jiggle icon-vibrate" sx={{ marginRight: '8px' }} />
+                              Disadvantages
                             </Typography>
                             <List dense>
                               {method.disadvantages.map((disadvantage, idx) => (
@@ -1206,12 +1250,13 @@ function LearningCenter() {
                             </List>
 
                             <Typography variant="h6" gutterBottom color="info.main" sx={{ mt: 2 }}>
-                              🎯 Applications
+                              <AppsIcon className="icon-orbit icon-comet" sx={{ marginRight: '8px' }} />
+                              Applications
                             </Typography>
                             <List dense>
                               {method.applications.map((application, idx) => (
                                 <ListItem key={idx}>
-                                  <ListItemIcon><TrendingUpIcon color="info" fontSize="small" /></ListItemIcon>
+                                  <ListItemIcon><TrendingUpIcon className="icon-quantum icon-magnetic" color="info" fontSize="small" /></ListItemIcon>
                                   <ListItemText primary={application} />
                                 </ListItem>
                               ))}
@@ -1230,13 +1275,14 @@ function LearningCenter() {
         {/* Theory & Examples Tab */}
         <TabPanel value={activeTab} index={1}>
           <Typography variant="h5" gutterBottom sx={{ mb: 3 }}>
-            🌍 Real-World Applications
+            <LanguageIcon className="icon-twist icon-levitate" sx={{ marginRight: '10px' }} />
+            Real-World Applications
           </Typography>
           
           <Grid container spacing={3} sx={{ mb: 4 }}>
             {practicalExamples.map((example, index) => (
               <Grid item xs={12} md={6} key={index}>
-                <Card sx={{ height: '100%', minHeight: 280, border: '1px solid rgba(0,0,0,0.1)' }}>
+                <Card sx={{ height: '100%', minHeight: 320, border: '1px solid rgba(0,0,0,0.1)', bgcolor: 'background.paper' }}>
                   <CardContent>
                     <Typography variant="h6" gutterBottom color="primary.main">
                       {example.title}
@@ -1259,15 +1305,17 @@ function LearningCenter() {
           </Grid>
 
           <Typography variant="h5" gutterBottom sx={{ mb: 3 }}>
-            📐 Mathematical Foundation
+            <ScienceIcon className="icon-matrix icon-breathe" sx={{ marginRight: '10px' }} />
+            Mathematical Foundation
           </Typography>
           
           <Grid container spacing={3}>
             <Grid item xs={12} md={6}>
-              <Card sx={{ height: '100%', minHeight: 320 }}>
+              <Card sx={{ height: '100%', minHeight: 320, bgcolor: 'background.paper' }}>
                 <CardContent>
                   <Typography variant="h6" gutterBottom color="primary.main">
-                    🎯 What are Non-linear Equations?
+                    <PsychologyIcon className="icon-quantum icon-shimmer" sx={{ marginRight: '8px' }} />
+                    What are Non-linear Equations?
                   </Typography>
                   <Typography variant="body1" paragraph>
                     Non-linear equations are mathematical expressions where the unknown variable appears with powers other than one, 
@@ -1289,7 +1337,7 @@ function LearningCenter() {
             </Grid>
 
             <Grid item xs={12} md={6}>
-              <Card sx={{ height: '100%', minHeight: 320 }}>
+              <Card sx={{ height: '100%', minHeight: 320, bgcolor: 'background.paper' }}>
                 <CardContent>
                   <Typography variant="h6" gutterBottom color="success.main">
                     🔧 Why Numerical Methods?
@@ -1322,7 +1370,7 @@ function LearningCenter() {
           <Grid container spacing={3}>
             {studyResources.map((category, index) => (
               <Grid item xs={12} sm={6} md={4} key={index}>
-                <Card sx={{ height: '100%', minHeight: 350 }}>
+                <Card sx={{ height: '100%', minHeight: 380, bgcolor: 'background.paper' }}>
                   <CardContent>
                     <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                       {category.icon}
@@ -1359,8 +1407,16 @@ function LearningCenter() {
                              color="primary"
                              onClick={() => handleResourceClick(resource)}
                              title="Open Resource"
+                             className="nav-item-hover"
+                             sx={{
+                               transition: 'all 0.3s ease',
+                               '&:hover': {
+                                 transform: 'scale(1.2) rotate(15deg)',
+                                 backgroundColor: 'rgba(21, 101, 192, 0.1)',
+                               }
+                             }}
                            >
-                             <LinkIcon />
+                             <LinkIcon className="icon-roll icon-ripple" />
                            </IconButton>
                         </ListItem>
                       ))}
@@ -1372,15 +1428,17 @@ function LearningCenter() {
           </Grid>
 
           <Typography variant="h5" gutterBottom sx={{ mt: 4, mb: 3 }}>
-            🌐 Online Resources & Tools
+            <LanguageIcon className="icon-roll icon-magnetic" sx={{ marginRight: '10px' }} />
+            Online Resources & Tools
           </Typography>
           
           <Grid container spacing={3}>
             <Grid item xs={12} sm={6} md={4}>
-              <Card sx={{ height: '100%', minHeight: 280 }}>
+              <Card sx={{ height: '100%', minHeight: 320, bgcolor: 'background.paper' }}>
                 <CardContent>
                   <Typography variant="h6" gutterBottom color="primary.main">
-                    📱 Interactive Tools
+                    <CodeIcon className="icon-wave icon-ripple" sx={{ marginRight: '8px' }} />
+                    Interactive Tools
                   </Typography>
                                      <List dense>
                      <ListItem button onClick={() => window.open('https://www.wolframalpha.com/', '_blank')}>
@@ -1405,10 +1463,11 @@ function LearningCenter() {
             </Grid>
 
             <Grid item xs={12} sm={6} md={4}>
-              <Card sx={{ height: '100%', minHeight: 280 }}>
+              <Card sx={{ height: '100%', minHeight: 320, bgcolor: 'background.paper' }}>
                 <CardContent>
                   <Typography variant="h6" gutterBottom color="success.main">
-                    📖 Documentation
+                    <DescriptionIcon className="icon-morph icon-levitate" sx={{ marginRight: '8px' }} />
+                    Documentation
                   </Typography>
                                      <List dense>
                      <ListItem button onClick={() => window.open('https://docs.scipy.org/', '_blank')}>
@@ -1433,10 +1492,11 @@ function LearningCenter() {
             </Grid>
 
             <Grid item xs={12} sm={6} md={4}>
-              <Card sx={{ height: '100%', minHeight: 280 }}>
+              <Card sx={{ height: '100%', minHeight: 320, bgcolor: 'background.paper' }}>
                 <CardContent>
                   <Typography variant="h6" gutterBottom color="warning.main">
-                    🎓 Academic Resources
+                    <SchoolIcon className="icon-spiral icon-comet" sx={{ marginRight: '8px' }} />
+                    Academic Resources
                   </Typography>
                                      <List dense>
                      <ListItem button onClick={() => window.open('https://ocw.mit.edu/', '_blank')}>
@@ -1465,13 +1525,14 @@ function LearningCenter() {
         {/* Practice Tab */}
         <TabPanel value={activeTab} index={3}>
           <Typography variant="h5" gutterBottom sx={{ mb: 3 }}>
-            🎯 Interactive Exercises
+            <AssignmentIcon className="icon-pendulum icon-glitch" sx={{ marginRight: '10px' }} />
+            Interactive Exercises
           </Typography>
           
           <Grid container spacing={3} sx={{ mb: 4 }}>
             {interactiveExercises.map((exercise, index) => (
               <Grid item xs={12} sm={6} md={4} key={index}>
-                <Card sx={{ height: '100%', minHeight: 360 }}>
+                <Card sx={{ height: '100%', minHeight: 380, bgcolor: 'background.paper' }}>
                   <CardContent>
                     <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                       <Typography variant="h6" sx={{ flex: 1 }}>{exercise.title}</Typography>
@@ -1504,6 +1565,14 @@ function LearningCenter() {
                        fullWidth 
                        sx={{ mt: 2 }}
                        onClick={() => handleStartPractice(exercise.title, exercise.difficulty)}
+                       className="pulse-button nav-item-hover"
+                       style={{
+                         transition: 'all 0.3s ease',
+                         '&:hover': {
+                           transform: 'scale(1.05)',
+                           boxShadow: '0 6px 20px rgba(21, 101, 192, 0.15)',
+                         }
+                       }}
                      >
                        Start Practice
                      </Button>
@@ -1514,10 +1583,11 @@ function LearningCenter() {
           </Grid>
 
           <Typography variant="h5" gutterBottom sx={{ mb: 3 }}>
-            📊 Self-Assessment Quiz
+            <QuizIcon className="icon-elastic icon-breathe" sx={{ marginRight: '10px' }} />
+            Self-Assessment Quiz
           </Typography>
           
-          <Card sx={{ mb: 3, minHeight: 200 }}>
+          <Card sx={{ mb: 3, minHeight: 200, bgcolor: 'background.paper' }}>
             <CardContent>
               <Typography variant="h6" gutterBottom>
                 Test Your Knowledge
@@ -1532,8 +1602,10 @@ function LearningCenter() {
                      fullWidth
                      sx={{ minHeight: 56 }}
                      onClick={() => handleStartQuiz('basic')}
+                     className="pulse-button nav-item-hover"
                    >
-                     📝 Basic Concepts (10 Questions)
+                     <AssignmentIcon className="icon-jiggle icon-shimmer" sx={{ marginRight: '8px' }} />
+                     Basic Concepts (10 Questions)
                    </Button>
                  </Grid>
                  <Grid item xs={12} sm={6} md={3}>
@@ -1543,8 +1615,10 @@ function LearningCenter() {
                      color="warning"
                      sx={{ minHeight: 56 }}
                      onClick={() => handleStartQuiz('selection')}
+                     className="pulse-button nav-item-hover"
                    >
-                     🧮 Method Selection (15 Questions)
+                     <CalculateIcon className="icon-twist icon-vibrate" sx={{ marginRight: '8px' }} />
+                     Method Selection (15 Questions)
                    </Button>
                  </Grid>
                  <Grid item xs={12} sm={6} md={3}>
@@ -1554,8 +1628,10 @@ function LearningCenter() {
                      color="success"
                      sx={{ minHeight: 56 }}
                      onClick={() => handleStartQuiz('implementation')}
+                     className="pulse-button nav-item-hover"
                    >
-                     🔧 Implementation (20 Questions)
+                     <CodeIcon className="icon-wave icon-magnetic" sx={{ marginRight: '8px' }} />
+                     Implementation (20 Questions)
                    </Button>
                  </Grid>
                  <Grid item xs={12} sm={6} md={3}>
@@ -1565,8 +1641,10 @@ function LearningCenter() {
                      color="error"
                      sx={{ minHeight: 56 }}
                      onClick={() => handleStartQuiz('advanced')}
+                     className="pulse-button nav-item-hover"
                    >
-                     🎯 Advanced Topics (25 Questions)
+                     <InsightsIcon className="icon-matrix icon-levitate" sx={{ marginRight: '8px' }} />
+                     Advanced Topics (25 Questions)
                    </Button>
                  </Grid>
                </Grid>
@@ -1575,7 +1653,8 @@ function LearningCenter() {
 
           <Alert severity="info">
             <Typography variant="body2">
-              💡 <strong>Study Tip:</strong> Practice with our interactive equation solver to understand how different methods 
+              <LightbulbIcon className="icon-comet icon-breathe" sx={{ marginRight: '8px' }} />
+              <strong>Study Tip:</strong> Practice with our interactive equation solver to understand how different methods 
               behave with various types of equations. Compare convergence rates and observe how initial conditions affect results.
             </Typography>
                      </Alert>

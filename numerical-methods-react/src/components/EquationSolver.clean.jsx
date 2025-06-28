@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import './animations.css';
 import {
   Grid,
   Card,
@@ -23,7 +24,15 @@ import {
   Speed as SpeedIcon,
   Assessment as AssessmentIcon,
   CheckCircle as CheckCircleIcon,
-  Error as ErrorIcon
+  Error as ErrorIcon,
+  Calculate as CalculateIcon,
+  Timeline as TimelineIcon,
+  GpsFixed as GpsFixedIcon,
+  BarChart as BarChartIcon,
+  Loop as LoopIcon,
+  BlurOn as BlurOnIcon,
+  Straighten as RulerIcon,
+  Balance as BalanceIcon
 } from '@mui/icons-material';
 
 import {
@@ -43,42 +52,42 @@ const methodInfo = {
     name: 'Bisection Method',
     description: 'Reliable bracketing method that always converges',
     color: '#1976d2',
-    icon: '📐',
+    icon: <BalanceIcon className="icon-sway" />,
     requirements: 'Function must change sign over interval [a,b]'
   },
   falsePosition: {
     name: 'False Position Method',
     description: 'Improved bracketing method with faster convergence',
     color: '#388e3c',
-    icon: '📏',
+    icon: <RulerIcon className="icon-float-gentle" />,
     requirements: 'Function must change sign over interval [a,b]'
   },
   newtonRaphson: {
     name: 'Newton-Raphson Method',
     description: 'Fast quadratic convergence using derivatives',
     color: '#f57c00',
-    icon: '🎯',
+    icon: <GpsFixedIcon className="icon-pulse-gentle" />,
     requirements: 'Derivative must be available and non-zero'
   },
   secant: {
     name: 'Secant Method',
     description: 'Newton-like method without derivative requirement',
     color: '#7b1fa2',
-    icon: '📊',
+    icon: <BarChartIcon className="icon-soft-bounce" />,
     requirements: 'Two initial points that yield different function values'
   },
   fixedPoint: {
     name: 'Fixed Point Method',
     description: 'Iterative method for equations in form x = g(x)',
     color: '#d32f2f',
-    icon: '🔄',
+    icon: <LoopIcon className="icon-rotate-slow" />,
     requirements: 'Equation must be reformulated as x = g(x)'
   },
   muller: {
     name: "Muller's Method",
     description: 'Quadratic interpolation method for complex roots',
     color: '#0288d1',
-    icon: '🌊',
+    icon: <BlurOnIcon className="icon-calm-wave" />,
     requirements: 'Three initial points'
   }
 };
@@ -212,8 +221,8 @@ function EquationSolver() {
 
   return (
     <Box sx={{ width: '100%', maxWidth: 'none' }}>
-      <Typography variant="h4" gutterBottom sx={{ mb: 4, fontWeight: 600, textAlign: 'center' }}>
-        🧮 Interactive Equation Solver
+      <Typography variant="h4" gutterBottom sx={{ mb: 4, fontWeight: 600, textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 2 }}>
+        <CalculateIcon className="icon-pulse-gentle" sx={{ fontSize: 40 }} /> Interactive Equation Solver
       </Typography>
 
       <Grid container spacing={3} sx={{ width: '100%', m: 0 }}>
@@ -495,8 +504,8 @@ function EquationSolver() {
           {/* Function Plot */}
           <Card sx={{ mb: 3 }}>
             <CardContent>
-              <Typography variant="h6" gutterBottom>
-                📈 Function Visualization
+              <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <TimelineIcon className="icon-float-gentle" /> Function Visualization
               </Typography>
               <FunctionPlot
                 functionExpression={getCurrentFunction()?.expression}
@@ -511,8 +520,8 @@ function EquationSolver() {
           {result?.iterationHistory && result.iterationHistory.length > 0 && (
             <Card>
               <CardContent>
-                <Typography variant="h6" gutterBottom>
-                  📋 Iteration History
+                <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <AssessmentIcon className="icon-soft-bounce" /> Iteration History
                 </Typography>
                 <IterationTable iterations={result.iterationHistory} />
               </CardContent>

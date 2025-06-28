@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import './animations.css';
 import {
   Grid,
   Card,
@@ -23,7 +24,16 @@ import {
   Speed as SpeedIcon,
   Assessment as AssessmentIcon,
   CheckCircle as CheckCircleIcon,
-  Error as ErrorIcon
+  Error as ErrorIcon,
+  Science as ScienceIcon,
+  CompareArrows as CompareArrowsIcon,
+  GpsFixed as GpsFixedIcon,
+  Timeline as TimelineIcon,
+  Loop as LoopIcon,
+  BlurOn as BlurOnIcon,
+  Insights as InsightsIcon,
+  ShowChart as ShowChartIcon,
+  ListAlt as ListAltIcon
 } from '@mui/icons-material';
 
 import {
@@ -43,42 +53,42 @@ const methodInfo = {
     name: 'Bisection Method',
     description: 'Reliable bracketing method that always converges',
     color: '#1976d2',
-    icon: '📐',
+    icon: <CompareArrowsIcon className="icon-pendulum icon-magnetic" />,
     requirements: 'Function must change sign over interval [a,b]'
   },
   falsePosition: {
     name: 'False Position Method',
     description: 'Improved bracketing method with faster convergence',
     color: '#388e3c',
-    icon: '📏',
+    icon: <GpsFixedIcon className="icon-orbit icon-ripple" />,
     requirements: 'Function must change sign over interval [a,b]'
   },
   newtonRaphson: {
     name: 'Newton-Raphson Method',
     description: 'Fast quadratic convergence using derivatives',
     color: '#f57c00',
-    icon: '🎯',
+    icon: <ScienceIcon className="icon-quantum icon-levitate" />,
     requirements: 'Derivative must be available and non-zero'
   },
   secant: {
     name: 'Secant Method',
     description: 'Newton-like method without derivative requirement',
     color: '#7b1fa2',
-    icon: '📊',
+    icon: <TimelineIcon className="icon-wave icon-glitch" />,
     requirements: 'Two initial points that yield different function values'
   },
   fixedPoint: {
     name: 'Fixed Point Method',
     description: 'Iterative method for equations in form x = g(x)',
     color: '#d32f2f',
-    icon: '🔄',
+    icon: <LoopIcon className="icon-spiral icon-comet" />,
     requirements: 'Equation must be reformulated as x = g(x)'
   },
   muller: {
     name: "Muller's Method",
     description: 'Quadratic interpolation method for complex roots',
     color: '#0288d1',
-    icon: '🌊',
+    icon: <BlurOnIcon className="icon-morph icon-twist" />,
     requirements: 'Three initial points'
   }
 };
@@ -212,17 +222,18 @@ function EquationSolver() {
 
   return (
     <Box sx={{ width: '100%', maxWidth: 'none' }}>
-      <Typography variant="h4" gutterBottom sx={{ mb: 4, fontWeight: 600, textAlign: 'center' }}>
-        🧮 Interactive Equation Solver
+      <Typography variant="h4" gutterBottom className="fade-in-up glow-text" sx={{ mb: 4, fontWeight: 600, textAlign: 'center' }}>
+        <ScienceIcon className="icon-matrix icon-breathe" sx={{ fontSize: '1.2em', marginRight: '10px' }} />
+        Interactive Equation Solver
       </Typography>
 
       <Grid container spacing={3} sx={{ width: '100%', m: 0 }}>
         {/* Left Panel - Configuration */}
         <Grid item xs={12} lg={4}>
-          <Card sx={{ mb: 3 }}>
-            <CardContent>
+                  <Card className="fade-in-left card-hover-lift" sx={{ mb: 3, bgcolor: 'background.paper' }}>
+          <CardContent>
               <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <FunctionIcon color="primary" />
+                <FunctionIcon className="icon-jiggle icon-shimmer" color="primary" />
                 Function Selection
               </Typography>
 
@@ -287,7 +298,7 @@ function EquationSolver() {
               )}
 
               <Typography variant="h6" gutterBottom sx={{ mt: 3, display: 'flex', alignItems: 'center', gap: 1 }}>
-                <SpeedIcon color="primary" />
+                <SpeedIcon className="icon-elastic icon-vibrate" color="primary" />
                 Method Selection
               </Typography>
 
@@ -310,8 +321,8 @@ function EquationSolver() {
               </FormControl>
 
               {/* Method Information */}
-              <Card variant="outlined" sx={{ mb: 2, bgcolor: 'grey.50' }}>
-                <CardContent sx={{ p: 2 }}>
+                        <Card variant="outlined" className="method-card scale-in" sx={{ mb: 2, minHeight: 320, bgcolor: 'grey.50' }}>
+            <CardContent sx={{ p: 2 }}>
                   <Typography variant="subtitle2" sx={{ fontWeight: 600, color: currentMethodInfo.color }}>
                     {currentMethodInfo.icon} {currentMethodInfo.name}
                   </Typography>
@@ -429,17 +440,29 @@ function EquationSolver() {
                   variant="contained"
                   onClick={solveEquation}
                   disabled={isComputing}
-                  startIcon={<PlayIcon />}
+                  startIcon={<PlayIcon className={isComputing ? 'icon-spiral icon-matrix' : 'icon-quantum icon-breathe'} />}
+                  className={!isComputing ? 'pulse-button' : ''}
                   sx={{ flex: 1 }}
                 >
                   {isComputing ? 'Computing...' : 'Solve'}
                 </Button>
-                <IconButton onClick={clearResults} disabled={!result}>
-                  <ClearIcon />
+                <IconButton 
+                  onClick={clearResults} 
+                  disabled={!result}
+                  className="nav-item-hover"
+                  sx={{
+                    transition: 'all 0.3s ease',
+                    '&:hover': {
+                      transform: 'scale(1.2) rotate(180deg)',
+                      backgroundColor: 'rgba(211, 47, 47, 0.1)',
+                    }
+                  }}
+                >
+                  <ClearIcon className="icon-twist icon-vibrate" />
                 </IconButton>
               </Box>
 
-              {isComputing && <LinearProgress sx={{ mt: 2 }} />}
+              {isComputing && <LinearProgress className="progress-glow" sx={{ mt: 2 }} />}
             </CardContent>
           </Card>
         </Grid>
@@ -448,10 +471,10 @@ function EquationSolver() {
         <Grid item xs={12} lg={8}>
           {/* Results Summary */}
           {result && (
-            <Card sx={{ mb: 3 }}>
-              <CardContent>
+                      <Card className="results-appear card-hover-lift" sx={{ mb: 3, minHeight: 380, bgcolor: 'background.paper' }}>
+            <CardContent>
                 <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <AssessmentIcon color="primary" />
+                  <InsightsIcon className="icon-roll icon-ripple" color="primary" />
                   Solution Results
                 </Typography>
 
@@ -463,13 +486,17 @@ function EquationSolver() {
                   <>
                     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2 }}>
                       <Chip
-                        icon={result.convergenceAchieved ? <CheckCircleIcon /> : <ErrorIcon />}
+                        className={`chip-slide-in ${result.convergenceAchieved ? 'success-animation' : 'error-animation'}`}
+                        icon={result.convergenceAchieved ? 
+                          <CheckCircleIcon className="icon-orbit icon-levitate" /> : 
+                          <ErrorIcon className="icon-glitch icon-jiggle" />
+                        }
                         label={result.convergenceAchieved ? 'Converged' : 'Did not converge'}
                         color={result.convergenceAchieved ? 'success' : 'error'}
                       />
-                      <Chip label={`${result.iterations} iterations`} variant="outlined" />
-                      <Chip label={`${result.functionEvaluations} function evaluations`} variant="outlined" />
-                      <Chip label={`${result.executionTime.toFixed(2)}ms`} variant="outlined" />
+                      <Chip className="chip-slide-in" label={`${result.iterations} iterations`} variant="outlined" />
+                      <Chip className="chip-slide-in" label={`${result.functionEvaluations} function evaluations`} variant="outlined" />
+                      <Chip className="chip-slide-in" label={`${result.executionTime.toFixed(2)}ms`} variant="outlined" />
                     </Box>
 
                     <Grid container spacing={2}>
@@ -493,26 +520,30 @@ function EquationSolver() {
           )}
 
           {/* Function Plot */}
-          <Card sx={{ mb: 3 }}>
-            <CardContent>
+                      <Card className="fade-in-right card-hover-lift" sx={{ mb: 3, minHeight: 450, bgcolor: 'background.paper' }}>
+              <CardContent>
               <Typography variant="h6" gutterBottom>
-                📈 Function Visualization
+                <ShowChartIcon className="icon-comet icon-magnetic" sx={{ fontSize: '1.2em', marginRight: '8px' }} />
+                Function Visualization
               </Typography>
-              <FunctionPlot
-                functionExpression={getCurrentFunction()?.expression}
-                interval={[parseFloat(parameters.a), parseFloat(parameters.b)]}
-                root={result?.root}
-                iterationHistory={result?.iterationHistory}
-              />
+              <div className="chart-container">
+                <FunctionPlot
+                  functionExpression={getCurrentFunction()?.expression}
+                  interval={[parseFloat(parameters.a), parseFloat(parameters.b)]}
+                  root={result?.root}
+                  iterationHistory={result?.iterationHistory}
+                />
+              </div>
             </CardContent>
           </Card>
 
           {/* Iteration History */}
           {result?.iterationHistory && result.iterationHistory.length > 0 && (
-            <Card>
+            <Card className="slide-in-bottom card-hover-lift">
               <CardContent>
-                <Typography variant="h6" gutterBottom>
-                  📋 Iteration History
+                <Typography variant="h6" gutterBottom className="typing-text">
+                  <ListAltIcon className="icon-glitch icon-levitate" sx={{ fontSize: '1.2em', marginRight: '8px' }} />
+                  Iteration History
                 </Typography>
                 <IterationTable iterations={result.iterationHistory} />
               </CardContent>

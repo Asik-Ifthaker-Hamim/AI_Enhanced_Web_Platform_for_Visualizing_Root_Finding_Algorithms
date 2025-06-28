@@ -1,5 +1,6 @@
 import React, { useRef, useMemo } from 'react';
 import { Box, Typography } from '@mui/material';
+import { BarChart as BarChartIcon, Cancel as CancelIcon } from '@mui/icons-material';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -280,8 +281,9 @@ function FunctionPlot({ functionExpression, interval = [-5, 5], root = null, ite
           borderColor: 'grey.300'
         }}
       >
-        <Typography variant="body1" color="text.secondary">
-          📊 Function plot will appear here when you select or enter a function
+        <Typography variant="body1" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <BarChartIcon className="icon-sway icon-subtle-glow" />
+          Function plot will appear here when you select or enter a function
         </Typography>
       </Box>
     );
@@ -301,8 +303,9 @@ function FunctionPlot({ functionExpression, interval = [-5, 5], root = null, ite
           borderColor: 'orange.300'
         }}
       >
-        <Typography variant="body1" color="error">
-          ❌ Could not plot function. Please check the function expression.
+        <Typography variant="body1" color="error" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <CancelIcon className="icon-rock icon-fade-pulse" />
+          Could not plot function. Please check the function expression.
         </Typography>
       </Box>
     );

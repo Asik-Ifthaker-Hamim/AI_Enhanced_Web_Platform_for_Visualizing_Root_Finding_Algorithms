@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import './animations.css';
 import {
   Box,
   Card,
@@ -30,6 +31,11 @@ import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import FunctionsIcon from '@mui/icons-material/Functions';
 import CalculateIcon from '@mui/icons-material/Calculate';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import SearchIcon from '@mui/icons-material/Search';
+import BuildIcon from '@mui/icons-material/Build';
+import StraightenIcon from '@mui/icons-material/Straighten';
+import DivideIcon from '@mui/icons-material/CallSplit';
+import LoopIcon from '@mui/icons-material/Loop';
 
 import { incrementalSearch } from '../utils/incrementalSearch';
 import { 
@@ -150,26 +156,26 @@ function Utilities() {
   const utilities = [
     { 
       value: 'incremental', 
-      label: '🔍 Incremental Search', 
-      icon: <TrendingUpIcon />,
+      label: 'Incremental Search', 
+      icon: <SearchIcon className="icon-orbital icon-breathe" />,
       description: 'Find intervals containing roots by systematic search'
     },
     { 
       value: 'horner', 
-      label: '📐 Horner\'s Rule', 
-      icon: <FunctionsIcon />,
+      label: 'Horner\'s Rule', 
+      icon: <StraightenIcon className="icon-twist icon-magnetic" />,
       description: 'Efficient polynomial evaluation with detailed steps'
     },
     { 
       value: 'deflation', 
-      label: '➗ Polynomial Deflation', 
-      icon: <CalculateIcon />,
+      label: 'Polynomial Deflation', 
+      icon: <DivideIcon className="icon-matrix icon-ripple" />,
       description: 'Reduce polynomial degree using known roots'
     },
     { 
       value: 'successive', 
-      label: '🔄 Successive Deflation', 
-      icon: <PlayArrowIcon />,
+      label: 'Successive Deflation', 
+      icon: <LoopIcon className="icon-spiral icon-levitate" />,
       description: 'Apply multiple deflations with known roots'
     }
   ];
@@ -177,12 +183,13 @@ function Utilities() {
   return (
     <Box sx={{ width: '100%', maxWidth: 'none' }}>
               <div>
-        <Typography variant="h4" gutterBottom sx={{ mb: 3, textAlign: 'center', fontWeight: 600 }}>
-          🔧 Mathematical Utilities
+        <Typography variant="h4" gutterBottom className="fade-in-up glow-text" sx={{ mb: 3, textAlign: 'center', fontWeight: 600 }}>
+          <BuildIcon className="icon-pendulum icon-comet" sx={{ fontSize: '1.2em', marginRight: '10px' }} />
+          Mathematical Utilities
         </Typography>
 
         {/* Utility Selection */}
-        <Card sx={{ mb: 3 }}>
+        <Card className="fade-in-left card-hover-lift" sx={{ mb: 3, minHeight: 200, bgcolor: 'background.paper' }}>
           <CardContent>
             <FormControl fullWidth>
               <InputLabel>Select Utility</InputLabel>
@@ -211,10 +218,11 @@ function Utilities() {
 
         {/* Incremental Search */}
         {activeUtility === 'incremental' && (
-          <Card>
+          <Card className="fade-in-right card-hover-lift" sx={{ minHeight: 450, bgcolor: 'background.paper' }}>
             <CardContent>
               <Typography variant="h5" gutterBottom>
-                🔍 Incremental Search
+                <SearchIcon className="icon-drift icon-pulse-gentle" sx={{ marginRight: '10px' }} />
+                Incremental Search
               </Typography>
                           <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
               Find intervals where the function changes sign, indicating potential roots.
@@ -264,10 +272,11 @@ function Utilities() {
                     variant="contained"
                     onClick={handleIncrementalSearch}
                     sx={{ mt: 2 }}
-                    startIcon={<PlayArrowIcon />}
+                    startIcon={<PlayArrowIcon className="icon-pulse" />}
+                    className="pulse-button"
                   >
-                                      Search for Roots
-                </Button>
+                    Search for Roots
+                  </Button>
               </Grid>
 
               <Grid item xs={12} lg={6}>
@@ -310,10 +319,11 @@ function Utilities() {
 
         {/* Horner's Rule */}
         {activeUtility === 'horner' && (
-          <Card>
+          <Card className="fade-in-right card-hover-lift" sx={{ minHeight: 450, bgcolor: 'background.paper' }}>
             <CardContent>
               <Typography variant="h5" gutterBottom>
-                📐 Horner's Rule
+                <StraightenIcon className="icon-tilt icon-scale-breathe" sx={{ marginRight: '10px' }} />
+                Horner's Rule
               </Typography>
                           <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
               Efficiently evaluate polynomials using Horner's method with step-by-step calculation.
@@ -341,10 +351,11 @@ function Utilities() {
                   <Button
                     variant="contained"
                     onClick={handleHornersRule}
-                    startIcon={<CalculateIcon />}
+                    startIcon={<CalculateIcon className="icon-pulse" />}
+                    className="pulse-button"
                   >
-                                      Evaluate Polynomial
-                </Button>
+                    Evaluate Polynomial
+                  </Button>
               </Grid>
 
               <Grid item xs={12} lg={6}>
@@ -404,7 +415,7 @@ function Utilities() {
 
         {/* Polynomial Deflation */}
         {activeUtility === 'deflation' && (
-          <Card>
+          <Card className="fade-in-right card-hover-lift" sx={{ minHeight: 450, bgcolor: 'background.paper' }}>
             <CardContent>
               <Typography variant="h5" gutterBottom>
                 ➗ Polynomial Deflation
@@ -435,10 +446,11 @@ function Utilities() {
                   <Button
                     variant="contained"
                     onClick={handlePolynomialDeflation}
-                    startIcon={<PlayArrowIcon />}
+                    startIcon={<PlayArrowIcon className="icon-pulse" />}
+                    className="pulse-button"
                   >
-                                      Perform Deflation
-                </Button>
+                    Perform Deflation
+                  </Button>
               </Grid>
 
               <Grid item xs={12} lg={6}>
@@ -527,10 +539,11 @@ function Utilities() {
 
         {/* Successive Deflation */}
         {activeUtility === 'successive' && (
-          <Card>
+          <Card className="fade-in-right card-hover-lift" sx={{ minHeight: 450, bgcolor: 'background.paper' }}>
             <CardContent>
               <Typography variant="h5" gutterBottom>
-                🔄 Successive Deflation
+                <LoopIcon className="icon-bob icon-glow-soft" sx={{ marginRight: '10px' }} />
+                Successive Deflation
               </Typography>
                           <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
               Apply multiple deflations using several known roots to reduce polynomial degree.
@@ -558,10 +571,11 @@ function Utilities() {
                   <Button
                     variant="contained"
                     onClick={handleSuccessiveDeflation}
-                    startIcon={<PlayArrowIcon />}
+                    startIcon={<PlayArrowIcon className="icon-pulse" />}
+                    className="pulse-button"
                   >
-                                      Apply Successive Deflation
-                </Button>
+                    Apply Successive Deflation
+                  </Button>
               </Grid>
 
               <Grid item xs={12} lg={6}>

@@ -18,7 +18,12 @@ import {
 import {
   Close as CloseIcon,
   Send as SendIcon,
-  EmojiEmotions as EmojiIcon
+  EmojiEmotions as EmojiIcon,
+  School as SchoolIcon,
+  Calculate as CalculateIcon,
+  Psychology as PsychologyIcon,
+  Lightbulb as LightbulbIcon,
+  QuestionMark as QuestionMarkIcon
 } from '@mui/icons-material';
 
 import { initializeGemini, isGeminiInitialized } from '../utils/geminiService';
@@ -62,7 +67,7 @@ const StudyBuddyChat = () => {
     {
       id: 1,
       sender: 'alex',
-      content: "Hey! 👋 I'm Alex 🤖, your study buddy for numerical methods! Got questions about root-finding? I'm here to help! 🧮",
+      content: "Hey there! I'm Alex, your study buddy for numerical methods! Got questions about root-finding? I'm here to help!",
       timestamp: new Date()
     }
   ]);
@@ -154,7 +159,7 @@ Alex:`;
       const errorMessage = {
         id: Date.now() + 1,
         sender: 'alex',
-        content: "Oops! 😅 I'm having trouble connecting right now. Can you try asking again? I really want to help you with those numerical methods!",
+        content: "Oops! I'm having trouble connecting right now. Can you try asking again? I really want to help you with those numerical methods!",
         timestamp: new Date(),
         isError: true
       };
@@ -172,9 +177,9 @@ Alex:`;
   };
 
   const getSuggestedQuestions = () => [
-    "How does Newton-Raphson method actually work? 🤔",
+    "How does Newton-Raphson method actually work?",
     "When should I use Bisection vs Secant method?",
-    "I'm confused about convergence rates... help? 📈",
+    "I'm confused about convergence rates... help?",
     "Can you explain derivatives in numerical methods?",
     "What are some real-world uses of root finding?"
   ];
@@ -194,20 +199,20 @@ Alex:`;
           alignItems: 'flex-end',
           maxWidth: '80%'
         }}>
-                     <Avatar sx={{ 
+          <Avatar sx={{ 
              bgcolor: isAlex ? 'primary.main' : 'secondary.main',
              width: 32,
              height: 32,
              mx: 1,
              fontSize: 18
-           }}>
+           }} className={isAlex ? 'icon-soft-bounce' : ''}>
              {isAlex ? (
                <img 
                  src="/alex-avatar.png" 
                  alt="Alex" 
                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                />
-             ) : '👨‍🎓'}
+             ) : <SchoolIcon className="icon-glow-soft" />}
            </Avatar>
           
           <Paper sx={{
@@ -215,7 +220,8 @@ Alex:`;
             bgcolor: isAlex ? 'grey.100' : 'primary.main',
             color: isAlex ? 'text.primary' : 'white',
             borderRadius: isAlex ? '20px 20px 20px 5px' : '20px 20px 5px 20px',
-            position: 'relative'
+            position: 'relative',
+            animation: 'resultsAppear 0.3s ease-out'
           }}>
             <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>
               {message.content}
@@ -245,7 +251,7 @@ Alex:`;
         right: 20,
         zIndex: 1300
       }}>
-                 <Tooltip title="Chat with Alex 🤖 - Your Numerical Methods Study Buddy!" placement="left">
+        <Tooltip title="Chat with Alex - Your Numerical Methods Study Buddy!" placement="left">
           <Fab
             color="primary"
             onClick={() => setIsOpen(true)}
@@ -253,23 +259,25 @@ Alex:`;
               background: 'linear-gradient(45deg, #1565c0, #7b1fa2)',
               '&:hover': {
                 background: 'linear-gradient(45deg, #0d47a1, #6a1b9a)',
-                transform: 'scale(1.05)'
+                transform: 'scale(1.05) translateY(-2px)',
               },
-              transition: 'all 0.3s ease',
-              position: 'relative'
+              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+              position: 'relative',
+              boxShadow: '0 4px 20px rgba(21, 101, 192, 0.3)',
             }}
-                     >
-             <img 
-               src="/chatbot-avatar.png" 
-               alt="Chatbot" 
-               style={{ 
-                 width: '100%', 
-                 height: '100%', 
-                 objectFit: 'cover',
-                 borderRadius: '50%'
-               }}
-             />
-             {unreadCount > 0 && (
+            className="pulse-button"
+          >
+            <img 
+              src="/chatbot-avatar.png" 
+              alt="Chatbot" 
+              style={{ 
+                width: '100%', 
+                height: '100%', 
+                objectFit: 'cover',
+                borderRadius: '50%'
+              }}
+            />
+            {unreadCount > 0 && (
               <Chip
                 label={unreadCount}
                 size="small"
@@ -280,7 +288,8 @@ Alex:`;
                   right: -8,
                   minWidth: 20,
                   height: 20,
-                  fontSize: '0.7rem'
+                  fontSize: '0.7rem',
+                  animation: 'iconPulse 2s ease-in-out infinite'
                 }}
               />
             )}
@@ -303,33 +312,91 @@ Alex:`;
             right: 20,
             m: 0,
             borderRadius: 3,
-            overflow: 'hidden'
+            overflow: 'hidden',
+            boxShadow: '0 20px 60px rgba(0, 0, 0, 0.15)',
           }
         }}
+        className="fade-in-up"
       >
         {/* Header */}
         <DialogTitle sx={{
-          background: 'linear-gradient(45deg, #1565c0, #7b1fa2)',
+          background: 'linear-gradient(135deg, #1565c0, #7b1fa2, #0d47a1)',
           color: 'white',
-          py: 2
+          py: 2,
+          position: 'relative',
+          overflow: 'hidden',
+          '&::before': {
+            content: '""',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.1) 50%, transparent 70%)',
+            animation: 'loadingShimmer 3s ease-in-out infinite'
+          }
         }}>
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-               <Avatar sx={{ bgcolor: 'rgba(255,255,255,0.2)', fontSize: 20 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+               <Avatar sx={{ 
+                 bgcolor: 'rgba(255,255,255,0.2)', 
+                 fontSize: 20,
+                 border: '2px solid rgba(255,255,255,0.3)'
+               }} className="icon-float-gentle">
                  <img 
                    src="/alex-avatar.png" 
                    alt="Alex" 
                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                  />
                </Avatar>
-                             <Box>
-                 <Typography variant="h6">Alex 🧮 - Study Buddy</Typography>
-                 <Typography variant="caption" sx={{ opacity: 0.9 }}>
-                   {isTyping ? 'Thinking...' : 'Online • Ready to help! 🤓'}
+               <Box>
+                 <Typography variant="h6" sx={{ 
+                   display: 'flex', 
+                   alignItems: 'center', 
+                   gap: 1,
+                   fontWeight: 600
+                 }}>
+                   Alex <CalculateIcon className="icon-rotate-slow" sx={{ fontSize: 20 }} /> Study Buddy
+                 </Typography>
+                 <Typography variant="caption" sx={{ 
+                   opacity: 0.9,
+                   display: 'flex',
+                   alignItems: 'center',
+                   gap: 0.5
+                 }}>
+                   {isTyping ? (
+                     <>
+                       <PsychologyIcon className="icon-pulse-gentle" sx={{ fontSize: 14 }} />
+                       Thinking...
+                     </>
+                   ) : (
+                     <>
+                       <span style={{ 
+                         width: 8, 
+                         height: 8, 
+                         borderRadius: '50%', 
+                         backgroundColor: '#4caf50',
+                         display: 'inline-block',
+                         animation: 'iconPulse 2s ease-in-out infinite'
+                       }}></span>
+                       Online • Ready to help!
+                     </>
+                   )}
                  </Typography>
                </Box>
             </Box>
-            <IconButton onClick={() => setIsOpen(false)} sx={{ color: 'white' }}>
+            <IconButton 
+              onClick={() => setIsOpen(false)} 
+              sx={{ 
+                color: 'white',
+                '&:hover': {
+                  backgroundColor: 'rgba(255,255,255,0.1)',
+                  transform: 'scale(1.1)'
+                },
+                transition: 'all 0.2s ease'
+              }}
+              className="icon-hover-float"
+            >
               <CloseIcon />
             </IconButton>
           </Box>
@@ -340,9 +407,10 @@ Alex:`;
           p: 0,
           display: 'flex',
           flexDirection: 'column',
-          height: '100%'
+          height: '100%',
+          bgcolor: '#fafafa'
         }}>
-                     <Box 
+          <Box 
              data-scroll-container
              sx={{ 
                flex: 1,
@@ -357,15 +425,21 @@ Alex:`;
                  borderRadius: '3px'
                }
              }}>
-                         {messages.map((message) => (
+             {messages.map((message) => (
                <MessageBubble key={message.id} message={message} />
              ))}
             
             {/* Quick suggestions for first interaction */}
             {messages.length <= 1 && (
               <Box sx={{ mt: 2 }}>
-                <Typography variant="caption" color="text.secondary" sx={{ mb: 1, display: 'block' }}>
-                  💡 Try asking Alex about:
+                <Typography variant="caption" color="text.secondary" sx={{ 
+                  mb: 1, 
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 0.5,
+                  fontWeight: 500
+                }}>
+                  <LightbulbIcon className="icon-glow-soft" sx={{ fontSize: 14 }} /> Try asking Alex about:
                 </Typography>
                 <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                   {getSuggestedQuestions().slice(0, 3).map((question, idx) => (
@@ -375,11 +449,21 @@ Alex:`;
                       size="small"
                       variant="outlined"
                       onClick={() => setInputMessage(question)}
-                      sx={{ cursor: 'pointer' }}
+                      sx={{ 
+                        cursor: 'pointer',
+                        '&:hover': {
+                          backgroundColor: 'primary.light',
+                          color: 'white',
+                          transform: 'translateY(-1px)',
+                        },
+                        transition: 'all 0.2s ease'
+                      }}
+                      className="chip-slide-in"
+                      icon={<QuestionMarkIcon className="icon-wiggle-soft" sx={{ fontSize: 14 }} />}
                     />
                   ))}
                 </Box>
-                             </Box>
+              </Box>
              )}
            </Box>
 
@@ -388,23 +472,33 @@ Alex:`;
             p: 2,
             borderTop: '1px solid',
             borderColor: 'divider',
-            bgcolor: 'background.paper'
+            bgcolor: 'background.paper',
+            boxShadow: '0 -2px 10px rgba(0,0,0,0.05)'
           }}>
             <Box sx={{ display: 'flex', gap: 1, alignItems: 'flex-end' }}>
               <TextField
                 fullWidth
                 multiline
                 maxRows={3}
-                                 placeholder="Quick question about numerical methods? 🤔"
-                                 value={inputMessage}
+                placeholder="Ask me about numerical methods..."
+                value={inputMessage}
                  onChange={(e) => setInputMessage(e.target.value)}
                  onKeyDown={handleKeyPress}
                  disabled={isTyping}
                 sx={{
                   '& .MuiOutlinedInput-root': {
-                    borderRadius: 3
+                    borderRadius: 3,
+                    bgcolor: '#f8f9fa',
+                    '&:hover': {
+                      bgcolor: 'white'
+                    },
+                    '&.Mui-focused': {
+                      bgcolor: 'white',
+                      boxShadow: '0 0 0 2px rgba(21, 101, 192, 0.2)'
+                    }
                   }
                 }}
+                className="animated-field"
               />
               <IconButton
                 color="primary"
@@ -414,21 +508,39 @@ Alex:`;
                   p: 1.5,
                   bgcolor: 'primary.main',
                   color: 'white',
-                  '&:hover': { bgcolor: 'primary.dark' },
-                  '&:disabled': { bgcolor: 'grey.300' }
+                  borderRadius: 2,
+                  '&:hover': { 
+                    bgcolor: 'primary.dark',
+                    transform: 'scale(1.05)'
+                  },
+                  '&:disabled': { 
+                    bgcolor: 'grey.300'
+                  },
+                  transition: 'all 0.2s ease'
                 }}
+                className="pulse-button"
               >
-                {isTyping ? <CircularProgress size={20} color="inherit" /> : <SendIcon />}
+                {isTyping ? (
+                  <CircularProgress size={20} color="inherit" />
+                ) : (
+                  <SendIcon className="icon-hover-float" />
+                )}
               </IconButton>
             </Box>
             
-                         <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
-               💡 Alex gives quick, helpful tips about numerical methods!
+            <Typography variant="caption" color="text.secondary" sx={{ 
+              mt: 1, 
+              display: 'flex',
+              alignItems: 'center',
+              gap: 0.5,
+              justifyContent: 'center'
+            }}>
+               <LightbulbIcon className="icon-subtle-glow" sx={{ fontSize: 12 }} />
+               Alex gives quick, helpful tips about numerical methods!
              </Typography>
           </Box>
         </DialogContent>
       </Dialog>
-
 
     </>
   );

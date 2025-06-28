@@ -1,4 +1,5 @@
 import React from 'react';
+import './animations.css';
 import {
   Box,
   Card,
@@ -27,7 +28,26 @@ import {
   Language as LanguageIcon,
   Star as StarIcon,
   Timeline as TimelineIcon,
-  EmojiEvents as TrophyIcon
+  EmojiEvents as TrophyIcon,
+  Groups as GroupsIcon,
+  Calculate as CalculateIcon,
+  Science as ScienceIcon,
+  Computer as ComputerIcon,
+  Extension as ExtensionIcon,
+  BugReport as BugReportIcon,
+  Description as DescriptionIcon,
+  Palette as PaletteIcon,
+  BarChart as BarChartIcon,
+  FlashOn as FlashOnIcon,
+  AutoAwesome as AutoAwesomeIcon,
+  Email as EmailIcon,
+  Business as BusinessIcon,
+  AccountBalance as AccountBalanceIcon,
+  Event as EventIcon,
+  Person as PersonIcon,
+  MenuBook as MenuBookIcon,
+  Laptop as LaptopIcon,
+  Rocket as RocketIcon
 } from '@mui/icons-material';
 
 
@@ -67,7 +87,7 @@ const teamMembers = [
     name: 'Adrishikhar Barua',
     studentId: 'C221022',
     role: 'Algorithm Developer',
-    avatar: '🧮',
+    avatar: <CalculateIcon className="icon-matrix icon-breathe" sx={{ fontSize: '28px' }} />,
     email: 'adrishikhar@iiuc.ac.bd',
     description: 'Focused on mathematical algorithm implementation and optimization',
     contributions: [
@@ -83,7 +103,7 @@ const teamMembers = [
     name: 'Sheikh Mohammad Rajking',
     studentId: 'C221011',
     role: 'Quality Assurance & Testing',
-    avatar: '🔬',
+    avatar: <ScienceIcon className="icon-float-gentle icon-glow-soft" sx={{ fontSize: '28px' }} />,
     email: 'rajking@iiuc.ac.bd',
     description: 'Specializes in software testing and quality assurance for numerical applications',
     contributions: [
@@ -98,12 +118,12 @@ const teamMembers = [
 ];
 
 const technologies = [
-  { name: 'React 18', icon: '⚛️', description: 'Modern UI framework with hooks', version: '18.2.0' },
-  { name: 'Material-UI', icon: '🎨', description: 'Beautiful component library', version: '5.15.0' },
-  { name: 'Chart.js', icon: '📊', description: 'Interactive data visualizations', version: '4.4.0' },
-  { name: 'Math.js', icon: '🧮', description: 'Mathematical expression parser', version: '12.2.0' },
-  { name: 'Framer Motion', icon: '🌟', description: 'Smooth animations library', version: '10.16.0' },
-  { name: 'Vite', icon: '⚡', description: 'Fast build tool and dev server', version: '5.0.0' }
+  { name: 'React 18', icon: <CodeIcon className="icon-spiral icon-breathe" />, description: 'Modern UI framework with hooks', version: '18.2.0' },
+  { name: 'Material-UI', icon: <PaletteIcon className="icon-morph icon-shimmer" />, description: 'Beautiful component library', version: '5.15.0' },
+  { name: 'Chart.js', icon: <BarChartIcon className="icon-wave icon-magnetic" />, description: 'Interactive data visualizations', version: '4.4.0' },
+  { name: 'Math.js', icon: <CalculateIcon className="icon-quantum icon-ripple" />, description: 'Mathematical expression parser', version: '12.2.0' },
+  { name: 'Framer Motion', icon: <AutoAwesomeIcon className="icon-orbit icon-levitate" />, description: 'Smooth animations library', version: '10.16.0' },
+  { name: 'Vite', icon: <FlashOnIcon className="icon-twist icon-glitch" />, description: 'Fast build tool and dev server', version: '5.0.0' }
 ];
 
 const numericalMethods = [
@@ -175,22 +195,23 @@ const courseInfo = {
 };
 
 const projectStats = [
-  { label: 'Lines of Code', value: '2,500+', icon: '💻' },
-  { label: 'Components', value: '15+', icon: '🧩' },
-  { label: 'Test Cases', value: '50+', icon: '🧪' },
-  { label: 'Documentation', value: '100%', icon: '📚' }
+  { label: 'Lines of Code', value: '2,500+', icon: <ComputerIcon className="icon-matrix icon-breathe" /> },
+  { label: 'Components', value: '15+', icon: <ExtensionIcon className="icon-elastic icon-magnetic" /> },
+  { label: 'Test Cases', value: '50+', icon: <BugReportIcon className="icon-jiggle icon-ripple" /> },
+  { label: 'Documentation', value: '100%', icon: <DescriptionIcon className="icon-pendulum icon-shimmer" /> }
 ];
 
 function TeamInfo() {
   return (
     <Box sx={{ width: '100%', maxWidth: 'none' }}>
       <div>
-        <Typography variant="h4" gutterBottom sx={{ mb: 4, fontWeight: 600, textAlign: 'center' }}>
-          👥 Project Information
+        <Typography variant="h4" gutterBottom className="fade-in-up glow-text" sx={{ mb: 4, fontWeight: 600, textAlign: 'center' }}>
+          <GroupsIcon className="icon-orbit icon-comet" sx={{ fontSize: '1.2em', marginRight: '10px' }} />
+          Project Information
         </Typography>
 
         {/* Project Overview */}
-        <Card sx={{ mb: 4 }}>
+        <Card className="fade-in-left card-hover-lift" sx={{ mb: 4, minHeight: 200, bgcolor: 'background.paper' }}>
           <CardContent>
             <Box sx={{ textAlign: 'center', mb: 3 }}>
               <Typography variant="h5" gutterBottom sx={{ fontWeight: 700, color: 'primary.main' }}>
@@ -224,10 +245,11 @@ function TeamInfo() {
         <Grid container spacing={4}>
           {/* Team Information */}
           <Grid item xs={12} lg={6}>
-            <Card sx={{ height: '100%' }}>
+            <Card className="fade-in-left card-hover-lift" sx={{ height: '100%', minHeight: 500, bgcolor: 'background.paper' }}>
               <CardContent>
                 <Typography variant="h5" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
-                  🎓 Development Team
+                  <SchoolIcon className="icon-sway icon-subtle-glow" color="primary" />
+                  Development Team
                 </Typography>
                 
                 <Grid container spacing={3}>
@@ -236,15 +258,15 @@ function TeamInfo() {
                       <Paper sx={{ p: 3, mb: 2, border: '1px solid rgba(0, 0, 0, 0.1)' }}>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 3, mb: 3 }}>
                           <Avatar sx={{ 
-                            bgcolor: member.avatar.startsWith('/') ? 'transparent' : (index === 0 ? 'primary.main' : index === 1 ? 'success.main' : 'warning.main'), 
+                            bgcolor: (typeof member.avatar === 'string' && member.avatar.startsWith('/')) ? 'transparent' : (index === 0 ? 'primary.main' : index === 1 ? 'success.main' : 'warning.main'), 
                             width: 60, 
                             height: 60, 
-                            fontSize: member.avatar.startsWith('/') ? '0px' : '28px',
+                            fontSize: (typeof member.avatar === 'string' && member.avatar.startsWith('/')) ? '0px' : '28px',
                             boxShadow: 2
                           }}
-                          src={member.avatar.startsWith('/') ? member.avatar : undefined}
+                          src={(typeof member.avatar === 'string' && member.avatar.startsWith('/')) ? member.avatar : undefined}
                           >
-                            {!member.avatar.startsWith('/') && member.avatar}
+                            {(typeof member.avatar === 'string' && !member.avatar.startsWith('/')) ? member.avatar : (typeof member.avatar !== 'string' ? member.avatar : null)}
                           </Avatar>
                           <Box sx={{ flex: 1 }}>
                                                     <Typography variant="h6" sx={{ fontWeight: 700 }}>
@@ -261,12 +283,14 @@ function TeamInfo() {
                         <Typography variant="body2" color="text.secondary">
                           Student ID: {member.studentId}
                         </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          📧 {member.email}
+                        <Typography variant="body2" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <EmailIcon className="icon-tilt icon-fade-pulse" sx={{ fontSize: '16px' }} />
+                          {member.email}
                         </Typography>
                         {member.academicEmail && (
-                          <Typography variant="body2" color="text.secondary">
-                            🎓 {member.academicEmail}
+                          <Typography variant="body2" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <SchoolIcon className="icon-bob icon-slow-pulse" sx={{ fontSize: '16px' }} />
+                            {member.academicEmail}
                           </Typography>
                         )}
                           </Box>
@@ -320,10 +344,11 @@ function TeamInfo() {
 
           {/* Course Information */}
           <Grid item xs={12} lg={6}>
-            <Card sx={{ height: '100%' }}>
+            <Card className="fade-in-right card-hover-lift" sx={{ height: '100%', minHeight: 500, bgcolor: 'background.paper' }}>
               <CardContent>
                 <Typography variant="h5" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
-                  📚 Academic Information
+                  <MenuBookIcon className="icon-drift icon-glow-soft" color="secondary" />
+                  Academic Information
                 </Typography>
                 
                 <List>
@@ -339,7 +364,7 @@ function TeamInfo() {
                   
                   <ListItem>
                     <ListItemIcon>
-                      <Box sx={{ fontSize: '24px' }}>🏫</Box>
+                      <BusinessIcon className="icon-wiggle-soft icon-pulse-gentle" color="primary" />
                     </ListItemIcon>
                     <ListItemText 
                       primary="Institution" 
@@ -349,7 +374,7 @@ function TeamInfo() {
                   
                   <ListItem>
                     <ListItemIcon>
-                      <Box sx={{ fontSize: '24px' }}>🏛️</Box>
+                      <AccountBalanceIcon className="icon-rock icon-subtle-glow" color="secondary" />
                     </ListItemIcon>
                     <ListItemText 
                       primary="Department" 
@@ -359,7 +384,7 @@ function TeamInfo() {
                   
                   <ListItem>
                     <ListItemIcon>
-                      <Box sx={{ fontSize: '24px' }}>👥</Box>
+                      <GroupsIcon className="icon-scale-breathe icon-hover-float" color="info" />
                     </ListItemIcon>
                     <ListItemText 
                       primary="Team" 
@@ -369,7 +394,7 @@ function TeamInfo() {
                   
                   <ListItem>
                     <ListItemIcon>
-                      <Box sx={{ fontSize: '24px' }}>📅</Box>
+                      <EventIcon className="icon-bounce-soft icon-glow-soft" color="warning" />
                     </ListItemIcon>
                     <ListItemText 
                       primary="Academic Year" 
@@ -379,7 +404,7 @@ function TeamInfo() {
                   
                   <ListItem>
                     <ListItemIcon>
-                      <Box sx={{ fontSize: '24px' }}>👨‍🏫</Box>
+                      <PersonIcon className="icon-float-gentle icon-fade-pulse" color="success" />
                     </ListItemIcon>
                     <ListItemText 
                       primary="Course Instructor" 
@@ -390,7 +415,7 @@ function TeamInfo() {
                   
                   <ListItem>
                     <ListItemIcon>
-                      <Box sx={{ fontSize: '24px' }}>🎓</Box>
+                      <SchoolIcon className="icon-soft-bounce icon-calm-wave" color="primary" />
                     </ListItemIcon>
                     <ListItemText 
                       primary="Qualifications" 
@@ -420,10 +445,11 @@ function TeamInfo() {
 
           {/* Project Statistics */}
           <Grid item xs={12}>
-            <Card>
+            <Card className="scale-in card-hover-lift" sx={{ minHeight: 200, bgcolor: 'background.paper' }}>
               <CardContent>
                 <Typography variant="h5" gutterBottom sx={{ textAlign: 'center', mb: 3 }}>
-                  📊 Project Statistics
+                  <BarChartIcon className="icon-slide-gentle icon-slow-pulse" color="primary" sx={{ marginRight: '10px' }} />
+                  Project Statistics
                 </Typography>
                 <Grid container spacing={3}>
                   {projectStats.map((stat, index) => (
@@ -448,10 +474,11 @@ function TeamInfo() {
 
           {/* Technology Stack */}
           <Grid item xs={12} md={6}>
-            <Card sx={{ height: '100%' }}>
+            <Card className="fade-in-left card-hover-lift" sx={{ height: '100%', minHeight: 450, bgcolor: 'background.paper' }}>
               <CardContent>
                 <Typography variant="h5" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  💻 Technology Stack
+                  <LaptopIcon className="icon-gentle-spin icon-subtle-glow" color="info" />
+                  Technology Stack
                 </Typography>
                 
                 <Grid container spacing={2}>
@@ -480,10 +507,11 @@ function TeamInfo() {
 
           {/* Numerical Methods */}
           <Grid item xs={12} md={6}>
-            <Card sx={{ height: '100%' }}>
+            <Card className="fade-in-right card-hover-lift" sx={{ height: '100%', minHeight: 450, bgcolor: 'background.paper' }}>
               <CardContent>
                 <Typography variant="h5" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  🧮 Implemented Methods
+                  <CalculateIcon className="icon-rotate-slow icon-glow-soft" color="secondary" />
+                  Implemented Methods
                 </Typography>
                 
                 {numericalMethods.map((method, index) => (
@@ -510,10 +538,11 @@ function TeamInfo() {
 
           {/* Project Features */}
           <Grid item xs={12}>
-            <Card>
+            <Card className="slide-in-bottom card-hover-lift" sx={{ minHeight: 380, bgcolor: 'background.paper' }}>
               <CardContent>
                 <Typography variant="h5" gutterBottom sx={{ textAlign: 'center', mb: 3 }}>
-                  🚀 Project Features
+                  <RocketIcon className="icon-hover-float icon-scale-breathe" color="warning" sx={{ marginRight: '10px' }} />
+                  Project Features
                 </Typography>
                 
                 <Grid container spacing={3}>

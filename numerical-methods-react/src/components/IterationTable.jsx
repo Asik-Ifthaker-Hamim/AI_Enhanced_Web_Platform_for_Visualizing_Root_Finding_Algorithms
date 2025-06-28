@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import './animations.css';
 import {
   Table,
   TableBody,
@@ -18,7 +19,9 @@ import {
 import {
   ExpandMore as ExpandMoreIcon,
   ExpandLess as ExpandLessIcon,
-  Info as InfoIcon
+  Info as InfoIcon,
+  Assignment as AssignmentIcon,
+  Assessment as AssessmentIcon
 } from '@mui/icons-material';
 
 
@@ -52,8 +55,9 @@ function IterationTable({ iterations = [] }) {
           borderColor: 'grey.300'
         }}
       >
-        <Typography variant="body1" color="text.secondary">
-          📋 Iteration history will appear here after solving
+        <Typography variant="body1" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
+          <AssignmentIcon className="icon-float-gentle icon-fade-pulse" />
+          Iteration history will appear here after solving
         </Typography>
       </Box>
     );
@@ -156,10 +160,11 @@ function IterationTable({ iterations = [] }) {
               return (
                 <React.Fragment key={actualIndex}>
                   <TableRow
+                    className="table-row-appear"
                     sx={{
                       '&:nth-of-type(odd)': { bgcolor: 'rgba(0, 0, 0, 0.02)' },
-                      '&:hover': { bgcolor: 'rgba(25, 118, 210, 0.04)' },
-                      transition: 'background-color 0.2s ease'
+                      '&:hover': { bgcolor: 'rgba(25, 118, 210, 0.04)', transform: 'scale(1.01)' },
+                      transition: 'all 0.3s ease'
                     }}
                   >
                     <TableCell align="center" sx={{ fontWeight: 500 }}>
@@ -264,8 +269,9 @@ function IterationTable({ iterations = [] }) {
 
       {/* Summary Statistics */}
       <Box sx={{ mt: 2, p: 2, bgcolor: 'grey.50', borderRadius: 1 }}>
-        <Typography variant="subtitle2" gutterBottom>
-          📊 Summary Statistics
+        <Typography variant="subtitle2" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <AssessmentIcon className="icon-wiggle-soft icon-subtle-glow" color="primary" />
+          Summary Statistics
         </Typography>
         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
           <Chip 

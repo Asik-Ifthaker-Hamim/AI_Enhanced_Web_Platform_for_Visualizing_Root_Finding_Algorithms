@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import './animations.css';
 import {
   Box,
   Card,
@@ -36,7 +37,11 @@ import {
   PlayArrow as PlayIcon,
   CheckCircle as CheckCircleIcon,
   Error as ErrorIcon,
-  Timer as TimerIcon
+  Timer as TimerIcon,
+  Summarize as SummarizeIcon,
+  TrendingUp as TrendingUpIcon,
+  BarChart as BarChartIcon,
+  Warning as WarningIcon
 } from '@mui/icons-material';
 import { Bar } from 'react-chartjs-2';
 import {
@@ -159,12 +164,11 @@ function MethodComparison() {
     const times = validResults.map(method => results[method].executionTime || 0);
     const functionEvals = validResults.map(method => results[method].functionEvaluations || 0);
     
-    // Handle errors specially for logarithmic scale - filter out invalid values
+    // Get final error values, using 0 for invalid/missing values with linear scale
     const errors = validResults.map(method => {
       const error = results[method].finalError;
-      if (error === null || error === undefined || error <= 0 || isNaN(error)) {
-        // Use a very small positive number for log scale instead of 0
-        return 1e-16;
+      if (error === null || error === undefined || isNaN(error) || error < 0) {
+        return 0; // Use 0 for linear scale
       }
       return error;
     });
@@ -252,15 +256,16 @@ function MethodComparison() {
 
   return (
     <Box sx={{ width: '100%', maxWidth: 'none' }}>
-      <Typography variant="h4" gutterBottom sx={{ mb: 4, fontWeight: 600, textAlign: 'center' }}>
-        📊 Method Comparison Center
+      <Typography variant="h4" gutterBottom className="fade-in-up glow-text" sx={{ mb: 4, fontWeight: 600, textAlign: 'center' }}>
+        <CompareIcon className="icon-matrix icon-breathe" sx={{ fontSize: '1.2em', marginRight: '10px' }} />
+        Method Comparison Center
       </Typography>
 
       <Grid container spacing={3} sx={{ width: '100%', m: 0 }}>
         {/* Configuration Panel */}
         <Grid item xs={12} lg={4}>
           <div>
-            <Card>
+            <Card className="fade-in-left card-hover-lift">
               <CardContent>
                 <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <CompareIcon color="primary" />
@@ -383,13 +388,14 @@ function MethodComparison() {
                   fullWidth
                   onClick={compareAllMethodsFunction}
                   disabled={isComparing}
-                  startIcon={<PlayIcon />}
+                  startIcon={<PlayIcon className={isComparing ? 'icon-rotate' : 'icon-pulse'} />}
+                  className={!isComparing ? 'pulse-button' : ''}
                   sx={{ py: 1.5 }}
                 >
                   {isComparing ? 'Comparing Methods...' : 'Compare All Methods'}
                 </Button>
 
-                {isComparing && <LinearProgress sx={{ mt: 2 }} />}
+                {isComparing && <LinearProgress className="progress-glow" sx={{ mt: 2 }} />}
               </CardContent>
             </Card>
           </div>
@@ -401,10 +407,11 @@ function MethodComparison() {
             
               {results && (
                 <div>
-                  <Card sx={{ mb: 3 }}>
-                    <CardContent>
+                          <Card className="results-appear card-hover-lift" sx={{ mb: 3, minHeight: 380, bgcolor: 'background.paper' }}>
+          <CardContent>
                       <Typography variant="h6" gutterBottom>
-                        📋 Results Summary
+                        <SummarizeIcon className="icon-jiggle icon-ripple" sx={{ marginRight: '8px' }} />
+                        Results Summary
                       </Typography>
                       
                       <Alert severity="info" sx={{ mb: 2 }}>
@@ -429,7 +436,12 @@ function MethodComparison() {
                               .map(([method, result]) => (
                                 <TableRow 
                                   key={method}
-                                  sx={{ '&:nth-of-type(odd)': { bgcolor: 'rgba(0, 0, 0, 0.02)' } }}
+                                  className="table-row-appear"
+                                  sx={{ 
+                                    '&:nth-of-type(odd)': { bgcolor: 'rgba(0, 0, 0, 0.02)' },
+                                    '&:hover': { bgcolor: 'rgba(25, 118, 210, 0.04)', transform: 'scale(1.01)' },
+                                    transition: 'all 0.3s ease'
+                                  }}
                                 >
                                   <TableCell sx={{ fontWeight: 500 }}>
                                     {methodDisplayNames[method] || method}
@@ -479,10 +491,11 @@ function MethodComparison() {
 
                   {/* Visualization Charts */}
                   {chartData && (
-                    <Card>
+                    <Card className="chart-container">
                       <CardContent>
                         <Typography variant="h6" gutterBottom>
-                          📈 Performance Analysis
+                          <TrendingUpIcon className="icon-wave icon-levitate" sx={{ marginRight: '8px' }} />
+                          Performance Analysis
                         </Typography>
 
                         <Tabs value={activeTab} onChange={handleTabChange} sx={{ mb: 2 }}>
@@ -492,57 +505,146 @@ function MethodComparison() {
                           <Tab label="Final Error" />
                         </Tabs>
 
-                        {/* Add safety check for chart data */}
-                        {!chartData.errors || chartData.errors.datasets[0].data.length === 0 ? (
-                          <Alert severity="warning" sx={{ mt: 2 }}>
-                            No valid error data available for logarithmic chart. This may occur when all methods failed to converge or had invalid error values.
-                          </Alert>
-                        ) : null}
+
 
                         <TabPanel value={activeTab} index={0}>
                           <Box sx={{ height: 300 }}>
-                            <Bar data={chartData.iterations} options={{...chartOptions, scales: {...chartOptions.scales, y: {...chartOptions.scales.y, title: {display: true, text: 'Number of Iterations'}}}}} />
+                            {(() => {
+                              try {
+                                return <Bar data={chartData.iterations} options={{...chartOptions, scales: {...chartOptions.scales, y: {...chartOptions.scales.y, title: {display: true, text: 'Number of Iterations'}}}}} />;
+                              } catch (error) {
+                                console.warn('Iterations chart error:', error);
+                                return <Typography color="error">Unable to display iterations chart</Typography>;
+                              }
+                            })()}
                           </Box>
                         </TabPanel>
 
                         <TabPanel value={activeTab} index={1}>
                           <Box sx={{ height: 300 }}>
-                            <Bar data={chartData.times} options={{...chartOptions, scales: {...chartOptions.scales, y: {...chartOptions.scales.y, title: {display: true, text: 'Execution Time (ms)'}}}}} />
+                            {(() => {
+                              try {
+                                return <Bar data={chartData.times} options={{...chartOptions, scales: {...chartOptions.scales, y: {...chartOptions.scales.y, title: {display: true, text: 'Execution Time (ms)'}}}}} />;
+                              } catch (error) {
+                                console.warn('Execution time chart error:', error);
+                                return <Typography color="error">Unable to display execution time chart</Typography>;
+                              }
+                            })()}
                           </Box>
                         </TabPanel>
 
                         <TabPanel value={activeTab} index={2}>
                           <Box sx={{ height: 300 }}>
-                            <Bar data={chartData.functionEvals} options={{...chartOptions, scales: {...chartOptions.scales, y: {...chartOptions.scales.y, title: {display: true, text: 'Function Evaluations'}}}}} />
+                            {(() => {
+                              try {
+                                return <Bar data={chartData.functionEvals} options={{...chartOptions, scales: {...chartOptions.scales, y: {...chartOptions.scales.y, title: {display: true, text: 'Function Evaluations'}}}}} />;
+                              } catch (error) {
+                                console.warn('Function evaluations chart error:', error);
+                                return <Typography color="error">Unable to display function evaluations chart</Typography>;
+                              }
+                            })()}
                           </Box>
                         </TabPanel>
 
                         <TabPanel value={activeTab} index={3}>
                           <Box sx={{ height: 300 }}>
-                            <Bar 
-                              data={chartData.errors} 
-                              options={{
-                                ...chartOptions, 
-                                scales: {
-                                  ...chartOptions.scales, 
-                                  y: {
-                                    ...chartOptions.scales.y, 
-                                    type: 'logarithmic',
-                                    beginAtZero: false,
-                                    min: 1e-16,
-                                    title: {
-                                      display: true, 
-                                      text: 'Final Error (log scale)'
+                            {(() => {
+                              try {
+                                // Check if we have valid error data
+                                if (!chartData?.errors?.datasets?.[0]?.data || chartData.errors.datasets[0].data.length === 0) {
+                                  throw new Error('No error data available');
+                                }
+
+                                // Get original error values from results for display
+                                const originalErrors = Object.entries(results)
+                                  .filter(([key]) => !['functionName', 'functionExpression'].includes(key))
+                                  .filter(([method, result]) => result && !result.errorMessage && result.finalError !== null && result.finalError !== undefined)
+                                  .map(([method, result]) => result.finalError);
+
+                                if (originalErrors.length === 0) {
+                                  throw new Error('No valid final error values');
+                                }
+
+                                // Use linear scale for better compatibility
+                                const errorChartOptions = {
+                                  responsive: true,
+                                  maintainAspectRatio: false,
+                                  plugins: {
+                                    legend: {
+                                      display: false
                                     },
-                                    ticks: {
-                                      callback: function(value) {
-                                        return value.toExponential(1);
+                                    tooltip: {
+                                      backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                                      titleColor: '#ffffff',
+                                      bodyColor: '#ffffff',
+                                      callbacks: {
+                                        label: function(context) {
+                                          return `Final Error: ${context.parsed.y.toExponential(3)}`;
+                                        }
+                                      }
+                                    }
+                                  },
+                                  scales: {
+                                    y: {
+                                      type: 'linear',
+                                      beginAtZero: true,
+                                      grid: {
+                                        color: 'rgba(0, 0, 0, 0.1)'
+                                      },
+                                      title: {
+                                        display: true, 
+                                        text: 'Final Error'
+                                      },
+                                      ticks: {
+                                        callback: function(value) {
+                                          return value.toExponential(1);
+                                        }
+                                      }
+                                    },
+                                    x: {
+                                      grid: {
+                                        display: false
                                       }
                                     }
                                   }
-                                }
-                              }} 
-                            />
+                                };
+
+                                return (
+                                  <Bar 
+                                    data={chartData.errors} 
+                                    options={errorChartOptions}
+                                  />
+                                );
+                              } catch (error) {
+                                console.warn('Final Error chart error:', error);
+                                return (
+                                  <Box sx={{ 
+                                    display: 'flex', 
+                                    flexDirection: 'column', 
+                                    alignItems: 'center', 
+                                    justifyContent: 'center', 
+                                    height: '100%',
+                                    bgcolor: 'grey.50',
+                                    borderRadius: 2,
+                                    border: '2px dashed',
+                                    borderColor: 'grey.300'
+                                  }}>
+                                    <Alert severity="info" sx={{ mb: 2, maxWidth: 500 }}>
+                                      <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                                        <BarChartIcon className="icon-shake icon-pulse" sx={{ marginRight: '8px' }} />
+                                        Final Error Chart Not Available
+                                      </Typography>
+                                      <Typography variant="body2" sx={{ mt: 1 }}>
+                                        Unable to display error visualization. You can still view the final error values in the results table above.
+                                      </Typography>
+                                    </Alert>
+                                    <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center' }}>
+                                      This may occur when methods have very different error scales or invalid error data.
+                                    </Typography>
+                                  </Box>
+                                );
+                              }
+                            })()}
                           </Box>
                         </TabPanel>
                       </CardContent>
@@ -551,10 +653,11 @@ function MethodComparison() {
 
                   {/* Error Details */}
                   {results && Object.values(results).some(r => r.errorMessage) && (
-                    <Card sx={{ mt: 2 }}>
-                      <CardContent>
+                              <Card sx={{ mt: 2, minHeight: 450, bgcolor: 'background.paper' }}>
+            <CardContent>
                         <Typography variant="h6" gutterBottom color="error">
-                          ⚠️ Error Details
+                          <WarningIcon className="icon-twist icon-vibrate" sx={{ marginRight: '8px' }} />
+                          Error Details
                         </Typography>
                         {Object.entries(results)
                           .filter(([key, result]) => result.errorMessage && !['functionName', 'functionExpression'].includes(key))
