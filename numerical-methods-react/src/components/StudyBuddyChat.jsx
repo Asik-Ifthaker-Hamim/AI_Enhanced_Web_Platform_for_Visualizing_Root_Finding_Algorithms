@@ -97,6 +97,7 @@ const StudyBuddyChat = () => {
   const [initializationError, setInitializationError] = useState(null);
   const inputRef = useRef(null);
   const fileInputRef = useRef(null);
+  const messagesEndRef = useRef(null);
 
   // Initialize Gemini on component mount
   useEffect(() => {
@@ -120,11 +121,10 @@ const StudyBuddyChat = () => {
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
-    const scrollContainer = document.querySelector('[data-scroll-container]');
-    if (scrollContainer && messages.length > 1) {
-      scrollContainer.scrollTop = scrollContainer.scrollHeight;
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
-  }, [messages.length]);
+  }, [messages]);
 
   // Update unread count when dialog is closed
   useEffect(() => {
@@ -492,53 +492,112 @@ Alex:`;
           </Box>
         </DialogTitle>
 
-        {/* Messages Area */}
-        <DialogContent
-          dividers
-          sx={{
-            p: 0,
-            bgcolor: 'grey.50',
-            height: '60vh',
-            display: 'flex',
-            flexDirection: 'column'
+        {/* Chat Content */}
+        <DialogContent 
+          sx={{ 
+            p: 2, 
+            display: 'flex', 
+            flexDirection: 'column',
+            position: 'relative',
+            overflow: 'hidden',
+            height: 'calc(85vh - 140px)' // Account for header and input area
           }}
         >
-          <Box
-            data-scroll-container
-            sx={{
-              flex: 1,
-              overflowY: 'auto',
-              p: 3,
-              display: 'flex',
-              flexDirection: 'column'
-            }}
-          >
-            {messages.map(msg => <MessageBubble key={msg.id} message={msg} />)}
-            {isTyping && (
-              <Box sx={{ display: 'flex', justifyContent: 'flex-start', mb: 2 }}>
-                <Avatar sx={{ bgcolor: 'primary.main', width: 32, height: 32, mx: 1 }}>
-                  <img src="/alex-avatar.png" alt="Alex" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                </Avatar>
-                <Paper sx={{ p: 2, bgcolor: 'grey.100', borderRadius: '20px 20px 20px 5px' }}>
-                  <CircularProgress size={20} />
-                </Paper>
-              </Box>
-            )}
-          </Box>
-          
-          {file && (
-            <Box sx={{ p: 2, borderTop: '1px solid #eee', position: 'relative' }}>
-              <Chip
-                label={file.name}
-                onDelete={() => setFile(null)}
-                deleteIcon={<CancelIcon />}
-              />
-              {file.type.startsWith('image/') && (
-                <img src={URL.createObjectURL(file)} alt="preview" style={{ maxWidth: '100px', maxHeight: '100px', marginTop: '8px', borderRadius: '8px' }} />
-              )}
+          {/* Messages Container */}
+          <Box sx={{ 
+            flexGrow: 1, 
+            overflowY: 'scroll', // Changed from 'auto' to 'scroll'
+            position: 'relative',
+            zIndex: 1,
+            height: '100%',
+            pr: 2, // Add padding to prevent content shift
+            mr: -2, // Offset padding to maintain alignment
+            '&::-webkit-scrollbar': {
+              width: '8px',
+              display: 'block',
+              background: 'transparent'
+            },
+            '&::-webkit-scrollbar-track': {
+              background: 'rgba(0,0,0,0.03)',
+              borderRadius: '4px',
+              margin: '4px'
+            },
+            '&::-webkit-scrollbar-thumb': {
+              background: 'rgba(0,0,0,0.12)',
+              borderRadius: '4px',
+              border: '2px solid transparent',
+              backgroundClip: 'padding-box',
+              '&:hover': {
+                background: 'rgba(0,0,0,0.2)',
+                border: '2px solid transparent',
+                backgroundClip: 'padding-box'
+              }
+            },
+            // Add Firefox scrollbar styling
+            scrollbarWidth: 'thin',
+            scrollbarColor: 'rgba(0,0,0,0.12) rgba(0,0,0,0.03)'
+          }}>
+            {/* Background Mathematical Symbols */}
+            <Box sx={{ 
+              position: 'absolute', 
+              top: 0, 
+              left: 0, 
+              right: 8, // Adjust to account for scrollbar
+              bottom: 0, 
+              pointerEvents: 'none', 
+              zIndex: 0,
+              opacity: 0.06
+            }}>
+              {[
+                { symbol: '∫', top: '5%', left: '10%', size: '16px', animation: 'mathFloat1 15s ease-in-out infinite' },
+                { symbol: 'λ', top: '25%', right: '15%', size: '18px', animation: 'mathFloat2 18s ease-in-out infinite 1s' },
+                { symbol: 'θ', top: '45%', left: '20%', size: '14px', animation: 'mathFloat3 12s ease-in-out infinite 2s' },
+                { symbol: 'β', top: '65%', right: '25%', size: '17px', animation: 'mathFloat4 20s ease-in-out infinite 3s' },
+                { symbol: 'Ω', top: '85%', left: '30%', size: '19px', animation: 'mathFloat5 16s ease-in-out infinite 4s' },
+                { symbol: 'μ', top: '15%', right: '35%', size: '15px', animation: 'mathFloat6 14s ease-in-out infinite 5s' },
+                { symbol: 'α', top: '35%', left: '40%', size: '18px', animation: 'mathFloat7 17s ease-in-out infinite 6s' },
+                { symbol: 'φ', top: '55%', right: '45%', size: '16px', animation: 'mathFloat8 19s ease-in-out infinite 7s' },
+                { symbol: 'ε', top: '75%', left: '50%', size: '17px', animation: 'mathFloat9 13s ease-in-out infinite 8s' },
+                { symbol: 'γ', top: '95%', right: '55%', size: '15px', animation: 'mathFloat10 21s ease-in-out infinite 9s' },
+                { symbol: '∇', top: '10%', left: '60%', size: '16px', animation: 'mathFloat3 16s ease-in-out infinite 2.5s' },
+                { symbol: 'σ', top: '30%', right: '65%', size: '14px', animation: 'mathFloat5 19s ease-in-out infinite 3.5s' },
+                { symbol: 'ψ', top: '50%', left: '70%', size: '18px', animation: 'mathFloat7 14s ease-in-out infinite 4.5s' },
+                { symbol: 'ξ', top: '70%', right: '75%', size: '15px', animation: 'mathFloat9 17s ease-in-out infinite 5.5s' },
+                { symbol: '∂', top: '90%', left: '80%', size: '19px', animation: 'mathFloat1 20s ease-in-out infinite 6.5s' },
+                { symbol: '∏', top: '20%', right: '85%', size: '16px', animation: 'mathFloat4 15s ease-in-out infinite 7.5s' },
+                { symbol: '∑', top: '40%', left: '90%', size: '17px', animation: 'mathFloat6 18s ease-in-out infinite 8.5s' },
+                { symbol: 'η', top: '60%', right: '5%', size: '14px', animation: 'mathFloat8 13s ease-in-out infinite 9.5s' },
+                { symbol: 'ρ', top: '80%', left: '15%', size: '18px', animation: 'mathFloat10 16s ease-in-out infinite 10.5s' },
+                { symbol: '∞', top: '8%', right: '20%', size: '16px', animation: 'mathFloat2 19s ease-in-out infinite 11.5s' },
+                { symbol: '∈', top: '28%', left: '25%', size: '15px', animation: 'mathFloat4 17s ease-in-out infinite 12.5s' },
+                { symbol: '∩', top: '48%', right: '30%', size: '17px', animation: 'mathFloat6 14s ease-in-out infinite 13.5s' },
+                { symbol: '∪', top: '68%', left: '35%', size: '14px', animation: 'mathFloat8 20s ease-in-out infinite 14.5s' },
+                { symbol: '∀', top: '88%', right: '40%', size: '19px', animation: 'mathFloat10 15s ease-in-out infinite 15.5s' },
+                { symbol: '∃', top: '18%', left: '45%', size: '16px', animation: 'mathFloat1 18s ease-in-out infinite 16.5s' }
+              ].map((item, index) => (
+                <span
+                  key={index}
+                  style={{
+                    position: 'absolute',
+                    top: item.top,
+                    left: item.left,
+                    right: item.right,
+                    fontSize: item.size,
+                    animation: item.animation
+                  }}
+                >
+                  {item.symbol}
+                </span>
+              ))}
             </Box>
-          )}
 
+            {messages.map((message, index) => (
+              <MessageBubble key={index} message={message} />
+            ))}
+            <div ref={messagesEndRef} />
+          </Box>
+
+          {/* Input Area */}
           <Box
             component="footer"
             sx={{
