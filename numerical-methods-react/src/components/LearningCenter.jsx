@@ -85,6 +85,7 @@ import {
 } from '@mui/icons-material';
 
 import { initializeGemini, validateSolutionWithGemini, isGeminiInitialized } from '../utils/geminiService';
+import { quizData } from '../data/quizData';
 
 // Get API key from environment variables
 const DEFAULT_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
@@ -323,108 +324,40 @@ const interactiveExercises = [
   }
 ];
 
-const quizQuestions = {
-  basic: [
-    {
-      question: "What is the main principle behind the Bisection Method?",
-      options: [
-        "Derivative approximation",
-        "Intermediate Value Theorem",
-        "Linear interpolation", 
-        "Fixed point iteration"
-      ],
-      correct: 1,
-      explanation: "The Bisection Method is based on the Intermediate Value Theorem, which states that if a continuous function changes sign over an interval, it must have a root in that interval."
-    },
-    {
-      question: "Which method requires the calculation of derivatives?",
-      options: [
-        "Bisection Method",
-        "Secant Method",
-        "Newton-Raphson Method",
-        "False Position Method"
-      ],
-      correct: 2,
-      explanation: "Newton-Raphson Method requires both the function value and its derivative at each iteration point."
-    },
-    {
-      question: "What type of convergence does the Bisection Method have?",
-      options: [
-        "Quadratic",
-        "Super-linear",
-        "Linear",
-        "Exponential"
-      ],
-      correct: 2,
-      explanation: "The Bisection Method has linear convergence, which is slower than quadratic but very reliable."
-    }
-  ],
-  selection: [
-    {
-      question: "When would you choose the Newton-Raphson method over the Bisection method?",
-      options: [
-        "When you need guaranteed convergence",
-        "When speed is more important than reliability",
-        "When working with discontinuous functions",
-        "When you don't know the derivative"
-      ],
-      correct: 1,
-      explanation: "Newton-Raphson is chosen when fast convergence is needed and you can compute the derivative easily."
-    },
-    {
-      question: "Which method is best for finding roots when derivatives are difficult to compute?",
-      options: [
-        "Newton-Raphson Method",
-        "Secant Method",
-        "Fixed Point Method",
-        "Muller's Method"
-      ],
-      correct: 1,
-      explanation: "The Secant Method approximates the derivative using finite differences, making it ideal when derivatives are hard to compute."
-    }
-  ],
-  implementation: [
-    {
-      question: "In Newton-Raphson method, what happens if f'(x) = 0?",
-      options: [
-        "The method converges faster",
-        "The method fails (division by zero)",
-        "The method continues normally",
-        "The method switches to bisection"
-      ],
-      correct: 1,
-      explanation: "When f'(x) = 0, the Newton-Raphson method fails because it involves division by the derivative."
-    }
-  ],
-  advanced: [
-    {
-      question: "What is the convergence order of the Secant Method?",
-      options: [
-        "Linear (order 1)",
-        "Quadratic (order 2)",
-        "Golden ratio φ ≈ 1.618",
-        "Cubic (order 3)"
-      ],
-      correct: 2,
-      explanation: "The Secant Method has super-linear convergence with order approximately equal to the golden ratio (1.618)."
-    }
-  ]
-};
 
-function QuizModal({ quizType, onClose }) {
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [selectedAnswer, setSelectedAnswer] = useState('');
-  const [showResult, setShowResult] = useState(false);
-  const [score, setScore] = useState(0);
-  const [userAnswers, setUserAnswers] = useState([]);
 
-  const questions = quizQuestions[quizType] || [];
-  const quizTitles = {
-    basic: 'Basic Concepts Quiz',
-    selection: 'Method Selection Quiz', 
-    implementation: 'Implementation Quiz',
-    advanced: 'Advanced Topics Quiz'
-  };
+ function QuizModal({ quizType, onClose }) {
+   const [currentQuestion, setCurrentQuestion] = useState(0);
+   const [selectedAnswer, setSelectedAnswer] = useState('');
+   const [showResult, setShowResult] = useState(false);
+   const [score, setScore] = useState(0);
+   const [userAnswers, setUserAnswers] = useState([]);
+   const [selectedQuestions, setSelectedQuestions] = useState([]);
+
+   // Function to shuffle array using Fisher-Yates algorithm
+   const shuffleArray = (array) => {
+     const shuffled = [...array];
+     for (let i = shuffled.length - 1; i > 0; i--) {
+       const j = Math.floor(Math.random() * (i + 1));
+       [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+     }
+     return shuffled;
+   };
+
+   // Initialize selected questions on mount
+   React.useEffect(() => {
+     const allQuestions = quizData[quizType] || [];
+     const randomQuestions = shuffleArray(allQuestions).slice(0, 5);
+     setSelectedQuestions(randomQuestions);
+   }, [quizType]);
+
+   const questions = selectedQuestions;
+   const quizTitles = {
+     basic: 'Basic Concepts Quiz',
+     selection: 'Method Selection Quiz', 
+     implementation: 'Implementation Quiz',
+     advanced: 'Advanced Topics Quiz'
+   };
 
   const handleAnswerSelect = (answerIndex) => {
     setSelectedAnswer(answerIndex);
@@ -1605,7 +1538,7 @@ function LearningCenter() {
                      className="pulse-button nav-item-hover"
                    >
                      <AssignmentIcon className="icon-jiggle icon-shimmer" sx={{ marginRight: '8px' }} />
-                     Basic Concepts (10 Questions)
+                                           Basic Concepts (50 Questions)
                    </Button>
                  </Grid>
                  <Grid item xs={12} sm={6} md={3}>
@@ -1618,7 +1551,7 @@ function LearningCenter() {
                      className="pulse-button nav-item-hover"
                    >
                      <CalculateIcon className="icon-twist icon-vibrate" sx={{ marginRight: '8px' }} />
-                     Method Selection (15 Questions)
+                                           Method Selection (50 Questions)
                    </Button>
                  </Grid>
                  <Grid item xs={12} sm={6} md={3}>
@@ -1631,7 +1564,7 @@ function LearningCenter() {
                      className="pulse-button nav-item-hover"
                    >
                      <CodeIcon className="icon-wave icon-magnetic" sx={{ marginRight: '8px' }} />
-                     Implementation (20 Questions)
+                                           Implementation (50 Questions)
                    </Button>
                  </Grid>
                  <Grid item xs={12} sm={6} md={3}>
@@ -1644,7 +1577,7 @@ function LearningCenter() {
                      className="pulse-button nav-item-hover"
                    >
                      <InsightsIcon className="icon-matrix icon-levitate" sx={{ marginRight: '8px' }} />
-                     Advanced Topics (25 Questions)
+                                           Advanced Topics (40 Questions)
                    </Button>
                  </Grid>
                </Grid>
