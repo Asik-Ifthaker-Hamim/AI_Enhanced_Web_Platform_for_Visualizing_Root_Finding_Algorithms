@@ -541,8 +541,8 @@ function EquationSolver() {
           {result?.iterationHistory && result.iterationHistory.length > 0 && (
             <Card className="slide-in-bottom card-hover-lift">
               <CardContent>
-                <Typography variant="h6" gutterBottom className="typing-text">
-                  <ListAltIcon className="icon-glitch icon-levitate" sx={{ fontSize: '1.2em', marginRight: '8px' }} />
+                <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <ListAltIcon className="icon-glitch icon-levitate" color="primary" />
                   Iteration History
                 </Typography>
                 <IterationTable iterations={result.iterationHistory} />

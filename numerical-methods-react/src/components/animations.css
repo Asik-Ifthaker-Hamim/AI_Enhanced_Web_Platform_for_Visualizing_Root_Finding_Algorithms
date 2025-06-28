@@ -1420,4 +1420,155 @@
   20%, 40%, 60%, 80% {
     transform: translateX(1px);
   }
+}
+
+/* Mathematical Symbol Floating Animations */
+@keyframes mathFloat1 {
+  0%, 100% {
+    transform: translate(0px, 0px) rotate(15deg);
+  }
+  25% {
+    transform: translate(8px, -12px) rotate(20deg);
+  }
+  50% {
+    transform: translate(-5px, -8px) rotate(10deg);
+  }
+  75% {
+    transform: translate(-10px, 6px) rotate(25deg);
+  }
+}
+
+@keyframes mathFloat2 {
+  0%, 100% {
+    transform: translate(0px, 0px) rotate(-20deg);
+  }
+  33% {
+    transform: translate(-12px, 8px) rotate(-15deg);
+  }
+  66% {
+    transform: translate(6px, 10px) rotate(-25deg);
+  }
+}
+
+@keyframes mathFloat3 {
+  0%, 100% {
+    transform: translate(0px, 0px) rotate(45deg);
+  }
+  20% {
+    transform: translate(4px, -6px) rotate(50deg);
+  }
+  40% {
+    transform: translate(-8px, -4px) rotate(40deg);
+  }
+  60% {
+    transform: translate(-6px, 8px) rotate(55deg);
+  }
+  80% {
+    transform: translate(10px, 2px) rotate(35deg);
+  }
+}
+
+@keyframes mathFloat4 {
+  0%, 100% {
+    transform: translate(0px, 0px) rotate(-10deg);
+  }
+  50% {
+    transform: translate(15px, -10px) rotate(-5deg);
+  }
+}
+
+@keyframes mathFloat5 {
+  0%, 100% {
+    transform: translate(0px, 0px) rotate(25deg);
+  }
+  25% {
+    transform: translate(-8px, -15px) rotate(30deg);
+  }
+  50% {
+    transform: translate(12px, -5px) rotate(20deg);
+  }
+  75% {
+    transform: translate(5px, 12px) rotate(35deg);
+  }
+}
+
+@keyframes mathFloat6 {
+  0%, 100% {
+    transform: translate(0px, 0px) rotate(-35deg);
+  }
+  30% {
+    transform: translate(7px, 9px) rotate(-30deg);
+  }
+  60% {
+    transform: translate(-11px, 3px) rotate(-40deg);
+  }
+}
+
+@keyframes mathFloat7 {
+  0%, 100% {
+    transform: translate(0px, 0px) rotate(60deg);
+  }
+  16% {
+    transform: translate(3px, -8px) rotate(65deg);
+  }
+  33% {
+    transform: translate(-6px, -12px) rotate(55deg);
+  }
+  50% {
+    transform: translate(-9px, 4px) rotate(70deg);
+  }
+  66% {
+    transform: translate(2px, 11px) rotate(50deg);
+  }
+  83% {
+    transform: translate(8px, 7px) rotate(75deg);
+  }
+}
+
+@keyframes mathFloat8 {
+  0%, 100% {
+    transform: translate(0px, 0px) rotate(-15deg);
+  }
+  40% {
+    transform: translate(-14px, -6px) rotate(-10deg);
+  }
+  80% {
+    transform: translate(9px, 13px) rotate(-20deg);
+  }
+}
+
+@keyframes mathFloat9 {
+  0%, 100% {
+    transform: translate(0px, 0px) rotate(30deg);
+  }
+  20% {
+    transform: translate(6px, -10px) rotate(35deg);
+  }
+  35% {
+    transform: translate(-4px, -14px) rotate(25deg);
+  }
+  55% {
+    transform: translate(-13px, 2px) rotate(40deg);
+  }
+  70% {
+    transform: translate(-8px, 9px) rotate(20deg);
+  }
+  85% {
+    transform: translate(11px, 6px) rotate(45deg);
+  }
+}
+
+@keyframes mathFloat10 {
+  0%, 100% {
+    transform: translate(0px, 0px) rotate(-25deg);
+  }
+  25% {
+    transform: translate(10px, 8px) rotate(-20deg);
+  }
+  50% {
+    transform: translate(-7px, 11px) rotate(-30deg);
+  }
+  75% {
+    transform: translate(-12px, -5px) rotate(-15deg);
+  }
 } 
