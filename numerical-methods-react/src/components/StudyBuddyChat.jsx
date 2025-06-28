@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Box,
   Fab,
@@ -13,7 +13,9 @@ import {
   Chip,
   CircularProgress,
   Alert,
-  Tooltip
+  Tooltip,
+  Button,
+  Badge
 } from '@mui/material';
 import {
   Close as CloseIcon,
@@ -23,16 +25,24 @@ import {
   Calculate as CalculateIcon,
   Psychology as PsychologyIcon,
   Lightbulb as LightbulbIcon,
-  QuestionMark as QuestionMarkIcon
+  QuestionMark as QuestionMarkIcon,
+  AttachFile as AttachFileIcon,
+  Image as ImageIcon,
+  Cancel as CancelIcon,
+  VpnKey as VpnKeyIcon
 } from '@mui/icons-material';
 
-import { initializeGemini, isGeminiInitialized } from '../utils/geminiService';
-
-// Default API key
-const DEFAULT_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
+import { initializeGemini, isGeminiInitialized, getChatResponse } from '../utils/geminiService';
+import { GEMINI_API_KEY, DEBUG_MODE } from '../config';
 
 // Study buddy persona prompt
 const STUDY_BUDDY_PROMPT = `You are Alex, a CS student who is ALSO learning numerical methods alongside the user. You're study partners, not teacher-student. Keep responses SHORT (2-3 sentences max).
+
+IMPORTANT FORMATTING RULES:
+- DO NOT use any markdown formatting (no asterisks, underscores, backticks, etc.)
+- DO NOT try to bold, italicize, or format text in any way
+- Just use plain text with emojis
+- Use parentheses () for emphasis instead of bold or italics
 
 CORE BEHAVIOR:
 - You're learning too! Share your own questions and confusion
@@ -74,18 +84,39 @@ const StudyBuddyChat = () => {
   const [inputMessage, setInputMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
-  const inputRef = React.useRef(null);
+  const [file, setFile] = useState(null);
+  const [geminiInitialized, setGeminiInitialized] = useState(() => {
+    const initialized = isGeminiInitialized();
+    if (DEBUG_MODE) {
+      console.log('Initial Gemini state:', initialized);
+    }
+    return initialized;
+  });
+  const [showApiKeyDialog, setShowApiKeyDialog] = useState(false);
+  const [apiKeyInput, setApiKeyInput] = useState('');
+  const [initializationError, setInitializationError] = useState(null);
+  const inputRef = useRef(null);
+  const fileInputRef = useRef(null);
 
   // Initialize Gemini on component mount
   useEffect(() => {
-    if (!isGeminiInitialized()) {
-      try {
-        initializeGemini(DEFAULT_API_KEY);
-      } catch (error) {
-        console.error('Failed to initialize Gemini for Study Buddy:', error);
+    if (!geminiInitialized) {
+      if (DEBUG_MODE) {
+        console.log('Attempting to initialize Gemini...');
+      }
+      const initialized = initializeGemini();
+      if (DEBUG_MODE) {
+        console.log('Initialization attempt result:', initialized);
+      }
+      setGeminiInitialized(initialized);
+      if (!initialized) {
+        setInitializationError('Failed to initialize with environment API key');
+        if (DEBUG_MODE) {
+          console.warn('Failed to initialize with environment API key');
+        }
       }
     }
-  }, []);
+  }, [geminiInitialized]);
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
@@ -113,26 +144,50 @@ const StudyBuddyChat = () => {
     }
   }, [messages, isOpen]);
 
+  const handleApiKeySubmit = () => {
+    if (DEBUG_MODE) {
+      console.log('Attempting to initialize with user-provided key...');
+    }
+    const initialized = initializeGemini(apiKeyInput);
+    if (DEBUG_MODE) {
+      console.log('User key initialization result:', initialized);
+    }
+    setGeminiInitialized(initialized);
+    if (initialized) {
+      setShowApiKeyDialog(false);
+      setApiKeyInput('');
+      setInitializationError(null);
+    } else {
+      setInitializationError('Failed to initialize with provided API key');
+      console.error("User-provided API key failed to initialize");
+    }
+  };
+
   const sendMessage = async () => {
-    if (!inputMessage.trim() || isTyping) return;
+    if (!inputMessage.trim() && !file) return;
+    if (isTyping) return;
+
+    if (!geminiInitialized) {
+      setShowApiKeyDialog(true);
+      return;
+    }
 
     const userMessage = {
       id: Date.now(),
       sender: 'user',
       content: inputMessage.trim(),
-      timestamp: new Date()
+      timestamp: new Date(),
+      file: file ? { name: file.name, type: file.type, url: URL.createObjectURL(file) } : null,
     };
 
     setMessages(prev => [...prev, userMessage]);
-    setInputMessage('');
-    setIsTyping(true);
+    
+    const messageToSend = inputMessage.trim();
+    const fileToSend = file;
 
-    // Focus back to input after a short delay to ensure state updates are complete
-    setTimeout(() => {
-      if (inputRef.current) {
-        inputRef.current.focus();
-      }
-    }, 100);
+    setInputMessage('');
+    setFile(null); // Clear file after sending
+    setIsTyping(true);
 
     try {
       // Create conversation context from recent messages
@@ -145,18 +200,11 @@ const StudyBuddyChat = () => {
 
 CONVERSATION HISTORY:
 ${conversationContext}
-Student: ${userMessage.content}
+Student: ${messageToSend}
 
 Alex:`;
 
-      // Initialize Gemini model for streaming
-      const { GoogleGenerativeAI } = await import('@google/generative-ai');
-      const genAI = new GoogleGenerativeAI(DEFAULT_API_KEY);
-      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-
-             // Get response from Gemini
-       const result = await model.generateContent(fullPrompt);
-       const responseText = result.response.text();
+      const responseText = await getChatResponse(fullPrompt, fileToSend);
 
        // Add Alex's response message
        const alexMessage = {
@@ -173,7 +221,7 @@ Alex:`;
       const errorMessage = {
         id: Date.now() + 1,
         sender: 'alex',
-        content: "Oops! I'm having trouble connecting right now. Can you try asking again? I really want to help you with those numerical methods!",
+        content: error.message || "Oops! An unknown error occurred. Please try again.",
         timestamp: new Date(),
         isError: true
       };
@@ -189,6 +237,18 @@ Alex:`;
     }
   };
 
+  const handleFileChange = (e) => {
+    const selectedFile = e.target.files[0];
+    if (selectedFile) {
+      setFile(selectedFile);
+    }
+  };
+
+  const handleUploadClick = (accept) => {
+    fileInputRef.current.setAttribute('accept', accept);
+    fileInputRef.current.click();
+  };
+
   const handleKeyPress = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -196,15 +256,7 @@ Alex:`;
     }
   };
 
-  const getSuggestedQuestions = () => [
-    "How does Newton-Raphson method actually work?",
-    "When should I use Bisection vs Secant method?",
-    "I'm confused about convergence rates... help?",
-    "Can you explain derivatives in numerical methods?",
-    "What are some real-world uses of root finding?"
-  ];
-
-    const MessageBubble = React.memo(({ message }) => {
+  const MessageBubble = React.memo(({ message }) => {
     const isAlex = message.sender === 'alex';
     
     return (
@@ -242,18 +294,22 @@ Alex:`;
             borderRadius: isAlex ? '20px 20px 20px 5px' : '20px 20px 5px 20px',
             position: 'relative'
           }}>
-            <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>
-              {message.content}
-            </Typography>
-            
-            {message.isError && (
-              <Chip 
-                icon={<EmojiIcon />}
-                label="Connection Issue"
-                size="small"
-                color="error"
-                sx={{ mt: 1 }}
-              />
+            {message.isError ? (
+              <Alert severity="error" sx={{ borderRadius: '20px', Flipper: true }}>
+                {message.content}
+              </Alert>
+            ) : (
+              <>
+                <Typography variant="body2" sx={{ wordBreak: 'break-word', whiteSpace: 'pre-wrap' }}>
+                  {message.content}
+                </Typography>
+                {message.file && (
+                  <Paper elevation={2} sx={{ mt: 1, p: 1, display: 'flex', alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.1)' }}>
+                    <ImageIcon sx={{ mr: 1, fontSize: '1.2rem' }} />
+                    <Typography variant="caption">{message.file.name}</Typography>
+                  </Paper>
+                )}
+              </>
             )}
           </Paper>
         </Box>
@@ -264,57 +320,44 @@ Alex:`;
   return (
     <>
       {/* Floating Action Button */}
-      <Box sx={{
-        position: 'fixed',
-        bottom: 20,
-        right: 20,
-        zIndex: 1300
-      }}>
-        <Tooltip title="Chat with Alex - Your Numerical Methods Study Buddy!" placement="left">
-          <Fab
-            color="primary"
-            onClick={() => setIsOpen(true)}
-            sx={{
-              background: 'linear-gradient(45deg, #1565c0, #7b1fa2)',
-              '&:hover': {
-                background: 'linear-gradient(45deg, #0d47a1, #6a1b9a)',
-                transform: 'scale(1.05) translateY(-2px)',
-              },
-              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-              position: 'relative',
-              boxShadow: '0 4px 20px rgba(21, 101, 192, 0.3)',
+      <Fab
+        color="primary"
+        aria-label="chat"
+        onClick={() => setIsOpen(true)}
+        sx={{
+          position: 'fixed',
+          bottom: 16,
+          right: 16,
+          background: 'linear-gradient(45deg, #1565c0, #7b1fa2)',
+          '&:hover': {
+            background: 'linear-gradient(45deg, #0d47a1, #6a1b9a)',
+            transform: 'scale(1.05) translateY(-2px)',
+          },
+          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+          boxShadow: '0 4px 20px rgba(21, 101, 192, 0.3)'
+        }}
+        className="pulse-button"
+      >
+        {initializationError ? (
+          <Tooltip title={initializationError}>
+            <VpnKeyIcon />
+          </Tooltip>
+        ) : (
+          <img 
+            src="/alex-avatar.png" 
+            alt="Alex" 
+            style={{ 
+              width: '100%', 
+              height: '100%', 
+              objectFit: 'cover',
+              borderRadius: '50%'
             }}
-            className="pulse-button"
-          >
-            <img 
-              src="/alex-avatar.png" 
-              alt="Alex" 
-              style={{ 
-                width: '100%', 
-                height: '100%', 
-                objectFit: 'cover',
-                borderRadius: '50%'
-              }}
-            />
-            {unreadCount > 0 && (
-              <Chip
-                label={unreadCount}
-                size="small"
-                color="error"
-                sx={{
-                  position: 'absolute',
-                  top: -8,
-                  right: -8,
-                  minWidth: 20,
-                  height: 20,
-                  fontSize: '0.7rem',
-                  animation: 'iconPulse 2s ease-in-out infinite'
-                }}
-              />
-            )}
-          </Fab>
-        </Tooltip>
-      </Box>
+          />
+        )}
+        {unreadCount > 0 && (
+          <Badge badgeContent={unreadCount} color="error" />
+        )}
+      </Fab>
 
       {/* Chat Dialog */}
       <Dialog
@@ -450,240 +493,121 @@ Alex:`;
         </DialogTitle>
 
         {/* Messages Area */}
-        <DialogContent sx={{ 
-          p: 0,
-          display: 'flex',
-          flexDirection: 'column',
-          height: '100%',
-          bgcolor: '#f8f9fa',
-          backgroundImage: `
-            radial-gradient(circle at 20% 80%, rgba(21, 101, 192, 0.05) 0%, transparent 50%),
-            radial-gradient(circle at 80% 20%, rgba(123, 31, 162, 0.05) 0%, transparent 50%),
-            radial-gradient(circle at 50% 50%, rgba(21, 101, 192, 0.02) 0%, transparent 70%),
-            linear-gradient(135deg, rgba(21, 101, 192, 0.02) 0%, rgba(123, 31, 162, 0.02) 100%)
-          `,
+        <DialogContent
+          dividers
+          sx={{
+            p: 0,
+            bgcolor: 'grey.50',
+            height: '60vh',
+            display: 'flex',
+            flexDirection: 'column'
+          }}
+        >
+          <Box
+            data-scroll-container
+            sx={{
+              flex: 1,
+              overflowY: 'auto',
+              p: 3,
+              display: 'flex',
+              flexDirection: 'column'
+            }}
+          >
+            {messages.map(msg => <MessageBubble key={msg.id} message={msg} />)}
+            {isTyping && (
+              <Box sx={{ display: 'flex', justifyContent: 'flex-start', mb: 2 }}>
+                <Avatar sx={{ bgcolor: 'primary.main', width: 32, height: 32, mx: 1 }}>
+                  <img src="/alex-avatar.png" alt="Alex" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                </Avatar>
+                <Paper sx={{ p: 2, bgcolor: 'grey.100', borderRadius: '20px 20px 20px 5px' }}>
+                  <CircularProgress size={20} />
+                </Paper>
+              </Box>
+            )}
+          </Box>
+          
+          {file && (
+            <Box sx={{ p: 2, borderTop: '1px solid #eee', position: 'relative' }}>
+              <Chip
+                label={file.name}
+                onDelete={() => setFile(null)}
+                deleteIcon={<CancelIcon />}
+              />
+              {file.type.startsWith('image/') && (
+                <img src={URL.createObjectURL(file)} alt="preview" style={{ maxWidth: '100px', maxHeight: '100px', marginTop: '8px', borderRadius: '8px' }} />
+              )}
+            </Box>
+          )}
 
-        }}>
-          <Box 
-             data-scroll-container
-             sx={{ 
-               flex: 1,
-               p: 2,
-               overflowY: 'auto',
-               overflowAnchor: 'none',
-               position: 'relative',
-               '&::-webkit-scrollbar': {
-                 width: '6px'
-               },
-               '&::-webkit-scrollbar-thumb': {
-                 backgroundColor: 'rgba(0,0,0,0.2)',
-                 borderRadius: '3px'
-               }
-             }}>
-             {/* Random Mathematical Symbols Background */}
-             <Box sx={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, pointerEvents: 'none', zIndex: 0 }}>
-               <span style={{ 
-                 position: 'absolute', top: '12%', left: '8%', fontSize: '18px', color: 'rgba(21, 101, 192, 0.1)', 
-                 transform: 'rotate(15deg)', animation: 'mathFloat1 12s ease-in-out infinite' 
-               }}>∑</span>
-               <span style={{ 
-                 position: 'absolute', top: '25%', right: '15%', fontSize: '16px', color: 'rgba(123, 31, 162, 0.12)', 
-                 transform: 'rotate(-20deg)', animation: 'mathFloat2 15s ease-in-out infinite 2s' 
-               }}>∫</span>
-               <span style={{ 
-                 position: 'absolute', top: '45%', left: '20%', fontSize: '14px', color: 'rgba(21, 101, 192, 0.08)', 
-                 transform: 'rotate(45deg)', animation: 'mathFloat3 18s ease-in-out infinite 4s' 
-               }}>∂</span>
-               <span style={{ 
-                 position: 'absolute', top: '35%', right: '25%', fontSize: '20px', color: 'rgba(123, 31, 162, 0.1)', 
-                 transform: 'rotate(-10deg)', animation: 'mathFloat4 14s ease-in-out infinite 1s' 
-               }}>π</span>
-               <span style={{ 
-                 position: 'absolute', top: '60%', left: '10%', fontSize: '15px', color: 'rgba(21, 101, 192, 0.09)', 
-                 transform: 'rotate(25deg)', animation: 'mathFloat5 16s ease-in-out infinite 3s' 
-               }}>ε</span>
-               <span style={{ 
-                 position: 'absolute', top: '70%', right: '20%', fontSize: '17px', color: 'rgba(123, 31, 162, 0.11)', 
-                 transform: 'rotate(-35deg)', animation: 'mathFloat6 13s ease-in-out infinite 5s' 
-               }}>δ</span>
-               <span style={{ 
-                 position: 'absolute', top: '15%', left: '45%', fontSize: '16px', color: 'rgba(21, 101, 192, 0.1)', 
-                 transform: 'rotate(60deg)', animation: 'mathFloat7 17s ease-in-out infinite 2.5s' 
-               }}>Δ</span>
-               <span style={{ 
-                 position: 'absolute', top: '80%', left: '30%', fontSize: '14px', color: 'rgba(123, 31, 162, 0.08)', 
-                 transform: 'rotate(-15deg)', animation: 'mathFloat8 11s ease-in-out infinite 6s' 
-               }}>≈</span>
-               <span style={{ 
-                 position: 'absolute', top: '30%', left: '60%', fontSize: '18px', color: 'rgba(21, 101, 192, 0.12)', 
-                 transform: 'rotate(30deg)', animation: 'mathFloat9 19s ease-in-out infinite 1.5s' 
-               }}>∞</span>
-               <span style={{ 
-                 position: 'absolute', top: '55%', right: '10%', fontSize: '15px', color: 'rgba(123, 31, 162, 0.09)', 
-                 transform: 'rotate(-25deg)', animation: 'mathFloat10 14.5s ease-in-out infinite 3.5s' 
-               }}>√</span>
-               <span style={{ 
-                 position: 'absolute', top: '20%', right: '35%', fontSize: '16px', color: 'rgba(21, 101, 192, 0.1)', 
-                 transform: 'rotate(40deg)', animation: 'mathFloat1 16.5s ease-in-out infinite 4.5s' 
-               }}>±</span>
-               <span style={{ 
-                 position: 'absolute', top: '75%', left: '50%', fontSize: '14px', color: 'rgba(123, 31, 162, 0.11)', 
-                 transform: 'rotate(-30deg)', animation: 'mathFloat2 12.5s ease-in-out infinite 7s' 
-               }}>≤</span>
-               <span style={{ 
-                 position: 'absolute', top: '40%', left: '5%', fontSize: '17px', color: 'rgba(21, 101, 192, 0.08)', 
-                 transform: 'rotate(50deg)', animation: 'mathFloat3 15.5s ease-in-out infinite 2.8s' 
-               }}>≥</span>
-               <span style={{ 
-                 position: 'absolute', top: '85%', right: '40%', fontSize: '15px', color: 'rgba(123, 31, 162, 0.1)', 
-                 transform: 'rotate(-40deg)', animation: 'mathFloat4 13.5s ease-in-out infinite 5.5s' 
-               }}>→</span>
-               <span style={{ 
-                 position: 'absolute', top: '50%', left: '75%', fontSize: '16px', color: 'rgba(21, 101, 192, 0.09)', 
-                 transform: 'rotate(20deg)', animation: 'mathFloat5 17.5s ease-in-out infinite 1.8s' 
-               }}>≠</span>
-               <span style={{ 
-                 position: 'absolute', top: '65%', right: '45%', fontSize: '18px', color: 'rgba(123, 31, 162, 0.12)', 
-                 transform: 'rotate(-45deg)', animation: 'mathFloat6 14.8s ease-in-out infinite 4.2s' 
-               }}>∇</span>
-               <span style={{ 
-                 position: 'absolute', top: '10%', left: '70%', fontSize: '14px', color: 'rgba(21, 101, 192, 0.1)', 
-                 transform: 'rotate(35deg)', animation: 'mathFloat7 16.2s ease-in-out infinite 6.5s' 
-               }}>θ</span>
-               <span style={{ 
-                 position: 'absolute', top: '90%', left: '15%', fontSize: '16px', color: 'rgba(123, 31, 162, 0.08)', 
-                 transform: 'rotate(-20deg)', animation: 'mathFloat8 18.5s ease-in-out infinite 3.2s' 
-               }}>λ</span>
-               <span style={{ 
-                 position: 'absolute', top: '25%', left: '35%', fontSize: '15px', color: 'rgba(21, 101, 192, 0.11)', 
-                 transform: 'rotate(55deg)', animation: 'mathFloat9 11.5s ease-in-out infinite 7.5s' 
-               }}>μ</span>
-               <span style={{ 
-                 position: 'absolute', top: '45%', right: '60%', fontSize: '17px', color: 'rgba(123, 31, 162, 0.09)', 
-                 transform: 'rotate(-50deg)', animation: 'mathFloat10 13.2s ease-in-out infinite 4.8s' 
-               }}>α</span>
-             </Box>
-             
-             <Box sx={{ position: 'relative', zIndex: 1 }}>
-               {messages.map((message) => (
-                 <MessageBubble key={message.id} message={message} />
-               ))}
-               
-               {/* Quick suggestions for first interaction */}
-               {messages.length <= 1 && (
-                 <Box sx={{ mt: 2 }}>
-                   <Typography variant="caption" color="text.secondary" sx={{ 
-                     mb: 1, 
-                     display: 'flex',
-                     alignItems: 'center',
-                     gap: 0.5,
-                     fontWeight: 500
-                   }}>
-                     <LightbulbIcon className="icon-glow-soft" sx={{ fontSize: 14 }} /> Try asking Alex about:
-                   </Typography>
-                   <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                     {getSuggestedQuestions().slice(0, 3).map((question, idx) => (
-                       <Chip
-                         key={idx}
-                         label={question}
-                         size="small"
-                         variant="outlined"
-                         onClick={() => setInputMessage(question)}
-                         sx={{ 
-                           cursor: 'pointer',
-                           '&:hover': {
-                             backgroundColor: 'primary.light',
-                             color: 'white',
-                             transform: 'translateY(-1px)',
-                           },
-                           transition: 'all 0.2s ease'
-                         }}
-                         className="chip-slide-in"
-                         icon={<QuestionMarkIcon className="icon-wiggle-soft" sx={{ fontSize: 14 }} />}
-                       />
-                     ))}
-                   </Box>
-                 </Box>
-               )}
-             </Box>
-           </Box>
-
-          {/* Input Area */}
-          <Box sx={{ 
-            p: 2,
-            borderTop: '1px solid',
-            borderColor: 'divider',
-            bgcolor: 'background.paper',
-            boxShadow: '0 -2px 10px rgba(0,0,0,0.05)'
-          }}>
-            <Box sx={{ display: 'flex', gap: 1, alignItems: 'flex-end' }}>
+          <Box
+            component="footer"
+            sx={{
+              p: 2,
+              bgcolor: 'white',
+              borderTop: '1px solid',
+              borderColor: 'grey.200'
+            }}
+          >
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
               <TextField
+                inputRef={inputRef}
                 fullWidth
-                multiline
-                maxRows={3}
-                placeholder="Ask me about numerical methods..."
+                variant="outlined"
+                placeholder="Let's solve this together..."
                 value={inputMessage}
-                 onChange={(e) => setInputMessage(e.target.value)}
-                 onKeyDown={handleKeyPress}
-                 disabled={isTyping}
-                 inputRef={inputRef}
-                sx={{
-                  '& .MuiOutlinedInput-root': {
-                    borderRadius: 3,
-                    bgcolor: '#f8f9fa',
-                    '&:hover': {
-                      bgcolor: 'white'
-                    },
-                    '&.Mui-focused': {
-                      bgcolor: 'white',
-                      boxShadow: '0 0 0 2px rgba(21, 101, 192, 0.2)'
-                    }
-                                    }
-                }}
-                className="animated-field"
-                />
-              <IconButton
-                color="primary"
-                onClick={sendMessage}
-                disabled={!inputMessage.trim() || isTyping}
-                sx={{ 
-                  p: 1.5,
-                  bgcolor: 'primary.main',
-                  color: 'white',
-                  borderRadius: 2,
-                  '&:hover': { 
-                    bgcolor: 'primary.dark',
-                    transform: 'scale(1.05)'
-                  },
-                  '&:disabled': { 
-                    bgcolor: 'grey.300'
-                  },
-                  transition: 'all 0.2s ease'
-                }}
-                className="pulse-button"
-              >
-                {isTyping ? (
-                  <CircularProgress size={20} color="inherit" />
-                ) : (
-                  <SendIcon className="icon-hover-float" />
-                )}
+                onChange={(e) => setInputMessage(e.target.value)}
+                onKeyPress={handleKeyPress}
+                multiline
+                maxRows={4}
+                sx={{ mr: 1 }}
+              />
+              <Tooltip title="Attach Image">
+                <IconButton onClick={() => handleUploadClick('image/*')} color="primary">
+                  <ImageIcon />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title="Attach File">
+                <IconButton onClick={() => handleUploadClick('*/*')} color="primary">
+                  <AttachFileIcon />
+                </IconButton>
+              </Tooltip>
+              <IconButton onClick={sendMessage} color="primary" disabled={isTyping || (!inputMessage.trim() && !file)}>
+                {isTyping ? <CircularProgress size={24} /> : <SendIcon />}
               </IconButton>
             </Box>
-            
-            <Typography variant="caption" color="text.secondary" sx={{ 
-              mt: 1, 
-              display: 'flex',
-              alignItems: 'center',
-              gap: 0.5,
-              justifyContent: 'center'
-            }}>
-               <LightbulbIcon className="icon-subtle-glow" sx={{ fontSize: 12 }} />
-               Alex gives quick, helpful tips about numerical methods!
-             </Typography>
+          </Box>
+        </DialogContent>
+        <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleFileChange}
+            style={{ display: 'none' }}
+        />
+      </Dialog>
+      <Dialog open={showApiKeyDialog} onClose={() => setShowApiKeyDialog(false)}>
+        <DialogTitle>Enter Gemini API Key</DialogTitle>
+        <DialogContent>
+          <Typography gutterBottom>
+            The Gemini API key is missing. Please enter your key to continue.
+            You can get a key from Google AI Studio.
+          </Typography>
+          <TextField
+            autoFocus
+            margin="dense"
+            label="Gemini API Key"
+            type="password"
+            fullWidth
+            variant="outlined"
+            value={apiKeyInput}
+            onChange={(e) => setApiKeyInput(e.target.value)}
+            onKeyPress={(e) => e.key === 'Enter' && handleApiKeySubmit()}
+          />
+          <Box sx={{ mt: 2, display: 'flex', justifyContent: 'flex-end' }}>
+            <Button onClick={() => setShowApiKeyDialog(false)}>Cancel</Button>
+            <Button onClick={handleApiKeySubmit} variant="contained" sx={{ ml: 1 }}>Submit</Button>
           </Box>
         </DialogContent>
       </Dialog>
-
     </>
   );
 };
