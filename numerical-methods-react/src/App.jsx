@@ -558,26 +558,27 @@ function App() {
         
         /* Subtitle Typing Effect */
         .subtitle-typing {
-          animation: typing 3s steps(60) 1s both, blink 1s step-end infinite 4s;
+          animation: typing 4s steps(60, end) 1s 1 forwards;
           white-space: nowrap;
           overflow: hidden;
           border-right: 2px solid rgba(255, 255, 255, 0.8);
+          display: inline-block;
+          vertical-align: middle;
         }
         
         @keyframes typing {
           from {
             width: 0;
+            border-right-color: rgba(255, 255, 255, 0.8);
           }
           to {
             width: 100%;
+            border-right-color: transparent;
           }
         }
         
         @keyframes blink {
-          0%, 50% {
-            border-color: rgba(255, 255, 255, 0.8);
-          }
-          51%, 100% {
+          50% {
             border-color: transparent;
           }
         }
@@ -598,10 +599,95 @@ function App() {
             width: '100vw',
             margin: 0,
             left: 0,
-            right: 0
+            right: 0,
+            position: 'relative',
+            overflow: 'hidden'
           }}
         >
-          <Toolbar sx={{ justifyContent: 'space-between', width: '100%', maxWidth: 'none', px: 3 }}>
+          {/* Header Mathematical Symbols - Right-Weighted Constellation with Gradient Opacity */}
+          <Box sx={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, pointerEvents: 'none', zIndex: 0 }}>
+            {/* Center Section - Minimal (Subtle) */}
+            <span style={{ 
+              position: 'absolute', top: '55%', left: '45%', fontSize: '16px', color: 'rgba(255, 255, 255, 0.18)', 
+              transform: 'rotate(20deg)', animation: 'mathFloat3 12s ease-in-out infinite 2s' 
+            }}>√</span>
+            <span style={{ 
+              position: 'absolute', top: '25%', left: '52%', fontSize: '17px', color: 'rgba(255, 255, 255, 0.20)', 
+              transform: 'rotate(-25deg)', animation: 'mathFloat6 17s ease-in-out infinite 3.5s' 
+            }}>∞</span>
+            
+            {/* Right-Center Section - More Symbols (Slightly Brighter) */}
+            <span style={{ 
+              position: 'absolute', top: '15%', left: '58%', fontSize: '15px', color: 'rgba(255, 255, 255, 0.25)', 
+              transform: 'rotate(-35deg)', animation: 'mathFloat10 16.5s ease-in-out infinite 5s' 
+            }}>≥</span>
+            <span style={{ 
+              position: 'absolute', top: '75%', left: '62%', fontSize: '18px', color: 'rgba(255, 255, 255, 0.28)', 
+              transform: 'rotate(40deg)', animation: 'mathFloat1 14s ease-in-out infinite 4.5s' 
+            }}>∫</span>
+            <span style={{ 
+              position: 'absolute', top: '45%', left: '66%', fontSize: '14px', color: 'rgba(255, 255, 255, 0.22)', 
+              transform: 'rotate(-10deg)', animation: 'mathFloat4 15s ease-in-out infinite 2.8s' 
+            }}>θ</span>
+            <span style={{ 
+              position: 'absolute', top: '85%', left: '70%', fontSize: '16px', color: 'rgba(255, 255, 255, 0.26)', 
+              transform: 'rotate(25deg)', animation: 'mathFloat7 11s ease-in-out infinite 1s' 
+            }}>δ</span>
+            <span style={{ 
+              position: 'absolute', top: '10%', left: '74%', fontSize: '13px', color: 'rgba(255, 255, 255, 0.23)', 
+              transform: 'rotate(-45deg)', animation: 'mathFloat2 16s ease-in-out infinite 6s' 
+            }}>≈</span>
+            
+            {/* Right Section - Dense Population (Brighter) */}
+            <span style={{ 
+              position: 'absolute', top: '35%', left: '78%', fontSize: '17px', color: 'rgba(255, 255, 255, 0.32)', 
+              transform: 'rotate(30deg)', animation: 'mathFloat5 13s ease-in-out infinite 3s' 
+            }}>λ</span>
+            <span style={{ 
+              position: 'absolute', top: '60%', left: '82%', fontSize: '15px', color: 'rgba(255, 255, 255, 0.30)', 
+              transform: 'rotate(-30deg)', animation: 'mathFloat8 18s ease-in-out infinite 4s' 
+            }}>π</span>
+            <span style={{ 
+              position: 'absolute', top: '20%', left: '86%', fontSize: '14px', color: 'rgba(255, 255, 255, 0.28)', 
+              transform: 'rotate(45deg)', animation: 'mathFloat9 14.5s ease-in-out infinite 1.5s' 
+            }}>α</span>
+            <span style={{ 
+              position: 'absolute', top: '80%', left: '90%', fontSize: '18px', color: 'rgba(255, 255, 255, 0.35)', 
+              transform: 'rotate(-20deg)', animation: 'mathFloat3 12s ease-in-out infinite 7s' 
+            }}>Δ</span>
+            <span style={{ 
+              position: 'absolute', top: '50%', left: '94%', fontSize: '16px', color: 'rgba(255, 255, 255, 0.33)', 
+              transform: 'rotate(35deg)', animation: 'mathFloat6 17s ease-in-out infinite 2.5s' 
+            }}>≠</span>
+            
+            {/* Far Right - Maximum Density (Brightest) */}
+            <span style={{ 
+              position: 'absolute', top: '30%', left: '97%', fontSize: '15px', color: 'rgba(255, 255, 255, 0.45)', 
+              transform: 'rotate(-15deg)', animation: 'mathFloat1 14s ease-in-out infinite 5.5s' 
+            }}>μ</span>
+            <span style={{ 
+              position: 'absolute', top: '65%', left: '96%', fontSize: '13px', color: 'rgba(255, 255, 255, 0.40)', 
+              transform: 'rotate(50deg)', animation: 'mathFloat4 15s ease-in-out infinite 8s' 
+            }}>ε</span>
+            <span style={{ 
+              position: 'absolute', top: '10%', left: '95%', fontSize: '14px', color: 'rgba(255, 255, 255, 0.48)', 
+              transform: 'rotate(-40deg)', animation: 'mathFloat7 11s ease-in-out infinite 0.8s' 
+            }}>∂</span>
+            <span style={{ 
+              position: 'absolute', top: '85%', left: '93%', fontSize: '17px', color: 'rgba(255, 255, 255, 0.50)', 
+              transform: 'rotate(20deg)', animation: 'mathFloat10 16.5s ease-in-out infinite 6.2s' 
+            }}>∑</span>
+            <span style={{ 
+              position: 'absolute', top: '42%', left: '98%', fontSize: '12px', color: 'rgba(255, 255, 255, 0.42)', 
+              transform: 'rotate(-50deg)', animation: 'mathFloat2 16s ease-in-out infinite 9s' 
+            }}>ω</span>
+            <span style={{ 
+              position: 'absolute', top: '75%', left: '99%', fontSize: '15px', color: 'rgba(255, 255, 255, 0.46)', 
+              transform: 'rotate(60deg)', animation: 'mathFloat5 13s ease-in-out infinite 4.8s' 
+            }}>≤</span>
+          </Box>
+
+          <Toolbar sx={{ justifyContent: 'space-between', width: '100%', maxWidth: 'none', px: 3, position: 'relative', zIndex: 1 }}>
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
               <div>
                 <CalculateIcon 
@@ -643,53 +729,7 @@ function App() {
                 </Typography>
               </Box>
             </Box>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-              <FunctionsIcon 
-                className="icon-spiral icon-quantum" 
-                sx={{ 
-                  fontSize: 28, 
-                  color: 'rgba(255, 255, 255, 0.9)',
-                  filter: 'drop-shadow(0 0 8px rgba(21, 101, 192, 0.4))',
-                  animationDelay: '0s',
-                  cursor: 'pointer',
-                  transition: 'all 0.3s ease',
-                  '&:hover': {
-                    transform: 'scale(1.3) rotate(360deg)',
-                    filter: 'drop-shadow(0 0 20px rgba(21, 101, 192, 0.9))',
-                  }
-                }} 
-              />
-              <TimelineIcon 
-                className="icon-wave icon-glitch" 
-                sx={{ 
-                  fontSize: 24, 
-                  color: 'rgba(255, 255, 255, 0.8)',
-                  filter: 'drop-shadow(0 0 8px rgba(123, 31, 162, 0.4))',
-                  animationDelay: '1s',
-                  cursor: 'pointer',
-                  transition: 'all 0.3s ease',
-                  '&:hover': {
-                    transform: 'scale(1.3) rotate(-180deg)',
-                    filter: 'drop-shadow(0 0 20px rgba(123, 31, 162, 0.9))',
-                  }
-                }} 
-              />
-              <TrendingUpIcon 
-                className="icon-elastic icon-morph" 
-                sx={{ 
-                  fontSize: 26, 
-                  color: 'rgba(255, 255, 255, 0.9)',
-                  filter: 'drop-shadow(0 0 8px rgba(211, 47, 47, 0.4))',
-                  animationDelay: '0.5s',
-                  cursor: 'pointer',
-                  transition: 'all 0.3s ease',
-                  '&:hover': {
-                    transform: 'scale(1.4) rotate(270deg)',
-                    filter: 'drop-shadow(0 0 20px rgba(211, 47, 47, 0.9))',
-                  }
-                }} 
-              />
-            </Box>
+
           </Toolbar>
         </AppBar>
 
