@@ -1,4 +1,4 @@
-# 🧮 Solution of Non-linear Equations - GUI Application
+# 🧮 Solution of Non-linear Equations - WEB Application
 
 A state-of-the-art educational platform revolutionizing the study of numerical methods through interactive learning and AI assistance. This comprehensive web application seamlessly integrates advanced root-finding algorithms with modern web technologies and artificial intelligence to create an immersive learning experience.
 
