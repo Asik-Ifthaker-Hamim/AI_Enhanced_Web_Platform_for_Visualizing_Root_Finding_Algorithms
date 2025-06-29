@@ -261,9 +261,9 @@ function TeamInfo() {
                             className="icon-glow-soft"
                             sx={{ 
                               bgcolor: (typeof member.avatar === 'string' && member.avatar.startsWith('/')) ? 'transparent' : (index === 0 ? 'primary.main' : index === 1 ? 'success.main' : 'warning.main'), 
-                              width: 60, 
-                              height: 60, 
-                              fontSize: (typeof member.avatar === 'string' && member.avatar.startsWith('/')) ? '0px' : '28px',
+                              width: 100, 
+                              height: 100, 
+                              fontSize: (typeof member.avatar === 'string' && member.avatar.startsWith('/')) ? '0px' : '32px',
                               border: '2px solid',
                               borderColor: 'primary.main',
                               boxShadow: '0 0 15px rgba(0, 0, 0, 0.2)',
