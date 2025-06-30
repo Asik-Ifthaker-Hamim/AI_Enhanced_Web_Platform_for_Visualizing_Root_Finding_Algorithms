@@ -13,7 +13,7 @@ import {
   ScatterController
 } from 'chart.js';
 import { Line } from 'react-chartjs-2';
-import { createFunction } from '../utils/numericalMethods';
+import { createFunction } from '../../utils/numericalMethods';
 
 ChartJS.register(
   CategoryScale,

@@ -1590,4 +1590,20 @@
   width: 32px;
   height: 32px;
   display: block;
+}
+
+.icon-rotate-left-right {
+  animation: iconRotateLeftRight 4s ease-in-out infinite;
+}
+
+@keyframes iconRotateLeftRight {
+  0% {
+    transform: rotate(-15deg);
+  }
+  50% {
+    transform: rotate(15deg);
+  }
+  100% {
+    transform: rotate(-15deg);
+  }
 } 

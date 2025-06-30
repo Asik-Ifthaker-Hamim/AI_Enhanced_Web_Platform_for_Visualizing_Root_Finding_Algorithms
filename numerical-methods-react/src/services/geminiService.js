@@ -1,5 +1,5 @@
 import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from "@google/generative-ai";
-import { GEMINI_API_KEY, GEMINI_MODELS, DEBUG_MODE } from '../config.js';
+import { GEMINI_API_KEY, GEMINI_MODELS, DEBUG_MODE } from '../config/config.js';
 
 // Get API key from environment variables
 const API_KEY = import.meta.env.VITE_GEMINI_API_KEY;

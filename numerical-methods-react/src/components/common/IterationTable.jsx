@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import './animations.css';
+import '../../assets/animations.css';
 import {
   Table,
   TableBody,

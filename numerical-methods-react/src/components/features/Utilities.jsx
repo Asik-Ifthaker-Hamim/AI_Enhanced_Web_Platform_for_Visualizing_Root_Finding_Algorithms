@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import './animations.css';
+import '../../assets/animations.css';
 import {
   Box,
   Card,
@@ -37,14 +37,14 @@ import StraightenIcon from '@mui/icons-material/Straighten';
 import DivideIcon from '@mui/icons-material/CallSplit';
 import LoopIcon from '@mui/icons-material/Loop';
 
-import { incrementalSearch } from '../utils/incrementalSearch';
+import { incrementalSearch } from '../../utils/incrementalSearch';
 import { 
   hornersRuleDetailed, 
   polynomialDeflation, 
   successiveDeflation,
   parseCoefficients,
   createPolynomialString
-} from '../utils/polynomialUtils';
+} from '../../utils/polynomialUtils';
 
 function Utilities() {
   // Incremental Search State

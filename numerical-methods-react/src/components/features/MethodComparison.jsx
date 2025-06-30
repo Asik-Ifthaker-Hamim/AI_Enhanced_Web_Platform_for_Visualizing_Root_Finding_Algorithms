@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import './animations.css';
+import '../../assets/animations.css';
 import {
   Box,
   Card,
@@ -54,7 +54,7 @@ import {
   Legend,
 } from 'chart.js';
 
-import { compareAllMethods, predefinedFunctions } from '../utils/numericalMethods';
+import { compareAllMethods, predefinedFunctions } from '../../utils/numericalMethods';
 
 ChartJS.register(
   CategoryScale,

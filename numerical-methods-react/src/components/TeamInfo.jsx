@@ -68,7 +68,7 @@ const teamMembers = [
     studentId: 'C221012',
     role: 'Team Leader & Lead Developer',
     professionalTitle: 'Associate AI Engineer, Liberate Labs',
-    avatar: '/leader-image.jpg',
+    avatar: '/leader-image.png',
     email: 'asikifthakerhamim75@gmail.com',
     academicEmail: 'c221012@ugrad.iiuc.ac.bd',
     description: 'Computer Science student and Associate AI Engineer specializing in numerical computing, AI systems, and modern web development',

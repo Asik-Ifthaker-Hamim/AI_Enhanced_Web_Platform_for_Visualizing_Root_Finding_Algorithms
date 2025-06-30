@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import './animations.css';
+import '../../assets/animations.css';
 import {
   Box,
   Card,
@@ -80,12 +80,11 @@ import {
   AssignmentTurnedIn as AssignmentDoneIcon,
   LightbulbOutlined as LightIcon,
   SchoolOutlined as EducationIcon,
-  FolderOpen as FolderIcon,
-  Quiz as ProblemIcon
+  FolderOpen as FolderIcon
 } from '@mui/icons-material';
 
-import { initializeGemini, validateSolutionWithGemini, isGeminiInitialized } from '../utils/geminiService';
-import { quizData } from '../data/quizData';
+import { initializeGemini, validateSolutionWithGemini, isGeminiInitialized } from '../../services/geminiService';
+import { quizData } from '../../data/quizData';
 
 // Get API key from environment variables
 const DEFAULT_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;

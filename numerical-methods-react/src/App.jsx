@@ -23,12 +23,14 @@ import AnalyticsIcon from '@mui/icons-material/Analytics';
 import BuildIcon from '@mui/icons-material/Build';
 import SchoolIcon from '@mui/icons-material/School';
 import GroupsIcon from '@mui/icons-material/Groups';
-import EquationSolver from './components/EquationSolver';
-import MethodComparison from './components/MethodComparison';
-import Utilities from './components/Utilities';
-import TeamInfo from './components/TeamInfo';
-import LearningCenter from './components/LearningCenter';
-import StudyBuddyChat from './components/StudyBuddyChat';
+
+// Fix import paths to include features subdirectory
+import EquationSolver from './components/features/EquationSolver';
+import MethodComparison from './components/features/MethodComparison';
+import Utilities from './components/features/Utilities';
+import TeamInfo from './components/features/TeamInfo';
+import LearningCenter from './components/features/LearningCenter';
+import StudyBuddyChat from './components/features/StudyBuddyChat';
 
 // Create a modern, professional theme
 const theme = createTheme({

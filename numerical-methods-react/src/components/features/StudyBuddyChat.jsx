@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import '../../assets/animations.css';
 import {
   Box,
   Fab,
@@ -32,8 +33,8 @@ import {
   VpnKey as VpnKeyIcon
 } from '@mui/icons-material';
 
-import { initializeGemini, isGeminiInitialized, getChatResponse } from '../utils/geminiService';
-import { GEMINI_API_KEY, DEBUG_MODE } from '../config';
+import { initializeGemini, isGeminiInitialized, getChatResponse } from '../../services/geminiService';
+import { GEMINI_API_KEY, DEBUG_MODE } from '../../config/config';
 
 // Study buddy persona prompt
 const STUDY_BUDDY_PROMPT = `You are Alex, a CS student who is ALSO learning numerical methods alongside the user. You're study partners, not teacher-student. Keep responses SHORT (2-3 sentences max).
