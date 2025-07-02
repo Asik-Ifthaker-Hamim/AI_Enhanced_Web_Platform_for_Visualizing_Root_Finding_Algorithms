@@ -54,12 +54,13 @@ import {
 const projectInfo = {
   title: 'Solution of Non-linear Equations',
   version: '2.0.0',
-  description: 'A comprehensive interactive learning platform for numerical root-finding algorithms with modern web technologies, developed with professional AI engineering expertise.',
+  description: 'A comprehensive AI-enhanced interactive learning platform for numerical root-finding algorithms with modern web technologies, featuring intelligent study assistance and advanced document processing capabilities.',
   developmentTeam: 'The Epsilon Chasers',
-  projectType: 'Educational Software Development',
-  status: 'Completed',
+  projectType: 'AI-Powered Educational Software',
+  status: 'Completed with AI Integration',
   lastUpdated: 'June 2025',
-  technicalLead: 'A.M Asik Ifthaker Hamim (Associate AI Engineer)'
+  technicalLead: 'A.M Asik Ifthaker Hamim (Associate AI Engineer)',
+  aiFeatures: 'Google Gemini AI Study Assistant'
 };
 
 const teamMembers = [
@@ -74,12 +75,13 @@ const teamMembers = [
     description: 'Computer Science student and AI Engineer specializing',
     contributions: [
       'Project Leadership & Architecture',
-      'AI-Enhanced Algorithm Development',
+      'AI Study Assistant Development',
+      'Google Gemini AI Integration',
+      'Smart PDF Processing Implementation',
       'React Frontend Development',
       'Numerical Methods Implementation', 
       'Advanced UI/UX Design',
-      'Mathematical Analysis & Optimization',
-      'Professional Testing & Documentation'
+      'Mathematical Analysis & Optimization'
     ],
     skills: ['AI/ML', 'React', 'JavaScript', 'Python', 'Numerical Methods', 'Material-UI', 'Mathematical Computing', 'Software Engineering']
   },
@@ -147,6 +149,12 @@ const technologies = [
     icon: <PaletteIcon className="icon-morph icon-shimmer" />
   },
   { 
+    name: 'Google Gemini AI', 
+    description: 'Advanced AI-powered study assistant', 
+    version: '1.5 Pro',
+    icon: <PsychologyIcon className="icon-quantum icon-glow" />
+  },
+  { 
     name: 'Chart.js', 
     description: 'Interactive data visualizations', 
     version: '4.4.0',
@@ -157,6 +165,12 @@ const technologies = [
     description: 'Mathematical expression parser', 
     version: '12.2.0',
     icon: <CalculateIcon className="icon-quantum icon-ripple" />
+  },
+  { 
+    name: 'PDF Processing AI', 
+    description: 'AI-enhanced document analysis', 
+    version: '2.1.0',
+    icon: <AutoAwesomeIcon className="icon-orbit icon-magnetic" />
   },
   { 
     name: 'Framer Motion', 
@@ -195,27 +209,33 @@ const features = [
     status: '100% Complete'
   },
   {
+    icon: <PsychologyIcon className="icon-quantum icon-magnetic" sx={{ color: 'white' }} />,
+    title: 'AI Study Assistant',
+    description: 'Google Gemini-powered peer learning chatbot with PDF analysis capabilities',
+    status: '100% Complete'
+  },
+  {
     icon: <SpeedIcon className="icon-spin icon-shimmer" sx={{ color: 'white' }} />,
     title: 'Performance Analysis',
     description: 'Method comparison with convergence analysis and execution metrics',
     status: '100% Complete'
   },
   {
-    icon: <PsychologyIcon className="icon-bounce icon-magnetic" sx={{ color: 'white' }} />,
-    title: 'Advanced Utilities',
-    description: 'Horner\'s Rule, Polynomial Deflation, and Incremental Search tools',
+    icon: <AutoAwesomeIcon className="icon-bounce icon-magnetic" sx={{ color: 'white' }} />,
+    title: 'Smart PDF Processing',
+    description: 'AI-enhanced document extraction and intelligent content analysis',
     status: '100% Complete'
   },
   {
     icon: <CodeIcon className="icon-wave icon-breathe" sx={{ color: 'white' }} />,
     title: 'Modern Architecture',
-    description: 'Built with React 18, TypeScript-ready, and responsive design',
+    description: 'Built with React 18, AI integration, and responsive design',
     status: '100% Complete'
   },
   {
     icon: <SchoolIcon className="icon-elastic icon-ripple" sx={{ color: 'white' }} />,
     title: 'Educational Focus',
-    description: 'Comprehensive learning center with tutorials and algorithm explanations',
+    description: 'AI-powered learning center with personalized tutorials and explanations',
     status: '100% Complete'
   }
 ];
@@ -323,6 +343,18 @@ function TeamInfo() {
                 label={`Technical Lead: ${projectInfo.technicalLead}`} 
                 color="secondary" 
                 icon={<CodeIcon />}
+                sx={{ mr: 1, mb: 1 }}
+              />
+              <Chip 
+                label={`AI Features: ${projectInfo.aiFeatures}`} 
+                color="info" 
+                icon={<PsychologyIcon />}
+                sx={{ mr: 1, mb: 1 }}
+              />
+              <Chip 
+                label={projectInfo.status} 
+                color="warning" 
+                icon={<AutoAwesomeIcon />}
                 sx={{ mb: 1 }}
               />
             </Box>
@@ -349,12 +381,35 @@ function TeamInfo() {
                 
                 <Grid container spacing={4.2}>
                   {teamMembers.map((member, index) => (
-                    <Grid item xs={12} md={3} key={index}>
-                      <Paper sx={{ 
+                    <Grid item xs={12} md={3} key={index} className="fade-in-up" style={{ animationDelay: `${index * 0.2}s` }}>
+                      <Paper className="card-hover-lift icon-float-gentle" sx={{ 
                         p: 3, 
                         mb: 2, 
                         border: '1px solid rgba(0, 0, 0, 0.1)', 
                         height: '100%',
+                        borderRadius: 3,
+                        background: 'linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%)',
+                        transition: 'all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+                        position: 'relative',
+                        overflow: 'hidden',
+                        '&::before': {
+                          content: '""',
+                          position: 'absolute',
+                          top: 0,
+                          left: '-100%',
+                          width: '100%',
+                          height: '100%',
+                          background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent)',
+                          transition: 'left 0.5s ease-in-out',
+                        },
+                        '&:hover': {
+                          transform: 'translateY(-12px) scale(1.02)',
+                          boxShadow: '0 20px 40px rgba(0, 0, 0, 0.15)',
+                          borderColor: 'primary.main',
+                          '&::before': {
+                            left: '100%',
+                          },
+                        },
                         ...(member.name === 'Sheikh Mohammad Rajking' && {
                           width: '104%',  // 4% increase
                           position: 'relative',
@@ -362,64 +417,137 @@ function TeamInfo() {
                           zIndex: 1  // Ensure it overlaps properly
                         })
                       }}>
-                        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 3 }}>
+                        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 3, position: 'relative', zIndex: 1 }}>
                           <Avatar 
-                            className="icon-glow-soft"
+                            className="icon-orbit icon-magnetic"
                             sx={{ 
                               bgcolor: 'transparent',
                               width: 100, 
                               height: 100, 
                               border: '3px solid',
-                              borderColor: 'primary.main',
-                              boxShadow: '0 0 20px rgba(0, 0, 0, 0.2)',
-                              marginBottom: 2,
+                              borderColor: index === 0 ? 'primary.main' : index === 1 ? 'success.main' : index === 2 ? 'warning.main' : 'secondary.main',
+                              boxShadow: `0 0 25px rgba(${index === 0 ? '25, 118, 210' : index === 1 ? '76, 175, 80' : index === 2 ? '255, 152, 0' : '156, 39, 176'}, 0.3)`,
+                              marginBottom: -1.5,
+                              position: 'relative',
                               '& img': {
                                 objectFit: 'cover',
                                 width: '100%',
-                                height: '100%'
+                                height: '100%',
+                                borderRadius: '50%',
+                                transition: 'all 0.3s ease',
+                              },
+                              '&::after': {
+                                content: '""',
+                                position: 'absolute',
+                                top: -3,
+                                left: -3,
+                                right: -3,
+                                bottom: -3,
+                                borderRadius: '50%',
+                                background: `conic-gradient(from 0deg, ${index === 0 ? '#1976d2' : index === 1 ? '#4caf50' : index === 2 ? '#ff9800' : '#9c27b0'}, transparent 90deg, ${index === 0 ? '#1976d2' : index === 1 ? '#4caf50' : index === 2 ? '#ff9800' : '#9c27b0'})`,
+                                animation: 'rotateRing 3s linear infinite',
+                                zIndex: -1,
+                                opacity: 0,
+                                transition: 'opacity 0.3s ease',
                               },
                               '&:hover': {
-                                animation: 'pulseAnimation 1.5s ease-in-out infinite',
-                                '@keyframes pulseAnimation': {
-                                  '0%': {
-                                    transform: 'scale(1)',
-                                    boxShadow: '0 0 20px rgba(0, 0, 0, 0.2)',
-                                  },
-                                  '50%': {
-                                    transform: 'scale(1.05)',
-                                    boxShadow: '0 0 25px rgba(25, 118, 210, 0.4)',
-                                  },
-                                  '100%': {
-                                    transform: 'scale(1)',
-                                    boxShadow: '0 0 20px rgba(0, 0, 0, 0.2)',
-                                  },
+                                transform: 'scale(1.1) rotate(5deg)',
+                                '&::after': {
+                                  opacity: 1,
                                 },
+                                '& img': {
+                                  transform: 'scale(1.05)',
+                                },
+                              },
+                              '@keyframes rotateRing': {
+                                '0%': { transform: 'rotate(0deg)' },
+                                '100%': { transform: 'rotate(360deg)' },
                               },
                             }}
                             src={member.avatar}
                           />
                           <Box sx={{ width: '100%', textAlign: 'center' }}>
-                            <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>
+                            <Typography variant="h6" className="icon-shimmer" sx={{ 
+                              fontWeight: 700, 
+                              mb: 1,
+                              background: index === 0 ? 'linear-gradient(45deg, #1976d2, #42a5f5)' : 
+                                          index === 1 ? 'linear-gradient(45deg, #4caf50, #81c784)' : 
+                                          index === 2 ? 'linear-gradient(45deg, #ff9800, #ffb74d)' : 
+                                          'linear-gradient(45deg, #9c27b0, #ba68c8)',
+                              backgroundClip: 'text',
+                              WebkitBackgroundClip: 'text',
+                              WebkitTextFillColor: 'transparent',
+                              transition: 'all 0.3s ease',
+                              '&:hover': {
+                                transform: 'scale(1.05)',
+                              }
+                            }}>
                               {member.name}
                             </Typography>
-                            <Typography variant="subtitle1" color="primary.main" sx={{ fontWeight: 500, mb: 1 }}>
+                            <Typography variant="subtitle1" className="icon-gentle-pulse" color="primary.main" sx={{ 
+                              fontWeight: 500, 
+                              mb: 1,
+                              transition: 'all 0.3s ease',
+                              '&:hover': {
+                                color: 'primary.dark',
+                                transform: 'scale(1.02)',
+                              }
+                            }}>
                               {member.role}
                             </Typography>
                             {member.professionalTitle && (
-                              <Typography variant="body2" color="success.main" sx={{ fontWeight: 500, mb: 1 }}>
+                              <Typography variant="body2" className="icon-breathe" color="success.main" sx={{ 
+                                fontWeight: 500, 
+                                mb: 1,
+                                padding: '2px 8px',
+                                backgroundColor: 'success.light',
+                                borderRadius: '12px',
+                                display: 'inline-block',
+                                transition: 'all 0.3s ease',
+                                '&:hover': {
+                                  backgroundColor: 'success.main',
+                                  color: 'white',
+                                  transform: 'scale(1.05)',
+                                }
+                              }}>
                                 {member.professionalTitle}
                               </Typography>
                             )}
-                            <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                            <Typography variant="body2" className="icon-slide-gentle" color="text.secondary" sx={{ 
+                              mb: 1,
+                              transition: 'color 0.3s ease',
+                              '&:hover': { color: 'text.primary' }
+                            }}>
                               Student ID: {member.studentId}
                             </Typography>
-                            <Typography variant="body2" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1, mb: 0.5 }}>
-                              <EmailIcon className="icon-tilt icon-fade-pulse" sx={{ fontSize: '16px' }} />
+                            <Typography variant="body2" className="icon-float" color="text.secondary" sx={{ 
+                              display: 'flex', 
+                              alignItems: 'center', 
+                              justifyContent: 'center', 
+                              gap: 1, 
+                              mb: 0.5,
+                              transition: 'all 0.3s ease',
+                              '&:hover': { 
+                                color: 'primary.main',
+                                transform: 'scale(1.02)',
+                              }
+                            }}>
+                              <EmailIcon className="icon-spin-slow icon-magnetic" sx={{ fontSize: '16px' }} />
                               {member.email}
                             </Typography>
                             {member.academicEmail && (
-                              <Typography variant="body2" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
-                                <SchoolIcon className="icon-bob icon-slow-pulse" sx={{ fontSize: '16px' }} />
+                              <Typography variant="body2" className="icon-drift" color="text.secondary" sx={{ 
+                                display: 'flex', 
+                                alignItems: 'center', 
+                                justifyContent: 'center', 
+                                gap: 1,
+                                transition: 'all 0.3s ease',
+                                '&:hover': { 
+                                  color: 'secondary.main',
+                                  transform: 'scale(1.02)',
+                                }
+                              }}>
+                                <SchoolIcon className="icon-wiggle icon-glow-soft" sx={{ fontSize: '16px' }} />
                                 {member.academicEmail}
                               </Typography>
                             )}
@@ -458,7 +586,22 @@ function TeamInfo() {
                                   size="small"
                                   variant="outlined"
                                   color="primary"
-                                  sx={{ justifyContent: 'flex-start', maxWidth: '100%' }}
+                                  className="icon-gentle-pulse"
+                                  sx={{ 
+                                    justifyContent: 'flex-start', 
+                                    maxWidth: '100%',
+                                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                                    '&:hover': {
+                                      transform: 'translateX(8px) scale(1.05)',
+                                      backgroundColor: 'primary.main',
+                                      color: 'white',
+                                      borderColor: 'primary.main',
+                                      boxShadow: '0 4px 12px rgba(25, 118, 210, 0.3)',
+                                      '& .MuiChip-label': {
+                                        fontWeight: 600,
+                                      }
+                                    }
+                                  }}
                                 />
                               ))}
                             </Box>
@@ -479,7 +622,22 @@ function TeamInfo() {
                                   label={skill}
                                   size="small"
                                   color="secondary"
-                                  sx={{ justifyContent: 'center' }}
+                                  className="icon-gentle-pulse"
+                                  sx={{ 
+                                    justifyContent: 'center',
+                                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                                    cursor: 'pointer',
+                                    '&:hover': {
+                                      transform: 'translateX(8px) scale(1.05)',
+                                      backgroundColor: 'secondary.main',
+                                      color: 'white',
+                                      borderColor: 'secondary.main',
+                                      boxShadow: '0 4px 12px rgba(156, 39, 176, 0.3)',
+                                      '& .MuiChip-label': {
+                                        fontWeight: 600,
+                                      }
+                                    }
+                                  }}
                                 />
                               ))}
                             </Box>
@@ -663,68 +821,130 @@ function TeamInfo() {
                 <Box sx={{ textAlign: 'center', mb: 3 }}>
                   <Avatar
                     src="/Sir.jpg"
-                    className="icon-glow-soft"
+                    className="icon-orbit icon-magnetic"
                     sx={{
+                      bgcolor: 'transparent',
                       width: 120,
                       height: 120,
                       margin: '0 auto',
-                      mb: 2,
                       border: '3px solid',
-                      borderColor: 'primary.main',
-                      boxShadow: '0 0 15px rgba(0, 0, 0, 0.2)',
+                      borderColor: 'success.main',
+                      boxShadow: '0 0 25px rgba(76, 175, 80, 0.3)',
+                      marginBottom: -1.5,
+                      position: 'relative',
+                      '& img': {
+                        objectFit: 'cover',
+                        width: '100%',
+                        height: '100%',
+                        borderRadius: '50%',
+                        transition: 'all 0.3s ease',
+                      },
+                      '&::after': {
+                        content: '""',
+                        position: 'absolute',
+                        top: -3,
+                        left: -3,
+                        right: -3,
+                        bottom: -3,
+                        borderRadius: '50%',
+                        background: 'conic-gradient(from 0deg, #4caf50, transparent 90deg, #4caf50)',
+                        animation: 'rotateRing 3s linear infinite',
+                        zIndex: -1,
+                        opacity: 0,
+                        transition: 'opacity 0.3s ease',
+                      },
                       '&:hover': {
-                        animation: 'pulseAnimation 1.5s ease-in-out infinite',
-                        '@keyframes pulseAnimation': {
-                          '0%': {
-                            transform: 'scale(1)',
-                            boxShadow: '0 0 15px rgba(0, 0, 0, 0.2)',
-                          },
-                          '50%': {
-                            transform: 'scale(1.05)',
-                            boxShadow: '0 0 20px rgba(25, 118, 210, 0.4)',
-                          },
-                          '100%': {
-                            transform: 'scale(1)',
-                            boxShadow: '0 0 15px rgba(0, 0, 0, 0.2)',
-                          },
+                        transform: 'scale(1.1) rotate(5deg)',
+                        '&::after': {
+                          opacity: 1,
                         },
+                        '& img': {
+                          transform: 'scale(1.05)',
+                        },
+                      },
+                      '@keyframes rotateRing': {
+                        '0%': { transform: 'rotate(0deg)' },
+                        '100%': { transform: 'rotate(360deg)' },
                       },
                     }}
                   />
-                  <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
+                  <Typography variant="h6" className="icon-shimmer" sx={{ 
+                    fontWeight: 700, 
+                    mb: 1,
+                    background: 'linear-gradient(45deg, #4caf50, #81c784)',
+                    backgroundClip: 'text',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    transition: 'all 0.3s ease',
+                    '&:hover': {
+                      transform: 'scale(1.05)',
+                    }
+                  }}>
                     {courseInfo.instructor}
                   </Typography>
-                  <Typography variant="subtitle1" color="primary.main" sx={{ fontWeight: 500, mb: 1 }}>
+                  <Typography variant="subtitle1" className="icon-gentle-pulse" color="primary.main" sx={{ 
+                    fontWeight: 500, 
+                    mb: 1,
+                    transition: 'all 0.3s ease',
+                    '&:hover': {
+                      color: 'primary.dark',
+                      transform: 'scale(1.02)',
+                    }
+                  }}>
                     Professor of Computer Science
                   </Typography>
-                  <Typography variant="subtitle2" color="secondary.main" sx={{ fontWeight: 500, mb: 2 }}>
+                  <Typography variant="subtitle2" className="icon-breathe" color="secondary.main" sx={{ 
+                    fontWeight: 500, 
+                    mb: 2,
+                    padding: '2px 8px',
+                    backgroundColor: 'secondary.light',
+                    borderRadius: '12px',
+                    display: 'inline-block',
+                    transition: 'all 0.3s ease',
+                    '&:hover': {
+                      backgroundColor: 'secondary.main',
+                      color: 'white',
+                      transform: 'scale(1.05)',
+                    }
+                  }}>
                     Dean, Faculty of Science & Engineering, IIUC
                   </Typography>
                   <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, alignItems: 'center', mb: 2 }}>
                     <Typography 
                       variant="body2" 
-                      className="icon-slide-gentle"
+                      className="icon-float"
                       sx={{ 
                         display: 'flex', 
                         alignItems: 'center', 
-                        gap: 1,
-                        color: 'text.secondary'
+                        justifyContent: 'center', 
+                        gap: 1, 
+                        mb: 0.5,
+                        transition: 'all 0.3s ease',
+                        '&:hover': { 
+                          color: 'primary.main',
+                          transform: 'scale(1.02)',
+                        }
                       }}
                     >
-                      <EmailIcon fontSize="small" className="icon-spin-slow" color="primary" />
+                      <EmailIcon className="icon-spin-slow icon-magnetic" fontSize="small" />
                       alam_cse@yahoo.com
                     </Typography>
                     <Typography 
                       variant="body2"
-                      className="icon-slide-gentle" 
+                      className="icon-drift" 
                       sx={{ 
                         display: 'flex', 
                         alignItems: 'center', 
+                        justifyContent: 'center', 
                         gap: 1,
-                        color: 'text.secondary'
+                        transition: 'all 0.3s ease',
+                        '&:hover': { 
+                          color: 'secondary.main',
+                          transform: 'scale(1.02)',
+                        }
                       }}
                     >
-                      <EmailIcon fontSize="small" className="icon-spin-slow" color="secondary" />
+                      <EmailIcon className="icon-spin-slow icon-magnetic" fontSize="small" color="secondary" />
                       msa@iiuc.ac.bd
                     </Typography>
                   </Box>

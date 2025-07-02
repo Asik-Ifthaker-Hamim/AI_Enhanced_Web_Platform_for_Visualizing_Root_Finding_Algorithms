@@ -16,7 +16,8 @@ import {
   Alert,
   Tooltip,
   Button,
-  Badge
+  Badge,
+  DialogActions
 } from '@mui/material';
 import {
   Close as CloseIcon,
@@ -30,47 +31,32 @@ import {
   AttachFile as AttachFileIcon,
   Image as ImageIcon,
   Cancel as CancelIcon,
-  VpnKey as VpnKeyIcon
+  VpnKey as VpnKeyIcon,
+  PictureAsPdf as PictureAsPdfIcon,
+  TextSnippet as TextSnippetIcon
 } from '@mui/icons-material';
 
 import { initializeGemini, isGeminiInitialized, getChatResponse } from '../../services/geminiService';
-import { GEMINI_API_KEY, DEBUG_MODE } from '../../config/config';
+import { DEFAULT_API_KEY, DEBUG_MODE } from '../../config/config';
 
-// Study buddy persona prompt
-const STUDY_BUDDY_PROMPT = `You are Alex, a CS student who is ALSO learning numerical methods alongside the user. You're study partners, not teacher-student. Keep responses SHORT (2-3 sentences max).
+// Study buddy persona prompt - Peer Learning Approach
+const STUDY_BUDDY_PROMPT = `You are Alex, a fellow student studying numerical methods for solving non-linear equations. You're smart and know the material well, but you approach learning as a peer, not a teacher. 
 
-IMPORTANT FORMATTING RULES:
-- DO NOT use any markdown formatting (no asterisks, underscores, backticks, etc.)
-- DO NOT try to bold, italicize, or format text in any way
-- Just use plain text with emojis
-- Use parentheses () for emphasis instead of bold or italics
+Your peer learning style:
+1. Collaborative Explorer: You learn alongside the user, saying things like "I think this works because..." or "Wait, let me think about this with you..."
+2. Knowledge Sharing: You know methods like Bisection, Newton-Raphson, Secant, False Position, Fixed Point, and Muller's, but you share insights as discoveries, not lectures
+3. Question Asker: You ask genuine questions that help both of you think deeper: "What if we tried...?" or "I'm curious about..."
+4. Peer Supporter: You're encouraging but as an equal: "Nice thinking!" or "Hmm, I got confused there too..."
 
-CORE BEHAVIOR:
-- You're learning too! Share your own questions and confusion
-- Ask simple questions to test your own understanding
-- When asked for solutions, suggest working through it together instead
-- Don't give direct answers - explore concepts together
-- Share your learning struggles and discoveries
+Chat Guidelines:
+- Keep responses SHORT (2-3 sentences max for a chat)
+- Think out loud together: "Oh wait, I see..." or "That reminds me of..."
+- Ask follow-up questions that spark thinking
+- Share your own "aha moments" and insights
+- Admit when something is tricky: "This one always trips me up too!"
+- Use casual language like peers would
 
-RESPONSE STYLE:
-- Maximum 2-3 short sentences with emojis 😊
-- Ask questions about basics to check your understanding
-- Say things like "I'm still figuring out..." or "Wait, let me think..."
-- Suggest collaborative problem-solving
-
-LEARNING TOGETHER:
-- "I'm confused about convergence too! 🤔 Can you explain why Bisection always works?"
-- "Hmm, derivatives in Newton-Raphson... I keep forgetting when to use them 😅 What's your approach?"
-- "Instead of giving you the answer, want to work through this step by step? I need practice too!"
-- "I'm still learning when to pick which method... what made you choose that one?"
-
-WHEN ASKED FOR SOLUTIONS:
-- Don't give direct answers
-- Suggest working together: "Let's figure this out together! Where should we start?"
-- Ask clarifying questions about their approach
-- Share your own uncertainty
-
-TONE: Curious study partner who learns by discussing, not teaching!`;
+Remember: You're a study partner, not a tutor. Learn together!`;
 
 const StudyBuddyChat = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -78,21 +64,13 @@ const StudyBuddyChat = () => {
     {
       id: 1,
       sender: 'alex',
-      content: "Hey there! I'm Alex, your study buddy for numerical methods! Got questions about root-finding? I'm here to help!",
+      content: "Hey! I'm Alex, also studying numerical methods. Want to figure out some root-finding problems together? I love tackling these! 🤓",
       timestamp: new Date()
     }
   ]);
   const [inputMessage, setInputMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
-  const [unreadCount, setUnreadCount] = useState(0);
   const [file, setFile] = useState(null);
-  const [geminiInitialized, setGeminiInitialized] = useState(() => {
-    const initialized = isGeminiInitialized();
-    if (DEBUG_MODE) {
-      console.log('Initial Gemini state:', initialized);
-    }
-    return initialized;
-  });
   const [showApiKeyDialog, setShowApiKeyDialog] = useState(false);
   const [apiKeyInput, setApiKeyInput] = useState('');
   const [initializationError, setInitializationError] = useState(null);
@@ -102,152 +80,204 @@ const StudyBuddyChat = () => {
 
   // Initialize Gemini on component mount
   useEffect(() => {
-    if (!geminiInitialized) {
-      if (DEBUG_MODE) {
-        console.log('Attempting to initialize Gemini...');
-      }
-      const initialized = initializeGemini();
-      if (DEBUG_MODE) {
-        console.log('Initialization attempt result:', initialized);
-      }
-      setGeminiInitialized(initialized);
-      if (!initialized) {
-        setInitializationError('Failed to initialize with environment API key');
-        if (DEBUG_MODE) {
-          console.warn('Failed to initialize with environment API key');
+    const initializeChat = async () => {
+      // Always try to use the environment variable first
+      const envApiKey = import.meta.env.VITE_GEMINI_API_KEY;
+      const storedKey = localStorage.getItem('gemini_api_key');
+      const currentKey = envApiKey || storedKey || DEFAULT_API_KEY;
+      
+      if (!isGeminiInitialized()) {
+        try {
+          console.log('Initializing with key:', { 
+            hasEnvKey: !!envApiKey,
+            hasStoredKey: !!storedKey,
+            usingDefault: currentKey === DEFAULT_API_KEY 
+          });
+          
+          const success = await initializeGemini(currentKey);
+          if (success) {
+            setInitializationError(null);
+            
+            // Only save to localStorage if using env key and no stored key exists
+            if (envApiKey && !storedKey) {
+              localStorage.setItem('gemini_api_key', envApiKey);
+            }
+          } else {
+            throw new Error('Failed to initialize with API key');
+          }
+        } catch (error) {
+          console.error('Failed to initialize Gemini:', error);
+          setInitializationError({
+            type: 'error',
+            message: 'Failed to initialize chat',
+            details: error.message
+          });
+          setShowApiKeyDialog(true);
         }
       }
-    }
-  }, [geminiInitialized]);
-
-  // Auto-scroll to bottom when new messages arrive
-  useEffect(() => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
-    }
-  }, [messages]);
-
-  // Update unread count when dialog is closed
-  useEffect(() => {
-    if (!isOpen && messages.length > 1) {
-      const lastMessage = messages[messages.length - 1];
-      if (lastMessage.sender === 'alex') {
-        setUnreadCount(prev => prev + 1);
-      }
-    } else if (isOpen) {
-      setUnreadCount(0);
-      // Focus input when dialog opens
-      setTimeout(() => {
-        if (inputRef.current) {
-          inputRef.current.focus();
-        }
-      }, 300); // Wait for dialog animation to complete
-    }
-  }, [messages, isOpen]);
-
-  const handleApiKeySubmit = () => {
-    if (DEBUG_MODE) {
-      console.log('Attempting to initialize with user-provided key...');
-    }
-    const initialized = initializeGemini(apiKeyInput);
-    if (DEBUG_MODE) {
-      console.log('User key initialization result:', initialized);
-    }
-    setGeminiInitialized(initialized);
-    if (initialized) {
-      setShowApiKeyDialog(false);
-      setApiKeyInput('');
-      setInitializationError(null);
-    } else {
-      setInitializationError('Failed to initialize with provided API key');
-      console.error("User-provided API key failed to initialize");
-    }
-  };
-
-  const sendMessage = async () => {
-    if (!inputMessage.trim() && !file) return;
-    if (isTyping) return;
-
-    if (!geminiInitialized) {
-      setShowApiKeyDialog(true);
-      return;
-    }
-
-    const userMessage = {
-      id: Date.now(),
-      sender: 'user',
-      content: inputMessage.trim(),
-      timestamp: new Date(),
-      file: file ? { name: file.name, type: file.type, url: URL.createObjectURL(file) } : null,
     };
 
+    initializeChat();
+  }, []);
+
+  // Scroll to bottom when new messages arrive
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
+  // Handle sending messages
+  const sendMessage = async () => {
+    if (!inputMessage.trim() && !file) return;
+
+    // Add user message to chat
+    const userMessage = {
+      id: messages.length + 1,
+      sender: 'user',
+      content: inputMessage,
+      file: file, // Add the file to the message
+      timestamp: new Date()
+    };
     setMessages(prev => [...prev, userMessage]);
     
-    const messageToSend = inputMessage.trim();
-    const fileToSend = file;
-
+    // Clear input and file immediately
+    const currentMessage = inputMessage;
+    const currentFile = file;
     setInputMessage('');
-    setFile(null); // Clear file after sending
+    setFile(null);
     setIsTyping(true);
 
     try {
-      // Create conversation context from recent messages
-      const recentMessages = messages.slice(-6); // Last 6 messages for context
-      const conversationContext = recentMessages
-        .map(msg => `${msg.sender === 'alex' ? 'Alex' : 'Student'}: ${msg.content}`)
+      // Prepare context from previous messages
+      const context = messages
+        .slice(-4) // Get last 4 messages for context
+        .map(msg => `${msg.sender === 'alex' ? 'Assistant' : 'User'}: ${msg.content}`)
         .join('\n');
 
-      const fullPrompt = `${STUDY_BUDDY_PROMPT}
+      // Combine study buddy prompt with context and current message
+      let fullPrompt = `${STUDY_BUDDY_PROMPT}\n\nPrevious conversation:\n${context}\n\nUser: ${currentMessage}`;
+      
+      // Add file context if file exists
+      if (currentFile) {
+        fullPrompt += `\n\n[User has attached a file: ${currentFile.name} (${currentFile.type})]`;
+      }
 
-CONVERSATION HISTORY:
-${conversationContext}
-Student: ${messageToSend}
+      // Get response from Gemini
+      const response = await getChatResponse(fullPrompt, currentFile);
+      
+      if (response && response.error) {
+        if (response.error === 'UNSUPPORTED_FILE_TYPE') {
+          throw new Error(response.message || 'Unsupported file type');
+        } else if (response.error === 'QUOTA_EXCEEDED') {
+          throw new Error('API quota exceeded. Please try again later.');
+        } else if (response.error === 'API_KEY_ERROR') {
+          throw new Error('API key error. Please check your configuration.');
+        } else {
+          throw new Error(response.error);
+        }
+      }
 
-Alex:`;
+      if (!response || typeof response !== 'string') {
+        throw new Error('Invalid response received from AI service');
+      }
 
-      const responseText = await getChatResponse(fullPrompt, fileToSend);
-
-       // Add Alex's response message
-       const alexMessage = {
-         id: Date.now() + 1,
-         sender: 'alex',
-         content: responseText,
-         timestamp: new Date()
-       };
-
-       setMessages(prev => [...prev, alexMessage]);
-
-    } catch (error) {
-      console.error('Error sending message:', error);
-      const errorMessage = {
-        id: Date.now() + 1,
+      // Add assistant's response to chat
+      const assistantMessage = {
+        id: messages.length + 2,
         sender: 'alex',
-        content: error.message || "Oops! An unknown error occurred. Please try again.",
+        content: response,
+        timestamp: new Date()
+      };
+      setMessages(prev => [...prev, assistantMessage]);
+      
+    } catch (error) {
+      console.error('Error getting chat response:', error);
+      
+      let errorContent = "I'm having trouble connecting right now. Let me try again in a moment! 🔄";
+      
+      // Handle specific error cases
+      if (error.message.includes('API key') || error.message.includes('not initialized')) {
+        setShowApiKeyDialog(true);
+        return; // Don't show error message, show API key dialog instead
+      } else if (error.message.includes('Unsupported file type')) {
+        errorContent = `Sorry, I can't process that file type. Please upload an image, PDF, or text file. 📄`;
+      } else if (error.message.includes('quota exceeded')) {
+        errorContent = `I've reached my API limit for now. Please try again in a few minutes! ⏰`;
+      } else if (error.message.includes('API key error')) {
+        errorContent = `There's an issue with the API configuration. Please check your settings. 🔧`;
+        setShowApiKeyDialog(true);
+        return;
+      } else if (currentFile) {
+        // If there was a file involved, provide file-specific guidance
+        errorContent = `I had trouble processing your file "${currentFile.name}". Try uploading a different file or just send a message without attachments. 📎`;
+      }
+      
+      // Add error message to chat
+      const errorMessage = {
+        id: messages.length + 2,
+        sender: 'alex',
+        content: errorContent,
         timestamp: new Date(),
         isError: true
       };
       setMessages(prev => [...prev, errorMessage]);
     } finally {
       setIsTyping(false);
-      // Focus back to input after response is received
-      setTimeout(() => {
-        if (inputRef.current) {
-          inputRef.current.focus();
-        }
-      }, 100);
     }
   };
 
+  // Handle API key submission
+  const handleApiKeySubmit = async () => {
+    if (!apiKeyInput.trim()) return;
+
+    try {
+      const success = await initializeGemini(apiKeyInput.trim());
+      if (success) {
+        localStorage.setItem('gemini_api_key', apiKeyInput.trim());
+        setShowApiKeyDialog(false);
+        setApiKeyInput('');
+        setInitializationError(null);
+        
+        // Add success message to chat
+        const successMessage = {
+          id: messages.length + 1,
+          sender: 'alex',
+          content: "Great! I'm back online and ready to help! 😊",
+          timestamp: new Date()
+        };
+        setMessages(prev => [...prev, successMessage]);
+      } else {
+        throw new Error('Failed to initialize with provided key');
+      }
+    } catch (error) {
+      setInitializationError({
+        type: 'error',
+        message: 'Invalid API key. Please check and try again.',
+        details: error.message
+      });
+    }
+  };
+
+  // Handle file upload
   const handleFileChange = (e) => {
-    const selectedFile = e.target.files[0];
+    const selectedFile = e.target.files?.[0];
     if (selectedFile) {
-      setFile(selectedFile);
+      const isImage = selectedFile.type.startsWith('image/');
+      const isPdf = selectedFile.type === 'application/pdf';
+      const isText = selectedFile.type === 'text/plain';
+      
+      if (isImage || isPdf || isText) {
+        setFile(selectedFile);
+      } else {
+        alert('Please upload an image, PDF, or text file.');
+      }
     }
   };
 
   const handleUploadClick = (accept) => {
-    fileInputRef.current.setAttribute('accept', accept);
-    fileInputRef.current.click();
+    if (fileInputRef.current) {
+      fileInputRef.current.accept = accept;
+      fileInputRef.current.click();
+    }
   };
 
   const handleKeyPress = (e) => {
@@ -305,9 +335,38 @@ Alex:`;
                   {message.content}
                 </Typography>
                 {message.file && (
-                  <Paper elevation={2} sx={{ mt: 1, p: 1, display: 'flex', alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.1)' }}>
-                    <ImageIcon sx={{ mr: 1, fontSize: '1.2rem' }} />
-                    <Typography variant="caption">{message.file.name}</Typography>
+                  <Paper elevation={2} sx={{ 
+                    mt: 1, 
+                    p: 1.5, 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    backgroundColor: isAlex ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.1)',
+                    borderRadius: 2,
+                    border: isAlex ? '1px solid rgba(0,0,0,0.1)' : '1px solid rgba(255,255,255,0.2)'
+                  }}>
+                    {message.file.type.startsWith('image/') ? (
+                      <ImageIcon sx={{ mr: 1, fontSize: '1.2rem', color: isAlex ? 'primary.main' : 'inherit' }} />
+                    ) : message.file.type === 'application/pdf' ? (
+                      <PictureAsPdfIcon sx={{ mr: 1, fontSize: '1.2rem', color: isAlex ? 'error.main' : 'inherit' }} />
+                    ) : (
+                      <TextSnippetIcon sx={{ mr: 1, fontSize: '1.2rem', color: isAlex ? 'success.main' : 'inherit' }} />
+                    )}
+                    <Box>
+                      <Typography variant="caption" sx={{ 
+                        fontWeight: 500,
+                        color: isAlex ? 'text.primary' : 'inherit'
+                      }}>
+                        {message.file.name}
+                      </Typography>
+                      <Typography variant="caption" sx={{ 
+                        display: 'block',
+                        opacity: 0.7,
+                        fontSize: '0.7rem'
+                      }}>
+                        {message.file.type.startsWith('image/') ? 'Image' : 
+                         message.file.type === 'application/pdf' ? 'PDF Document' : 'Text File'}
+                      </Typography>
+                    </Box>
                   </Paper>
                 )}
               </>
@@ -340,7 +399,7 @@ Alex:`;
         className="pulse-button"
       >
         {initializationError ? (
-          <Tooltip title={initializationError}>
+          <Tooltip title={initializationError.message}>
             <VpnKeyIcon />
           </Tooltip>
         ) : (
@@ -354,9 +413,6 @@ Alex:`;
               borderRadius: '50%'
             }}
           />
-        )}
-        {unreadCount > 0 && (
-          <Badge badgeContent={unreadCount} color="error" />
         )}
       </Fab>
 
@@ -608,12 +664,52 @@ Alex:`;
               borderColor: 'grey.200'
             }}
           >
+            {/* File Preview */}
+            {file && (
+              <Paper
+                sx={{
+                  p: 1,
+                  mb: 1,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  backgroundColor: 'rgba(0, 0, 0, 0.04)',
+                  borderRadius: 1
+                }}
+              >
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  {file.type.startsWith('image/') ? (
+                    <ImageIcon color="primary" fontSize="small" />
+                  ) : file.type === 'application/pdf' ? (
+                    <PictureAsPdfIcon color="primary" fontSize="small" />
+                  ) : (
+                    <TextSnippetIcon color="primary" fontSize="small" />
+                  )}
+                  <Typography variant="body2" sx={{ maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {file.name}
+                  </Typography>
+                </Box>
+                <IconButton 
+                  size="small" 
+                  onClick={() => setFile(null)}
+                  sx={{ 
+                    '&:hover': { 
+                      color: 'error.main',
+                      backgroundColor: 'error.light' 
+                    }
+                  }}
+                >
+                  <CancelIcon fontSize="small" />
+                </IconButton>
+              </Paper>
+            )}
+
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
               <TextField
                 inputRef={inputRef}
                 fullWidth
                 variant="outlined"
-                placeholder="Let's solve this together..."
+                placeholder={file ? "Add a message with your file..." : "Let's solve this together..."}
                 value={inputMessage}
                 onChange={(e) => setInputMessage(e.target.value)}
                 onKeyPress={handleKeyPress}
@@ -622,16 +718,28 @@ Alex:`;
                 sx={{ mr: 1 }}
               />
               <Tooltip title="Attach Image">
-                <IconButton onClick={() => handleUploadClick('image/*')} color="primary">
+                <IconButton 
+                  onClick={() => handleUploadClick('image/*')} 
+                  color="primary"
+                  disabled={!!file}
+                >
                   <ImageIcon />
                 </IconButton>
               </Tooltip>
-              <Tooltip title="Attach File">
-                <IconButton onClick={() => handleUploadClick('*/*')} color="primary">
+              <Tooltip title="Attach Document">
+                <IconButton 
+                  onClick={() => handleUploadClick('.pdf,.txt')} 
+                  color="primary"
+                  disabled={!!file}
+                >
                   <AttachFileIcon />
                 </IconButton>
               </Tooltip>
-              <IconButton onClick={sendMessage} color="primary" disabled={isTyping || (!inputMessage.trim() && !file)}>
+              <IconButton 
+                onClick={sendMessage} 
+                color="primary" 
+                disabled={isTyping || (!inputMessage.trim() && !file)}
+              >
                 {isTyping ? <CircularProgress size={24} /> : <SendIcon />}
               </IconButton>
             </Box>
@@ -648,7 +756,7 @@ Alex:`;
         <DialogTitle>Enter Gemini API Key</DialogTitle>
         <DialogContent>
           <Typography gutterBottom>
-            The Gemini API key is missing. Please enter your key to continue.
+            The Gemini API key is missing or invalid. Please enter your key to continue.
             You can get a key from Google AI Studio.
           </Typography>
           <TextField
@@ -661,12 +769,30 @@ Alex:`;
             value={apiKeyInput}
             onChange={(e) => setApiKeyInput(e.target.value)}
             onKeyPress={(e) => e.key === 'Enter' && handleApiKeySubmit()}
+            error={!!initializationError}
+            helperText={initializationError?.details}
           />
-          <Box sx={{ mt: 2, display: 'flex', justifyContent: 'flex-end' }}>
-            <Button onClick={() => setShowApiKeyDialog(false)}>Cancel</Button>
-            <Button onClick={handleApiKeySubmit} variant="contained" sx={{ ml: 1 }}>Submit</Button>
-          </Box>
+          {initializationError && (
+            <Alert severity={initializationError.type} sx={{ mt: 2 }}>
+              <Typography variant="subtitle1" gutterBottom>
+                {initializationError.message}
+              </Typography>
+              <Typography variant="body2">
+                {initializationError.details}
+              </Typography>
+            </Alert>
+          )}
         </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setShowApiKeyDialog(false)}>Cancel</Button>
+          <Button 
+            onClick={handleApiKeySubmit} 
+            variant="contained"
+            disabled={!apiKeyInput.trim()}
+          >
+            Submit
+          </Button>
+        </DialogActions>
       </Dialog>
     </>
   );

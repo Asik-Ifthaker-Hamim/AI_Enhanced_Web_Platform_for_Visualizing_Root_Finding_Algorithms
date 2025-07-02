@@ -80,14 +80,16 @@ import {
   AssignmentTurnedIn as AssignmentDoneIcon,
   LightbulbOutlined as LightIcon,
   SchoolOutlined as EducationIcon,
-  FolderOpen as FolderIcon
+  FolderOpen as FolderIcon,
+  Speed as SpeedIcon,
+  Verified as VerifiedIcon,
+  Edit as EditIcon,
+  Info as InfoIcon
 } from '@mui/icons-material';
 
 import { initializeGemini, validateSolutionWithGemini, isGeminiInitialized } from '../../services/geminiService';
 import { quizData } from '../../data/quizData';
-
-// Get API key from environment variables
-const DEFAULT_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
+import { DEFAULT_API_KEY } from '../../config/config';
 
 function TabPanel({ children, value, index, ...other }) {
   return (
@@ -507,12 +509,12 @@ const interactiveExercises = [
 function PracticeModal({ exercise, onClose }) {
   const [currentProblem, setCurrentProblem] = useState(0);
   const [userSolution, setUserSolution] = useState('');
-  const [showHint, setShowHint] = useState(false);
   const [validationResult, setValidationResult] = useState(null);
   const [showCorrectAnswer, setShowCorrectAnswer] = useState(false);
-  const [apiKey, setApiKey] = useState(localStorage.getItem('gemini_api_key') || DEFAULT_API_KEY);
+  const [apiKey, setApiKey] = useState(DEFAULT_API_KEY);
   const [isValidating, setIsValidating] = useState(false);
   const [showApiKeyDialog, setShowApiKeyDialog] = useState(false);
+  const [apiKeyInput, setApiKeyInput] = useState('');
 
   const practiceProblems = {
     'Basic Root Finding': [
@@ -564,17 +566,38 @@ function PracticeModal({ exercise, onClose }) {
 
   // Function to save API key
   const saveApiKey = () => {
-    if (apiKey.trim()) {
-      localStorage.setItem('gemini_api_key', apiKey.trim());
+    if (apiKeyInput.trim()) {
       try {
-        initializeGemini(apiKey.trim());
+        const success = initializeGemini(apiKeyInput.trim());
+        if (success) {
+          localStorage.setItem('gemini_api_key', apiKeyInput.trim());
+          setApiKey(apiKeyInput.trim());
         setShowApiKeyDialog(false);
-      } catch (_error) { // eslint-disable-line no-unused-vars
+          setApiKeyInput('');
+          setValidationResult(null); // Clear any previous errors
+        } else {
+          throw new Error('Failed to initialize with provided key');
+        }
+      } catch (error) {
         setValidationResult({
           type: 'error',
-          message: 'Invalid API key. Please check and try again.'
+          message: 'Invalid API key. Please check and try again.',
+          details: error.message
         });
       }
+    }
+  };
+
+  // Function to handle problem navigation
+  const handleNextProblem = () => {
+    if (currentProblem + 1 < problems.length) {
+      setCurrentProblem(currentProblem + 1);
+    }
+  };
+
+  const handlePrevProblem = () => {
+    if (currentProblem > 0) {
+      setCurrentProblem(currentProblem - 1);
     }
   };
 
@@ -588,11 +611,14 @@ function PracticeModal({ exercise, onClose }) {
       return;
     }
 
-    // Check if API key is available
+    // Check if API key is available and Gemini is initialized
     if (!isGeminiInitialized()) {
-      // Try to initialize with current API key
       try {
-        initializeGemini(apiKey);
+        const success = initializeGemini(apiKey);
+        if (!success) {
+          setShowApiKeyDialog(true);
+          return;
+        }
       } catch (_error) { // eslint-disable-line no-unused-vars
         setShowApiKeyDialog(true);
         return;
@@ -609,53 +635,29 @@ function PracticeModal({ exercise, onClose }) {
         currentProb.solution
       );
 
-      // Check if this is an error response from the service
-      if (evaluation.error) {
-        const alertType = evaluation.error === 'QUOTA_EXCEEDED' ? 'warning' : 'error';
+      if (evaluation.error === 'QUOTA_EXCEEDED') {
         setValidationResult({
-          type: alertType,
-          message: evaluation.feedback,
-          details: evaluation.error === 'QUOTA_EXCEEDED' ? 
-            'The free API tier has daily limits. Please try again in a few minutes.' : 
-            'Technical issue detected.',
-          score: evaluation.score,
-          suggestions: evaluation.suggestions || [],
-          nextSteps: evaluation.nextSteps
+          type: 'warning',
+          message: 'API quota exceeded. Please try again in a few minutes.',
+          details: 'The free API tier has daily limits. Please wait a moment before trying again.'
         });
-        setShowCorrectAnswer(false);
-      } else if (evaluation.isCorrect) {
-        setValidationResult({
-          type: 'success',
-                      message: 'Congratulations! Your solution is correct!',
-            icon: <CelebrationIcon className="icon-bounce-soft" />,
-          details: evaluation.feedback,
-          score: evaluation.score,
-          methodUsed: evaluation.methodUsed,
-          suggestions: evaluation.suggestions || [],
-          strengths: evaluation.strengths || [],
-          nextSteps: evaluation.nextSteps
-        });
-        setShowCorrectAnswer(false);
+      } else if (evaluation.error === 'API_KEY_ERROR') {
+        setShowApiKeyDialog(true);
       } else {
-        setValidationResult({
-          type: 'error',
-          message: 'Your solution needs improvement.',
-          details: evaluation.feedback,
-          score: evaluation.score,
-          methodUsed: evaluation.methodUsed,
-          suggestions: evaluation.suggestions || [],
-          correctRoots: evaluation.correctRoots || [],
-          strengths: evaluation.strengths || [],
-          nextSteps: evaluation.nextSteps
-        });
-        setShowCorrectAnswer(true);
+        setValidationResult(evaluation);
+        setShowCorrectAnswer(!evaluation.isCorrect);
       }
-    } catch (_error) { // eslint-disable-line no-unused-vars
+    } catch (error) {
+      console.error('Validation error:', error);
+      if (error.message.includes('API key') || error.message.includes('not initialized')) {
+        setShowApiKeyDialog(true);
+      } else {
       setValidationResult({
         type: 'error',
-        message: '🔧 Unexpected error occurred.',
-        details: 'Please check your connection and try again.'
+          message: 'An error occurred while checking your solution.',
+          details: error.message
       });
+      }
     } finally {
       setIsValidating(false);
     }
@@ -689,17 +691,39 @@ function PracticeModal({ exercise, onClose }) {
   }, [currentProblem]);
 
   return (
-    <Dialog open={true} onClose={onClose} maxWidth="lg" fullWidth>
+    <Dialog 
+      open={true} 
+      onClose={onClose} 
+      maxWidth={false}
+      fullWidth
+      PaperProps={{
+        sx: {
+          width: '1400px',
+          height: '800px',
+          maxWidth: '95vw',
+          maxHeight: '90vh'
+        }
+      }}
+    >
       <DialogTitle sx={{ 
         display: 'flex', 
         justifyContent: 'space-between', 
         alignItems: 'center',
         bgcolor: 'primary.main',
-        color: 'white'
+        color: 'white',
+        p: 2
       }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <GpsFixedIcon className="icon-pulse-gentle" /> {exercise.title}
+          <Typography variant="h5" sx={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: 1,
+            fontWeight: 500
+          }}>
+            {exercise.title === 'Basic Root Finding' && <CalculateIcon className="icon-pulse-gentle" />}
+            {exercise.title === 'Method Comparison' && <TimelineIcon className="icon-float-gentle" />}
+            {exercise.title === 'Advanced Applications' && <ScienceIcon className="icon-spin-slow" />}
+            {exercise.title}
           </Typography>
           <Chip 
             label={exercise.difficulty} 
@@ -716,69 +740,36 @@ function PracticeModal({ exercise, onClose }) {
         </IconButton>
       </DialogTitle>
       
-      <DialogContent>
-        <Grid container spacing={3}>
-          <Grid item xs={12} md={6}>
-            <Card>
-              <CardContent>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                  <Typography variant="h6" color="primary" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <AssignmentIcon className="icon-soft-bounce" /> Problem {currentProblem + 1} of {problems.length}
-                  </Typography>
-                  <Chip 
-                    label={`${exercise.difficulty} Level`}
-                    size="small"
-                    color={exercise.difficulty === 'Beginner' ? 'success' : 
-                           exercise.difficulty === 'Intermediate' ? 'warning' : 'error'}
-                    variant="outlined"
-                  />
-                </Box>
-                <Paper sx={{ p: 2, bgcolor: 'grey.50', mb: 2 }}>
-                  <Typography variant="h6" sx={{ fontFamily: 'monospace', textAlign: 'center' }}>
-                    {currentProb?.equation || 'No problem available'}
-                  </Typography>
-                </Paper>
-                
-                <Typography variant="body2" paragraph>
-                  <strong>Task:</strong> Find the root(s) of this equation using numerical methods.
-                </Typography>
-
-                <Button 
-                  variant="outlined" 
-                  onClick={() => setShowHint(!showHint)}
-                  sx={{ mb: 2 }}
-                >
-                  {showHint ? 'Hide Hint' : 'Show Hint'}
-                </Button>
-
-                {showHint && (
-                  <Alert severity="info" sx={{ mb: 2 }}>
-                    <Typography variant="body2">
-                      <strong>Hint:</strong> {currentProb?.hint}
-                    </Typography>
-                  </Alert>
-                )}
-
-                <Typography variant="body2" color="text.secondary">
-                  <strong>Recommended Method:</strong> {currentProb?.method}
-                </Typography>
-
-
-              </CardContent>
-            </Card>
-          </Grid>
-
-          <Grid item xs={12} md={6}>
-            <Card>
-              <CardContent>
-                <Typography variant="h6" gutterBottom color="success.main">
+      <DialogContent sx={{ p: 3 }}>
+        <Box sx={{ 
+          display: 'flex', 
+          flexDirection: 'row', 
+          gap: 3,
+          justifyContent: 'center',
+          alignItems: 'stretch',
+          height: 'calc(100% - 20px)'
+        }}>
+          <Card sx={{ 
+            width: '650px',
+            height: '100%',
+            display: 'flex',
+            flexDirection: 'column'
+          }}>
+            <CardContent sx={{ flex: 1, p: 3 }}>
+              <Typography variant="h6" gutterBottom color="primary.main" sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1,
+                mb: 3
+              }}>
+                <EditIcon className="icon-bounce-soft" />
                   Your Solution
                 </Typography>
                 
                 <TextField
                   fullWidth
                   multiline
-                  rows={8}
+                rows={16}
                   placeholder="Write your solution steps here...
                   
 1. Choose method and initial conditions
@@ -787,203 +778,286 @@ function PracticeModal({ exercise, onClose }) {
 4. State final answer"
                   value={userSolution}
                   onChange={(e) => setUserSolution(e.target.value)}
-                  sx={{ mb: 2 }}
+                sx={{ 
+                  mb: 3,
+                  '& .MuiOutlinedInput-root': {
+                    bgcolor: 'grey.50'
+                  }
+                }}
                 />
 
                 {!showCorrectAnswer && (
                   <Alert severity="info" sx={{ mb: 2 }}>
-                    <Typography variant="body2">
-                      <LightbulbIcon className="icon-glow-soft" sx={{ fontSize: 16, mr: 0.5 }} /> <strong>Tip:</strong> Write your complete solution including the method used and final answer.
+                  <Typography variant="body2" sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1
+                  }}>
+                    <LightbulbIcon className="icon-glow-soft" />
+                    <strong>Tip:</strong> Write your complete solution including the method used and final answer.
                     </Typography>
                   </Alert>
                 )}
 
                 {showCorrectAnswer && (
-                  <Alert severity="success">
-                    <Typography variant="body2">
-                      <strong>Expected Answer:</strong> {currentProb?.solution}
+                <Alert severity="success" sx={{ mb: 2 }}>
+                  <Typography variant="subtitle1" sx={{ mb: 1 }}>
+                    <strong>Expected Answer:</strong>
+                  </Typography>
+                  <Typography variant="body1" sx={{ 
+                    fontFamily: 'monospace',
+                    whiteSpace: 'pre-wrap'
+                  }}>
+                    {currentProb?.solution}
                     </Typography>
                   </Alert>
                 )}
+            </CardContent>
+          </Card>
 
-                {/* Validation Results */}
+          <Card sx={{ 
+            width: '650px',
+            height: '100%',
+            display: 'flex',
+            flexDirection: 'column'
+          }}>
+            <CardContent sx={{ 
+              flex: 1, 
+              p: 3,
+              display: 'flex',
+              flexDirection: 'column',
+              height: '100%',
+              overflow: 'hidden' // Prevent double scrollbars
+            }}>
+              <Typography variant="h6" gutterBottom color="primary.main" sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1,
+                mb: 3,
+                flexShrink: 0 // Prevent title from shrinking
+              }}>
+                <AssignmentIcon className="icon-bounce-soft" />
+                Problem Details
+                    </Typography>
+
+              <Box sx={{ 
+                flex: 1,
+                overflow: 'auto', // Make content scrollable
+                pr: 1 // Add space for scrollbar
+              }}>
+                <Box sx={{ mb: 3 }}>
+                  <Typography variant="subtitle1" gutterBottom color="text.secondary">
+                    Equation:
+                      </Typography>
+                  <Paper sx={{ 
+                    p: 2, 
+                    bgcolor: 'grey.50',
+                    borderLeft: '3px solid',
+                    borderColor: 'primary.main'
+                  }}>
+                    <Typography variant="h6" sx={{ 
+                      fontFamily: 'monospace',
+                      color: 'primary.dark'
+                    }}>
+                      {currentProb?.equation}
+                      </Typography>
+                  </Paper>
+                </Box>
+
+                <Box sx={{ mb: 3 }}>
+                  <Typography variant="subtitle1" gutterBottom color="text.secondary">
+                    Hint:
+                    </Typography>
+                  <Alert severity="info">
+                    <Typography variant="body1">
+                      {currentProb?.hint}
+                        </Typography>
+                  </Alert>
+                      </Box>
+
+                <Box sx={{ mb: 3 }}>
+                  <Typography variant="subtitle1" gutterBottom color="text.secondary">
+                    Suggested Method:
+                        </Typography>
+                  <Alert severity="success">
+                    <Typography variant="body1">
+                      {currentProb?.method}
+                        </Typography>
+                  </Alert>
+                      </Box>
+
                 {validationResult && (
+                  <Box sx={{ mb: 3 }}>
                   <Alert 
-                    severity={validationResult.type === 'success' ? 'success' : validationResult.type === 'warning' ? 'warning' : validationResult.type === 'partial' ? 'warning' : 'error'}
-                    sx={{ mt: 2 }}
-                  >
-                    <Typography variant="body2" sx={{ fontWeight: 'bold', mb: 1 }}>
+                      severity={validationResult.type}
+                      sx={{ 
+                        '& .MuiAlert-message': {
+                          width: '100%'
+                        }
+                      }}
+                    >
+                      <Typography variant="subtitle1" sx={{ 
+                        mb: 1, 
+                        fontWeight: 500,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 1
+                      }}>
+                        {validationResult.type === 'success' && <CelebrationIcon className="icon-bounce-soft" />}
+                        {validationResult.type === 'error' && <WarningIcon className="icon-shake" />}
+                        {validationResult.type === 'info' && <InfoIcon className="icon-pulse" />}
                       {validationResult.message}
                     </Typography>
+                      
                     {validationResult.score !== undefined && (
-                      <Typography variant="body2" sx={{ mb: 1 }}>
-                        <strong>Score:</strong> {validationResult.score}/100
+                        <Box sx={{ 
+                          display: 'flex', 
+                          alignItems: 'center',
+                          gap: 1,
+                          mb: 2,
+                          bgcolor: 'background.paper',
+                          p: 1,
+                          borderRadius: 1
+                        }}>
+                          <Typography variant="body2" sx={{ minWidth: 80 }}>
+                            Score:
                       </Typography>
-                    )}
-                    {validationResult.methodUsed && (
-                      <Typography variant="body2" sx={{ mb: 1 }}>
-                        <strong>Method Identified:</strong> {validationResult.methodUsed}
-                      </Typography>
-                    )}
-                    <Typography variant="body2" sx={{ mb: 1 }}>
-                      {validationResult.details}
-                    </Typography>
-                    {validationResult.strengths && validationResult.strengths.length > 0 && (
-                      <Box sx={{ mt: 1 }}>
-                        <Typography variant="body2" sx={{ fontWeight: 'bold', color: 'success.main', display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                          <StarIcon className="icon-sparkle" sx={{ fontSize: 16 }} /> Strengths:
-                        </Typography>
-                        <ul style={{ margin: '0.5em 0', paddingLeft: '1.5em' }}>
-                          {validationResult.strengths.map((strength, index) => (
-                            <li key={index}>
-                              <Typography variant="body2" color="success.dark">{strength}</Typography>
-                            </li>
-                          ))}
-                        </ul>
-                      </Box>
-                    )}
-                    {validationResult.suggestions && validationResult.suggestions.length > 0 && (
-                      <Box sx={{ mt: 1 }}>
-                        <Typography variant="body2" sx={{ fontWeight: 'bold', color: 'warning.main', display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                          <LightbulbIcon className="icon-glow-soft" sx={{ fontSize: 16 }} /> Suggestions for Improvement:
-                        </Typography>
-                        <ul style={{ margin: '0.5em 0', paddingLeft: '1.5em' }}>
-                          {validationResult.suggestions.map((suggestion, index) => (
-                            <li key={index}>
-                              <Typography variant="body2">{suggestion}</Typography>
-                            </li>
-                          ))}
-                        </ul>
-                      </Box>
-                    )}
-                    {validationResult.nextSteps && (
-                      <Box sx={{ mt: 1, p: 1, bgcolor: 'info.light', borderRadius: 1 }}>
-                        <Typography variant="body2" sx={{ fontWeight: 'bold', color: 'info.dark', display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                          <GpsFixedIcon className="icon-pulse-gentle" sx={{ fontSize: 16 }} /> Next Steps:
-                        </Typography>
-                        <Typography variant="body2" color="info.dark">{validationResult.nextSteps}</Typography>
-                        {validationResult.type === 'warning' && (
-                          <Button 
-                            size="small" 
-                            variant="outlined" 
-                            onClick={checkSolution}
-                            disabled={isValidating}
-                            sx={{ mt: 1 }}
-                          >
-                            Try Again
-                          </Button>
-                        )}
-                      </Box>
-                    )}
-                    {validationResult.correctRoots && validationResult.correctRoots.length > 0 && (
-                      <Typography variant="body2" sx={{ mt: 1, fontWeight: 'bold' }}>
-                        <CheckIcon className="icon-bounce-soft" sx={{ fontSize: 16, mr: 0.5, verticalAlign: 'middle' }} />
-                        Correct roots: {validationResult.correctRoots.join(', ')}
-                      </Typography>
-                    )}
-                  </Alert>
-                )}
-              </CardContent>
-            </Card>
-          </Grid>
-        </Grid>
-
-        {/* Problem Navigation */}
-        <Card sx={{ mt: 3, bgcolor: 'grey.50' }}>
-          <CardContent>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-              <Typography variant="h6" color="primary.main" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <FolderIcon className="icon-float-gentle" /> Problem Navigation
-              </Typography>
               <LinearProgress 
                 variant="determinate" 
-                value={((currentProblem + 1) / problems.length) * 100}
-                sx={{ width: 100, height: 8, borderRadius: 4 }}
-              />
+                            value={validationResult.score}
+                            sx={{ 
+                              flex: 1,
+                              height: 8,
+                              borderRadius: 4
+                            }}
+                          />
+                          <Typography variant="body2" sx={{ 
+                            minWidth: 60,
+                            fontWeight: 500,
+                            color: validationResult.score >= 80 ? 'success.main' : 
+                                   validationResult.score >= 60 ? 'warning.main' : 'error.main'
+                          }}>
+                            {validationResult.score}/100
+                      </Typography>
             </Box>
+                    )}
+
+                      <Typography variant="body1" sx={{ mb: 2 }}>
+                      {validationResult.details}
+                    </Typography>
+
+                      {validationResult.suggestions?.length > 0 && (
+                        <Box sx={{ 
+                          mt: 2,
+                          bgcolor: 'background.paper',
+                          borderRadius: 1,
+                          p: 1
+                        }}>
+                          <Typography variant="subtitle2" gutterBottom sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 1,
+                            color: 'primary.main'
+                          }}>
+                            <LightbulbIcon className="icon-glow-soft" />
+                            Suggestions for Improvement:
+                        </Typography>
+                          <List dense sx={{
+                            '& .MuiListItem-root': {
+                              borderLeft: '2px solid',
+                              borderColor: 'primary.light',
+                              mb: 1,
+                              bgcolor: 'grey.50',
+                              borderRadius: '0 4px 4px 0',
+                              '&:last-child': { mb: 0 }
+                            }
+                          }}>
+                            {validationResult.suggestions.map((suggestion, idx) => (
+                              <ListItem key={idx}>
+                                <ListItemIcon>
+                                  <CheckIcon fontSize="small" color="success" />
+                                </ListItemIcon>
+                                <ListItemText 
+                                  primary={suggestion}
+                                  primaryTypographyProps={{
+                                    sx: { fontWeight: 500 }
+                                  }}
+                                />
+                              </ListItem>
+                            ))}
+                          </List>
+                      </Box>
+                    )}
+                    </Alert>
+                      </Box>
+                        )}
+                      </Box>
+              </CardContent>
+            </Card>
+            </Box>
+      </DialogContent>
             
-            <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2 }}>
+      <DialogActions sx={{ p: 3, bgcolor: 'grey.50', display: 'flex', justifyContent: 'space-between' }}>
+        <Box>
               <Button 
-                variant="outlined"
-                onClick={() => setCurrentProblem(Math.max(0, currentProblem - 1))}
+            onClick={handlePrevProblem}
                 disabled={currentProblem === 0}
                 startIcon={<PrevIcon />}
-                sx={{ minWidth: 150 }}
               >
                 Previous
               </Button>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 2 }}>
-                {[...Array(problems.length)].map((_, idx) => (
-                  <Box
-                    key={idx}
-                    sx={{
-                      width: 12,
-                      height: 12,
-                      borderRadius: '50%',
-                      bgcolor: idx === currentProblem ? 'primary.main' : 'grey.300',
-                      cursor: 'pointer',
-                      transition: 'all 0.2s',
-                      '&:hover': { transform: 'scale(1.2)' }
-                    }}
-                    onClick={() => setCurrentProblem(idx)}
-                  />
-                ))}
-              </Box>
               <Button 
-                variant="outlined"
-                onClick={() => setCurrentProblem(Math.min(problems.length - 1, currentProblem + 1))}
+            onClick={handleNextProblem}
                 disabled={currentProblem === problems.length - 1}
                 endIcon={<NextIcon />}
-                sx={{ minWidth: 150 }}
+            sx={{ ml: 1 }}
               >
                 Next
               </Button>
             </Box>
-          </CardContent>
-        </Card>
-      </DialogContent>
-      
-      <DialogActions>
-        <Button onClick={onClose}>Close</Button>
+        <Box>
+          <Button 
+            onClick={onClose}
+            startIcon={<CloseIcon />}
+          >
+            Close
+          </Button>
         <Button 
           variant="contained" 
-          color="success"
           onClick={checkSolution}
           disabled={isValidating || !userSolution.trim()}
-          startIcon={isValidating ? <CircularProgress size={20} /> : <PlayIcon />}
+            className={!isValidating && userSolution.trim() ? "button-breathe" : ""}
+            startIcon={isValidating ? <CircularProgress size={20} /> : <CheckIcon />}
+            sx={{ ml: 1 }}
         >
-          {isValidating ? 'Checking with AI...' : 'Check Solution'}
+            {isValidating ? 'Checking...' : 'Check Solution'}
         </Button>
+        </Box>
       </DialogActions>
 
-      {/* API Key Configuration Dialog */}
-      <Dialog open={showApiKeyDialog} onClose={() => setShowApiKeyDialog(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>
-          Configure Gemini AI API Key
-        </DialogTitle>
+      {/* API Key Dialog */}
+      <Dialog open={showApiKeyDialog} onClose={() => setShowApiKeyDialog(false)}>
+        <DialogTitle>Enter Gemini API Key</DialogTitle>
         <DialogContent>
-          <Alert severity="success" sx={{ mb: 2 }}>
-                              <CheckIcon className="icon-bounce-soft" sx={{ fontSize: 16, mr: 0.5, verticalAlign: 'middle' }} />
-                  A Gemini API key is already pre-configured and working!
-            <br />
-            You can optionally use your own key from: <Link href="https://aistudio.google.com/app/apikey" target="_blank">Google AI Studio</Link>
-          </Alert>
+          <Typography gutterBottom>
+            The Gemini API key is missing or invalid. Please enter your key to continue.
+            You can get a key from Google AI Studio.
+          </Typography>
           <TextField
-            fullWidth
+            autoFocus
+            margin="dense"
             label="Gemini API Key"
             type="password"
-            value={apiKey}
-            onChange={(e) => setApiKey(e.target.value)}
-            placeholder="AIza..."
-            sx={{ mt: 2 }}
-            helperText="Your API key will be stored locally and used only for solution validation"
+            fullWidth
+            variant="outlined"
+            value={apiKeyInput}
+            onChange={(e) => setApiKeyInput(e.target.value)}
+            onKeyPress={(e) => e.key === 'Enter' && saveApiKey()}
           />
         </DialogContent>
                   <DialogActions>
-            <Button onClick={() => setShowApiKeyDialog(false)}>Use Pre-configured Key</Button>
-            <Button onClick={saveApiKey} variant="contained" disabled={!apiKey.trim()}>
-              Use This Key Instead
-            </Button>
+          <Button onClick={() => setShowApiKeyDialog(false)}>Cancel</Button>
+          <Button onClick={saveApiKey} variant="contained">Submit</Button>
           </DialogActions>
       </Dialog>
     </Dialog>
@@ -1066,136 +1140,281 @@ function LearningCenter() {
 
         {/* Methods Overview Tab */}
         <TabPanel value={activeTab} index={0}>
-          <Alert severity="info" sx={{ mb: 3 }}>
-            <Typography variant="body1" sx={{ fontWeight: 500 }}>
+          <Box sx={{ 
+            width: '100%',
+            display: 'flex',
+            justifyContent: 'center',
+            mb: 3
+          }}>
+            <Alert severity="info" sx={{ 
+              maxWidth: '800px',
+              width: '100%',
+              '& .MuiAlert-message': {
+                width: '100%'
+              }
+            }}>
+              <Typography variant="body1" sx={{ 
+                fontWeight: 500,
+                textAlign: 'center'
+              }}>
               Explore comprehensive information about numerical methods for solving non-linear equations f(x) = 0.
             </Typography>
           </Alert>
+          </Box>
 
-          <Grid container spacing={3}>
+          <Grid container spacing={3} sx={{ 
+            display: 'flex',
+            justifyContent: 'center',
+            '& .MuiGrid-item': {
+              display: 'flex',
+              justifyContent: 'center'
+            }
+          }}>
             {methodsData.map((method, index) => (
               <Grid item xs={12} md={6} key={index}>
-                <Card className="scale-in card-hover-lift" sx={{ 
-                  height: '100%',
-                  minHeight: 380,
-                  border: '1px solid rgba(0,0,0,0.1)',
+                <Card sx={{ 
+                  height: '400px',
+                  width: '500px',
+                  margin: '0 auto',
                   bgcolor: 'background.paper',
-                  transition: 'all 0.3s ease'
+                  overflow: 'hidden',
+                  display: 'flex',
+                  flexDirection: 'column'
                 }}>
-                  <CardContent>
-                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                  <CardContent sx={{ height: '100%', overflow: 'auto' }}>
                       <Box sx={{ 
-                        mr: 2, 
-                        fontSize: '2.5rem', 
                         display: 'flex', 
                         alignItems: 'center',
-                        '& .MuiSvgIcon-root': {
-                          fontSize: '2.5rem',
-                          color: 'primary.main'
-                        }
+                      justifyContent: 'space-between',
+                      borderBottom: '2px solid',
+                      borderColor: 'primary.light',
+                      pb: 1,
+                      mb: 2
+                    }}>
+                      <Box sx={{ 
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 2
                       }}>
+                        <Box sx={{ color: 'primary.main' }}>
                         {method.icon}
                       </Box>
-                      <Box sx={{ flex: 1 }}>
-                        <Typography variant="h5" sx={{ fontWeight: 600 }}>
+                        <Typography variant="h6" color="primary.main">
                           {method.name}
                         </Typography>
-                        <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
-                          <Chip label={`Convergence: ${method.convergence}`} size="small" color="primary" />
-                          <Chip label={`Complexity: ${method.complexity}`} size="small" color="secondary" />
-                          <Chip label={`Reliability: ${method.reliability}`} size="small" color="success" />
-                        </Box>
                       </Box>
                       <Button 
-                        variant="outlined" 
+                        variant="contained"
+                        color="primary"
+                        size="small"
+                        startIcon={<SchoolIcon className="icon-bounce-soft" />}
                         onClick={() => handleMethodExpand(index)}
-                        endIcon={<ExpandMoreIcon className="icon-bounce" />}
-                        className="nav-item-hover"
                         sx={{
-                          transition: 'all 0.3s ease',
+                          borderRadius: 2,
                           '&:hover': {
                             transform: 'scale(1.05)',
                             boxShadow: '0 4px 15px rgba(21, 101, 192, 0.2)',
                           }
                         }}
                       >
-                        {expandedMethod === index ? 'Hide Details' : 'Learn More'}
+                        {expandedMethod === index ? 'Close' : 'Learn'}
                       </Button>
                     </Box>
 
-                    <Typography variant="body1" paragraph>
+                    <Box sx={{ 
+                      display: 'flex', 
+                      gap: 1, 
+                      flexWrap: 'wrap',
+                      mb: 2
+                    }}>
+                      <Chip 
+                        icon={<TimelineIcon className="icon-pulse-gentle" />}
+                        label={`Convergence: ${method.convergence}`} 
+                        size="small" 
+                        color="primary"
+                        sx={{ fontWeight: 500 }}
+                      />
+                      <Chip 
+                        icon={<SpeedIcon className="icon-spin-slow" />}
+                        label={`Complexity: ${method.complexity}`} 
+                        size="small" 
+                        color="secondary"
+                        sx={{ fontWeight: 500 }}
+                      />
+                      <Chip 
+                        icon={<VerifiedIcon className="icon-bounce-soft" />}
+                        label={`Reliability: ${method.reliability}`} 
+                        size="small" 
+                        color="success"
+                        sx={{ fontWeight: 500 }}
+                      />
+                    </Box>
+
+                    <Typography variant="body1" paragraph sx={{ flex: 1 }}>
                       {method.description}
                     </Typography>
 
                     {expandedMethod === index && (
-                      <div>
-                        <Divider sx={{ my: 2 }} />
+                      <Box sx={{ 
+                        mt: 1,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: 3
+                      }}>
+                        <Divider />
                         
                         <Grid container spacing={3}>
                           <Grid item xs={12} md={6}>
-                            <Typography variant="h6" gutterBottom color="primary.main">
-                              <BookIcon className="icon-wave icon-magnetic" sx={{ marginRight: '8px' }} />
+                            <Box sx={{ mb: 2 }}>
+                              <Typography variant="h6" gutterBottom color="primary.main" sx={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 1
+                              }}>
+                                <BookIcon className="icon-wave icon-magnetic" />
                               Theory
                             </Typography>
-                            <Typography variant="body2" paragraph>
+                              <Paper sx={{ 
+                                p: 2, 
+                                bgcolor: 'grey.50',
+                                borderLeft: '3px solid',
+                                borderColor: 'primary.main'
+                              }}>
+                                <Typography variant="body2">
                               {method.theory}
                             </Typography>
+                              </Paper>
+                            </Box>
 
-                            <Typography variant="h6" gutterBottom color="primary.main">
-                              <AutoFixHighIcon className="icon-elastic icon-glitch" sx={{ marginRight: '8px' }} />
+                            <Typography variant="h6" gutterBottom color="primary.main" sx={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 1
+                            }}>
+                              <AutoFixHighIcon className="icon-elastic icon-glitch" />
                               Algorithm Steps
                             </Typography>
-                            <List dense>
+                            <List dense sx={{
+                              bgcolor: 'grey.50',
+                              borderRadius: 1,
+                              '& .MuiListItem-root': {
+                                borderLeft: '3px solid',
+                                borderColor: 'primary.light',
+                                mb: 1,
+                                bgcolor: 'background.paper',
+                                borderRadius: '0 4px 4px 0'
+                              }
+                            }}>
                               {method.algorithm.map((step, idx) => (
                                 <ListItem key={idx}>
-                                  <ListItemText primary={step} />
+                                  <ListItemText 
+                                    primary={step}
+                                    sx={{ 
+                                      '& .MuiTypography-root': { 
+                                        fontFamily: 'monospace',
+                                        fontWeight: 500
+                                      }
+                                    }}
+                                  />
                                 </ListItem>
                               ))}
                             </List>
                           </Grid>
 
                           <Grid item xs={12} md={6}>
-                            <Typography variant="h6" gutterBottom color="success.main">
-                              <CheckIcon className="icon-pendulum icon-ripple" sx={{ marginRight: '8px' }} />
+                            <Box sx={{ mb: 2 }}>
+                              <Typography variant="h6" gutterBottom color="success.main" sx={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 1
+                              }}>
+                                <CheckIcon className="icon-pendulum icon-ripple" />
                               Advantages
                             </Typography>
-                            <List dense>
+                              <List dense sx={{
+                                bgcolor: 'success.50',
+                                borderRadius: 1,
+                                '& .MuiListItem-root': {
+                                  borderLeft: '3px solid',
+                                  borderColor: 'success.light',
+                                  mb: 1,
+                                  bgcolor: 'background.paper',
+                                  borderRadius: '0 4px 4px 0'
+                                }
+                              }}>
                               {method.advantages.map((advantage, idx) => (
                                 <ListItem key={idx}>
-                                  <ListItemIcon><StarIcon className="icon-twist icon-glow-pulse" color="success" fontSize="small" /></ListItemIcon>
+                                    <ListItemIcon>
+                                      <StarIcon className="icon-twist icon-glow-pulse" color="success" fontSize="small" />
+                                    </ListItemIcon>
                                   <ListItemText primary={advantage} />
                                 </ListItem>
                               ))}
                             </List>
+                            </Box>
 
-                            <Typography variant="h6" gutterBottom color="warning.main" sx={{ mt: 2 }}>
-                              <WarningIcon className="icon-jiggle icon-vibrate" sx={{ marginRight: '8px' }} />
-                              Disadvantages
+                            <Box sx={{ mb: 2 }}>
+                              <Typography variant="h6" gutterBottom color="warning.main" sx={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 1
+                              }}>
+                                <WarningIcon className="icon-jiggle icon-vibrate" />
+                                Limitations
                             </Typography>
-                            <List dense>
+                              <List dense sx={{
+                                bgcolor: 'warning.50',
+                                borderRadius: 1,
+                                '& .MuiListItem-root': {
+                                  borderLeft: '3px solid',
+                                  borderColor: 'warning.light',
+                                  mb: 1,
+                                  bgcolor: 'background.paper',
+                                  borderRadius: '0 4px 4px 0'
+                                }
+                              }}>
                               {method.disadvantages.map((disadvantage, idx) => (
                                 <ListItem key={idx}>
-                                  <ListItemIcon><Typography color="warning.main">•</Typography></ListItemIcon>
+                                    <ListItemIcon>
+                                      <Typography color="warning.main">•</Typography>
+                                    </ListItemIcon>
                                   <ListItemText primary={disadvantage} />
                                 </ListItem>
                               ))}
                             </List>
+                            </Box>
 
-                            <Typography variant="h6" gutterBottom color="info.main" sx={{ mt: 2 }}>
-                              <AppsIcon className="icon-orbit icon-comet" sx={{ marginRight: '8px' }} />
+                            <Typography variant="h6" gutterBottom color="info.main" sx={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 1
+                            }}>
+                              <AppsIcon className="icon-orbit icon-comet" />
                               Applications
                             </Typography>
-                            <List dense>
+                            <List dense sx={{
+                              bgcolor: 'info.50',
+                              borderRadius: 1,
+                              '& .MuiListItem-root': {
+                                borderLeft: '3px solid',
+                                borderColor: 'info.light',
+                                mb: 1,
+                                bgcolor: 'background.paper',
+                                borderRadius: '0 4px 4px 0'
+                              }
+                            }}>
                               {method.applications.map((application, idx) => (
                                 <ListItem key={idx}>
-                                  <ListItemIcon><TrendingUpIcon className="icon-quantum icon-magnetic" color="info" fontSize="small" /></ListItemIcon>
+                                  <ListItemIcon>
+                                    <TrendingUpIcon className="icon-quantum icon-magnetic" color="info" fontSize="small" />
+                                  </ListItemIcon>
                                   <ListItemText primary={application} />
                                 </ListItem>
                               ))}
                             </List>
                           </Grid>
                         </Grid>
-                      </div>
+                      </Box>
                     )}
                   </CardContent>
                 </Card>
@@ -1206,89 +1425,338 @@ function LearningCenter() {
 
         {/* Theory & Examples Tab */}
         <TabPanel value={activeTab} index={1}>
-          <Typography variant="h5" gutterBottom sx={{ mb: 3 }}>
-            <LanguageIcon className="icon-twist icon-levitate" sx={{ marginRight: '10px' }} />
+          <Box sx={{ 
+            width: '100%',
+            display: 'flex',
+            justifyContent: 'center',
+            mb: 3
+          }}>
+            <Typography variant="h5" sx={{ 
+              display: 'flex',
+              alignItems: 'center',
+              gap: 2
+            }}>
+              <LanguageIcon className="icon-twist icon-levitate" />
             Real-World Applications
           </Typography>
+          </Box>
           
-          <Grid container spacing={3} sx={{ mb: 4 }}>
+          <Grid container spacing={3} sx={{ 
+            mb: 4,
+            display: 'flex',
+            justifyContent: 'center'
+          }}>
             {practicalExamples.map((example, index) => (
-              <Grid item xs={12} md={6} key={index}>
-                <Card sx={{ height: '100%', minHeight: 320, border: '1px solid rgba(0,0,0,0.1)', bgcolor: 'background.paper' }}>
-                  <CardContent>
-                    <Typography variant="h6" gutterBottom color="primary.main">
+              <Grid item xs={12} md={6} key={index} sx={{ 
+                display: 'flex', 
+                justifyContent: 'center'
+              }}>
+                <Card sx={{ 
+                  height: '100%',
+                  minHeight: 300,
+                  width: '100%',
+                  maxWidth: '500px',
+                  bgcolor: 'background.paper',
+                  transition: 'all 0.3s ease',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  '&:hover': {
+                    transform: 'translateY(-4px)',
+                    boxShadow: '0 8px 20px rgba(0,0,0,0.1)',
+                  }
+                }}>
+                  <CardContent sx={{ 
+                    display: 'flex',
+                    flexDirection: 'column',
+                    height: '100%',
+                    gap: 2
+                  }}>
+                    <Box sx={{ 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      gap: 2,
+                      borderBottom: '2px solid',
+                      borderColor: 'primary.light',
+                      pb: 1
+                    }}>
+                      <Typography variant="h6" color="primary.main" sx={{ 
+                        fontWeight: 600,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 1,
+                        flex: 1
+                      }}>
+                        {index === 0 && <BalanceIcon className="icon-sway" />}
+                        {index === 1 && <TimelineIcon className="icon-pulse-gentle" />}
+                        {index === 2 && <TrendingUpIcon className="icon-float-gentle" />}
+                        {index === 3 && <FunctionsIcon className="icon-bounce-soft" />}
+                        {index === 4 && <ScienceIcon className="icon-spin-slow" />}
                       {example.title}
                     </Typography>
-                    <Paper sx={{ p: 2, bgcolor: 'grey.50', mb: 2 }}>
-                      <Typography variant="body1" sx={{ fontFamily: 'monospace', textAlign: 'center' }}>
+                    </Box>
+                    <Paper sx={{ 
+                      p: 3,
+                      bgcolor: 'grey.50',
+                      borderRadius: 2,
+                      border: '1px dashed rgba(0,0,0,0.1)',
+                      display: 'flex',
+                      justifyContent: 'center',
+                      alignItems: 'center'
+                    }}>
+                      <Typography 
+                        variant="h6" 
+                        sx={{ 
+                          fontFamily: 'monospace', 
+                          textAlign: 'center',
+                          color: 'primary.dark',
+                          fontWeight: 500
+                        }}
+                      >
                         {example.equation}
                       </Typography>
                     </Paper>
-                    <Typography variant="body2" paragraph>
-                      <strong>Context:</strong> {example.context}
+                    <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 2 }}>
+                      <Box>
+                        <Typography variant="subtitle1" color="text.secondary" gutterBottom>
+                          <strong>Context:</strong>
                     </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      <strong>Real-world use:</strong> {example.realWorld}
+                        <Typography variant="body1" sx={{ 
+                          pl: 2, 
+                          borderLeft: '3px solid', 
+                          borderColor: 'primary.light',
+                          minHeight: '80px',
+                          display: 'flex',
+                          alignItems: 'center'
+                        }}>
+                          {example.context}
                     </Typography>
+                      </Box>
+                      <Box>
+                        <Typography variant="subtitle1" color="text.secondary" gutterBottom>
+                          <strong>Real-world Application:</strong>
+                        </Typography>
+                        <Typography variant="body1" sx={{ 
+                          pl: 2, 
+                          borderLeft: '3px solid', 
+                          borderColor: 'success.light',
+                          minHeight: '80px',
+                          display: 'flex',
+                          alignItems: 'center'
+                        }}>
+                          {example.realWorld}
+                        </Typography>
+                      </Box>
+                    </Box>
                   </CardContent>
                 </Card>
               </Grid>
             ))}
           </Grid>
 
-          <Typography variant="h5" gutterBottom sx={{ mb: 3 }}>
-            <ScienceIcon className="icon-matrix icon-breathe" sx={{ marginRight: '10px' }} />
+          <Box sx={{ 
+            width: '100%',
+            display: 'flex',
+            justifyContent: 'center',
+            mb: 3
+          }}>
+            <Typography variant="h5" sx={{ 
+              display: 'flex',
+              alignItems: 'center',
+              gap: 2
+            }}>
+              <ScienceIcon className="icon-matrix icon-breathe" />
             Mathematical Foundation
           </Typography>
+          </Box>
           
-          <Grid container spacing={3}>
-            <Grid item xs={12} md={6}>
-              <Card sx={{ height: '100%', minHeight: 320, bgcolor: 'background.paper' }}>
-                <CardContent>
-                  <Typography variant="h6" gutterBottom color="primary.main">
-                    <PsychologyIcon className="icon-quantum icon-shimmer" sx={{ marginRight: '8px' }} />
+          <Grid container spacing={3} sx={{ 
+            display: 'flex',
+            justifyContent: 'center',
+            mb: 4
+          }}>
+            <Grid item xs={12} md={6} sx={{ display: 'flex', justifyContent: 'center' }}>
+              <Card sx={{ 
+                height: '100%',
+                minHeight: 300,
+                width: '100%',
+                maxWidth: '500px',
+                bgcolor: 'background.paper',
+                transition: 'all 0.3s ease',
+                display: 'flex',
+                flexDirection: 'column',
+                '&:hover': {
+                  transform: 'translateY(-4px)',
+                  boxShadow: '0 8px 20px rgba(0,0,0,0.1)',
+                }
+              }}>
+                <CardContent sx={{ 
+                  display: 'flex',
+                  flexDirection: 'column',
+                  height: '100%',
+                  gap: 2
+                }}>
+                  <Box sx={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: 2,
+                    borderBottom: '2px solid',
+                    borderColor: 'primary.light',
+                    pb: 1
+                  }}>
+                    <Typography variant="h6" color="primary.main" sx={{ 
+                      fontWeight: 600,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 1,
+                      flex: 1
+                    }}>
+                      <PsychologyIcon className="icon-quantum icon-shimmer" />
                     What are Non-linear Equations?
                   </Typography>
+                  </Box>
                   <Typography variant="body1" paragraph>
                     Non-linear equations are mathematical expressions where the unknown variable appears with powers other than one, 
                     or in functions like sin, cos, exp, log, etc. Examples include:
                   </Typography>
-                  <List>
+                  <List sx={{
+                    bgcolor: 'grey.50',
+                    borderRadius: 2,
+                    p: 2,
+                    flex: 1,
+                    '& .MuiListItem-root': {
+                      borderLeft: '3px solid',
+                      borderColor: 'primary.light',
+                      mb: 1,
+                      bgcolor: 'background.paper',
+                      borderRadius: '0 8px 8px 0',
+                      minHeight: '60px'
+                    }
+                  }}>
                     <ListItem>
-                      <ListItemText primary="Polynomial: x³ - 2x² + x - 1 = 0" />
+                      <ListItemText 
+                        primary={
+                          <Typography variant="body1" sx={{ fontFamily: 'monospace', fontWeight: 500 }}>
+                            Polynomial: x³ - 2x² + x - 1 = 0
+                          </Typography>
+                        }
+                      />
                     </ListItem>
                     <ListItem>
-                      <ListItemText primary="Transcendental: e^x - 3x = 0" />
+                      <ListItemText 
+                        primary={
+                          <Typography variant="body1" sx={{ fontFamily: 'monospace', fontWeight: 500 }}>
+                            Transcendental: e^x - 3x = 0
+                          </Typography>
+                        }
+                      />
                     </ListItem>
                     <ListItem>
-                      <ListItemText primary="Trigonometric: sin(x) - x/2 = 0" />
+                      <ListItemText 
+                        primary={
+                          <Typography variant="body1" sx={{ fontFamily: 'monospace', fontWeight: 500 }}>
+                            Trigonometric: sin(x) - x/2 = 0
+                          </Typography>
+                        }
+                      />
                     </ListItem>
                   </List>
                 </CardContent>
               </Card>
             </Grid>
 
-            <Grid item xs={12} md={6}>
-              <Card sx={{ height: '100%', minHeight: 320, bgcolor: 'background.paper' }}>
-                <CardContent>
-                  <Typography variant="h6" gutterBottom color="success.main">
-                    🔧 Why Numerical Methods?
+            <Grid item xs={12} md={6} sx={{ display: 'flex', justifyContent: 'center' }}>
+              <Card sx={{ 
+                height: '100%',
+                minHeight: 300,
+                width: '100%',
+                maxWidth: '500px',
+                bgcolor: 'background.paper',
+                transition: 'all 0.3s ease',
+                display: 'flex',
+                flexDirection: 'column',
+                '&:hover': {
+                  transform: 'translateY(-4px)',
+                  boxShadow: '0 8px 20px rgba(0,0,0,0.1)',
+                }
+              }}>
+                <CardContent sx={{ 
+                  display: 'flex',
+                  flexDirection: 'column',
+                  height: '100%',
+                  gap: 2
+                }}>
+                  <Box sx={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: 2,
+                    borderBottom: '2px solid',
+                    borderColor: 'success.light',
+                    pb: 1
+                  }}>
+                    <Typography variant="h6" color="success.main" sx={{ 
+                      fontWeight: 600,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 1,
+                      flex: 1
+                    }}>
+                      <AutoFixHighIcon className="icon-bounce-soft" />
+                      Why Numerical Methods?
                   </Typography>
+                  </Box>
                   <Typography variant="body1" paragraph>
                     Most non-linear equations cannot be solved analytically. Numerical methods provide:
                   </Typography>
-                  <List>
-                    <ListItem>
-                      <ListItemIcon><CalculateIcon color="success" /></ListItemIcon>
-                      <ListItemText primary="Approximate solutions with desired precision" />
+                  <List sx={{
+                    bgcolor: 'grey.50',
+                    borderRadius: 2,
+                    p: 2,
+                    flex: 1,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'space-around'
+                  }}>
+                    <ListItem sx={{
+                      bgcolor: 'background.paper',
+                      borderRadius: 1,
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
+                      minHeight: '60px'
+                    }}>
+                      <ListItemIcon>
+                        <CalculateIcon color="success" className="icon-pulse-gentle" />
+                      </ListItemIcon>
+                      <ListItemText 
+                        primary="Approximate solutions with desired precision"
+                        sx={{ '& .MuiTypography-root': { fontWeight: 500 } }}
+                      />
                     </ListItem>
-                    <ListItem>
-                      <ListItemIcon><TimelineIcon color="success" /></ListItemIcon>
-                      <ListItemText primary="Systematic approach to complex problems" />
+                    <ListItem sx={{
+                      bgcolor: 'background.paper',
+                      borderRadius: 1,
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
+                      minHeight: '60px'
+                    }}>
+                      <ListItemIcon>
+                        <TimelineIcon color="success" className="icon-float-gentle" />
+                      </ListItemIcon>
+                      <ListItemText 
+                        primary="Systematic approach to complex problems"
+                        sx={{ '& .MuiTypography-root': { fontWeight: 500 } }}
+                      />
                     </ListItem>
-                    <ListItem>
-                      <ListItemIcon><CodeIcon color="success" /></ListItemIcon>
-                      <ListItemText primary="Computer-implementable algorithms" />
+                    <ListItem sx={{
+                      bgcolor: 'background.paper',
+                      borderRadius: 1,
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
+                      minHeight: '60px'
+                    }}>
+                      <ListItemIcon>
+                        <CodeIcon color="success" className="icon-wave" />
+                      </ListItemIcon>
+                      <ListItemText 
+                        primary="Computer-implementable algorithms"
+                        sx={{ '& .MuiTypography-root': { fontWeight: 500 } }}
+                      />
                     </ListItem>
                   </List>
                 </CardContent>
@@ -1299,41 +1767,56 @@ function LearningCenter() {
 
         {/* Resources Tab */}
         <TabPanel value={activeTab} index={2}>
-          <Grid container spacing={3}>
+          <Grid container spacing={3} sx={{ display: 'flex', justifyContent: 'center' }}>
             {studyResources.map((category, index) => (
-              <Grid item xs={12} sm={6} md={4} key={index}>
-                <Card sx={{ height: '100%', minHeight: 380, bgcolor: 'background.paper' }}>
+              <Grid item xs={12} sm={6} md={3} key={index} sx={{ display: 'flex', justifyContent: 'center' }}>
+                <Card sx={{ 
+                  height: '100%',
+                  minHeight: 300,
+                  width: '100%',
+                  maxWidth: '450px',
+                  bgcolor: 'background.paper',
+                  display: 'flex',
+                  flexDirection: 'column'
+                }}>
                   <CardContent>
                     <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                      <Box sx={{ mr: 1, color: 'primary.main' }}>
                       {category.icon}
-                      <Typography variant="h6" sx={{ ml: 1, fontWeight: 600 }}>
+                      </Box>
+                      <Typography variant="h6" sx={{ fontWeight: 600 }}>
                         {category.category}
                       </Typography>
                     </Box>
                     
-                    <List>
+                    <List sx={{ flexGrow: 1 }}>
                       {category.resources.map((resource, idx) => (
-                        <ListItem key={idx} sx={{ px: 0 }}>
-                          <ListItemText
-                            primary={
-                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <ListItem key={idx} sx={{ 
+                          px: 0,
+                          alignItems: 'flex-start',
+                          gap: 1
+                        }}>
+                          <Box sx={{ flex: 1 }}>
+                            <Box sx={{ 
+                              display: 'flex', 
+                              justifyContent: 'space-between',
+                              alignItems: 'center',
+                              gap: 1,
+                              mb: 0.5
+                            }}>
                                 <Typography variant="body1">{resource.title}</Typography>
-                                <Box>
+                              <Box sx={{ 
+                                display: 'flex', 
+                                alignItems: 'center', 
+                                gap: 1,
+                                minWidth: 'fit-content',
+                                flexShrink: 0
+                              }}>
+                                <Box sx={{ display: 'flex' }}>
                                   {[...Array(resource.rating)].map((_, i) => (
                                     <StarIcon key={i} sx={{ fontSize: '16px', color: 'gold' }} />
                                   ))}
                                 </Box>
-                              </Box>
-                            }
-                            secondary={
-                              <Chip 
-                                label={resource.level} 
-                                size="small" 
-                                variant="outlined" 
-                                color="primary"
-                              />
-                            }
-                          />
                                                      <IconButton 
                              size="small" 
                              color="primary"
@@ -1343,13 +1826,22 @@ function LearningCenter() {
                              sx={{
                                transition: 'all 0.3s ease',
                                '&:hover': {
-                                 transform: 'scale(1.2) rotate(15deg)',
+                                      transform: 'rotate(360deg)',
                                  backgroundColor: 'rgba(21, 101, 192, 0.1)',
                                }
                              }}
                            >
-                             <LinkIcon className="icon-roll icon-ripple" />
+                                  <LinkIcon />
                            </IconButton>
+                              </Box>
+                            </Box>
+                            <Chip 
+                              label={resource.level} 
+                              size="small" 
+                              variant="outlined" 
+                              color="primary"
+                            />
+                          </Box>
                         </ListItem>
                       ))}
                     </List>
@@ -1359,93 +1851,504 @@ function LearningCenter() {
             ))}
           </Grid>
 
-          <Typography variant="h5" gutterBottom sx={{ mt: 4, mb: 3 }}>
+          <Typography variant="h5" gutterBottom sx={{ 
+            mt: 4, 
+            mb: 3, 
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}>
             <LanguageIcon className="icon-roll icon-magnetic" sx={{ marginRight: '10px' }} />
             Online Resources & Tools
           </Typography>
           
-          <Grid container spacing={3}>
-            <Grid item xs={12} sm={6} md={4}>
-              <Card sx={{ height: '100%', minHeight: 320, bgcolor: 'background.paper' }}>
+          <Grid container spacing={3} sx={{ display: 'flex', justifyContent: 'center' }}>
+            <Grid item xs={12} sm={6} md={4} sx={{ display: 'flex', justifyContent: 'center' }}>
+              <Card sx={{ 
+                height: '100%',
+                minHeight: 300,
+                width: '100%',
+                maxWidth: '800px',
+                bgcolor: 'background.paper',
+                display: 'flex',
+                flexDirection: 'column'
+              }}>
                 <CardContent>
                   <Typography variant="h6" gutterBottom color="primary.main">
                     <CodeIcon className="icon-wave icon-ripple" sx={{ marginRight: '8px' }} />
                     Interactive Tools
                   </Typography>
                                      <List dense>
-                     <ListItem button onClick={() => window.open('https://www.wolframalpha.com/', '_blank')}>
-                       <ListItemText primary="Wolfram Alpha Equation Solver" />
-                       <LinkIcon color="primary" />
+                    <ListItem button onClick={() => window.open('https://www.wolframalpha.com/', '_blank')} 
+                      sx={{ 
+                        display: 'flex', 
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        gap: 2
+                      }}
+                    >
+                      <ListItemText 
+                        primary="Wolfram Alpha Equation Solver"
+                        sx={{ flex: '1 1 auto' }}
+                      />
+                      <Box sx={{ 
+                        display: 'flex', 
+                        alignItems: 'center',
+                        ml: 3,
+                        flexShrink: 0
+                      }}>
+                        <IconButton 
+                          size="small" 
+                          color="primary"
+                          sx={{
+                            transition: 'all 0.3s ease',
+                            '&:hover': {
+                              transform: 'rotate(360deg)',
+                              backgroundColor: 'rgba(21, 101, 192, 0.1)',
+                            }
+                          }}
+                        >
+                          <LinkIcon />
+                        </IconButton>
+                      </Box>
                      </ListItem>
-                     <ListItem button onClick={() => window.open('https://www.desmos.com/calculator', '_blank')}>
-                       <ListItemText primary="Desmos Graphing Calculator" />
-                       <LinkIcon color="primary" />
+                    <ListItem 
+                      button 
+                      onClick={() => window.open('https://www.desmos.com/calculator', '_blank')}
+                      sx={{ 
+                        display: 'flex', 
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        gap: 2,
+                        pr: 2
+                      }}
+                    >
+                      <ListItemText 
+                        primary="Desmos Graphing Calculator"
+                        sx={{ flex: '1 1 auto', mr: 4 }}
+                      />
+                      <Box sx={{ 
+                        display: 'flex', 
+                        alignItems: 'center',
+                        ml: 3,
+                        flexShrink: 0
+                      }}>
+                        <IconButton 
+                          size="small" 
+                          color="primary"
+                          sx={{
+                            transition: 'all 0.3s ease',
+                            '&:hover': {
+                              transform: 'rotate(360deg)',
+                              backgroundColor: 'rgba(21, 101, 192, 0.1)',
+                            }
+                          }}
+                        >
+                          <LinkIcon />
+                        </IconButton>
+                      </Box>
                      </ListItem>
-                     <ListItem button onClick={() => window.open('https://www.geogebra.org/', '_blank')}>
-                       <ListItemText primary="GeoGebra Numerical Methods" />
-                       <LinkIcon color="primary" />
+                    <ListItem 
+                      button 
+                      onClick={() => window.open('https://www.geogebra.org/', '_blank')}
+                      sx={{ 
+                        display: 'flex', 
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        gap: 2,
+                        pr: 2
+                      }}
+                    >
+                      <ListItemText 
+                        primary="GeoGebra Numerical Methods"
+                        sx={{ flex: '1 1 auto', mr: 4 }}
+                      />
+                      <Box sx={{ 
+                        display: 'flex', 
+                        alignItems: 'center',
+                        ml: 3,
+                        flexShrink: 0
+                      }}>
+                        <IconButton 
+                          size="small" 
+                          color="primary"
+                          sx={{
+                            transition: 'all 0.3s ease',
+                            '&:hover': {
+                              transform: 'rotate(360deg)',
+                              backgroundColor: 'rgba(21, 101, 192, 0.1)',
+                            }
+                          }}
+                        >
+                          <LinkIcon />
+                        </IconButton>
+                      </Box>
                      </ListItem>
-                     <ListItem button onClick={() => window.open('https://matlab.mathworks.com/', '_blank')}>
-                       <ListItemText primary="MATLAB Online" />
-                       <LinkIcon color="primary" />
+                    <ListItem 
+                      button 
+                      onClick={() => window.open('https://matlab.mathworks.com/', '_blank')}
+                      sx={{ 
+                        display: 'flex', 
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        gap: 2,
+                        pr: 2
+                      }}
+                    >
+                      <ListItemText 
+                        primary="MATLAB Online"
+                        sx={{ flex: '1 1 auto', mr: 4 }}
+                      />
+                      <Box sx={{ 
+                        display: 'flex', 
+                        alignItems: 'center',
+                        ml: 3,
+                        flexShrink: 0
+                      }}>
+                        <IconButton 
+                          size="small" 
+                          color="primary"
+                          sx={{
+                            transition: 'all 0.3s ease',
+                            '&:hover': {
+                              transform: 'rotate(360deg)',
+                              backgroundColor: 'rgba(21, 101, 192, 0.1)',
+                            }
+                          }}
+                        >
+                          <LinkIcon />
+                        </IconButton>
+                      </Box>
                      </ListItem>
                    </List>
                 </CardContent>
               </Card>
             </Grid>
 
-            <Grid item xs={12} sm={6} md={4}>
-              <Card sx={{ height: '100%', minHeight: 320, bgcolor: 'background.paper' }}>
+            <Grid item xs={12} sm={6} md={4} sx={{ display: 'flex', justifyContent: 'center' }}>
+              <Card sx={{ 
+                height: '100%',
+                minHeight: 300,
+                width: '100%',
+                maxWidth: '800px',
+                bgcolor: 'background.paper',
+                display: 'flex',
+                flexDirection: 'column'
+              }}>
                 <CardContent>
                   <Typography variant="h6" gutterBottom color="success.main">
                     <DescriptionIcon className="icon-morph icon-levitate" sx={{ marginRight: '8px' }} />
                     Documentation
                   </Typography>
                                      <List dense>
-                     <ListItem button onClick={() => window.open('https://docs.scipy.org/', '_blank')}>
-                       <ListItemText primary="NumPy/SciPy Documentation" />
-                       <LinkIcon color="primary" />
+                    <ListItem 
+                      button 
+                      onClick={() => window.open('https://docs.scipy.org/', '_blank')}
+                      sx={{ 
+                        display: 'flex', 
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        gap: 2,
+                        pr: 2
+                      }}
+                    >
+                      <ListItemText 
+                        primary="NumPy/SciPy Documentation"
+                        sx={{ flex: '1 1 auto', mr: 4 }}
+                      />
+                      <Box sx={{ 
+                        display: 'flex', 
+                        alignItems: 'center',
+                        ml: 3,
+                        flexShrink: 0
+                      }}>
+                        <IconButton 
+                          size="small" 
+                          color="primary"
+                          sx={{
+                            transition: 'all 0.3s ease',
+                            '&:hover': {
+                              transform: 'rotate(360deg)',
+                              backgroundColor: 'rgba(21, 101, 192, 0.1)',
+                            }
+                          }}
+                        >
+                          <LinkIcon />
+                        </IconButton>
+                      </Box>
                      </ListItem>
-                     <ListItem button onClick={() => window.open('https://www.mathworks.com/help/matlab/numerical-analysis.html', '_blank')}>
-                       <ListItemText primary="MATLAB Numerical Methods Guide" />
-                       <LinkIcon color="primary" />
+                    <ListItem 
+                      button 
+                      onClick={() => window.open('https://www.mathworks.com/help/matlab/numerical-analysis.html', '_blank')}
+                      sx={{ 
+                        display: 'flex', 
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        gap: 2,
+                        pr: 2
+                      }}
+                    >
+                      <ListItemText 
+                        primary="MATLAB Numerical Methods Guide"
+                        sx={{ flex: '1 1 auto', mr: 4 }}
+                      />
+                      <Box sx={{ 
+                        display: 'flex', 
+                        alignItems: 'center',
+                        ml: 3,
+                        flexShrink: 0
+                      }}>
+                        <IconButton 
+                          size="small" 
+                          color="primary"
+                          sx={{
+                            transition: 'all 0.3s ease',
+                            '&:hover': {
+                              transform: 'rotate(360deg)',
+                              backgroundColor: 'rgba(21, 101, 192, 0.1)',
+                            }
+                          }}
+                        >
+                          <LinkIcon />
+                        </IconButton>
+                      </Box>
                      </ListItem>
-                     <ListItem button onClick={() => window.open('https://www.gnu.org/software/gsl/', '_blank')}>
-                       <ListItemText primary="GNU Scientific Library Manual" />
-                       <LinkIcon color="primary" />
+                    <ListItem 
+                      button 
+                      onClick={() => window.open('https://www.gnu.org/software/gsl/', '_blank')}
+                      sx={{ 
+                        display: 'flex', 
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        gap: 2,
+                        pr: 2
+                      }}
+                    >
+                      <ListItemText 
+                        primary="GNU Scientific Library Manual"
+                        sx={{ flex: '1 1 auto', mr: 4 }}
+                      />
+                      <Box sx={{ 
+                        display: 'flex', 
+                        alignItems: 'center',
+                        ml: 3,
+                        flexShrink: 0
+                      }}>
+                        <IconButton 
+                          size="small" 
+                          color="primary"
+                          sx={{
+                            transition: 'all 0.3s ease',
+                            '&:hover': {
+                              transform: 'rotate(360deg)',
+                              backgroundColor: 'rgba(21, 101, 192, 0.1)',
+                            }
+                          }}
+                        >
+                          <LinkIcon />
+                        </IconButton>
+                      </Box>
                      </ListItem>
-                     <ListItem button onClick={() => window.open('http://numerical.recipes/', '_blank')}>
-                       <ListItemText primary="Numerical Recipes Online" />
-                       <LinkIcon color="primary" />
+                    <ListItem 
+                      button 
+                      onClick={() => window.open('http://numerical.recipes/', '_blank')}
+                      sx={{ 
+                        display: 'flex', 
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        gap: 2,
+                        pr: 2
+                      }}
+                    >
+                      <ListItemText 
+                        primary="Numerical Recipes Online"
+                        sx={{ flex: '1 1 auto', mr: 4 }}
+                      />
+                      <Box sx={{ 
+                        display: 'flex', 
+                        alignItems: 'center',
+                        ml: 3,
+                        flexShrink: 0
+                      }}>
+                        <IconButton 
+                          size="small" 
+                          color="primary"
+                          sx={{
+                            transition: 'all 0.3s ease',
+                            '&:hover': {
+                              transform: 'rotate(360deg)',
+                              backgroundColor: 'rgba(21, 101, 192, 0.1)',
+                            }
+                          }}
+                        >
+                          <LinkIcon />
+                        </IconButton>
+                      </Box>
                      </ListItem>
                    </List>
                 </CardContent>
               </Card>
             </Grid>
 
-            <Grid item xs={12} sm={6} md={4}>
-              <Card sx={{ height: '100%', minHeight: 320, bgcolor: 'background.paper' }}>
+            <Grid item xs={12} sm={6} md={4} sx={{ display: 'flex', justifyContent: 'center' }}>
+              <Card sx={{ 
+                height: '100%',
+                minHeight: 300,
+                width: '100%',
+                maxWidth: '800px',
+                bgcolor: 'background.paper',
+                display: 'flex',
+                flexDirection: 'column'
+              }}>
                 <CardContent>
                   <Typography variant="h6" gutterBottom color="warning.main">
                     <SchoolIcon className="icon-spiral icon-comet" sx={{ marginRight: '8px' }} />
                     Academic Resources
                   </Typography>
                                      <List dense>
-                     <ListItem button onClick={() => window.open('https://ocw.mit.edu/', '_blank')}>
-                       <ListItemText primary="MIT OpenCourseWare" />
-                       <LinkIcon color="primary" />
+                    <ListItem 
+                      button 
+                      onClick={() => window.open('https://ocw.mit.edu/', '_blank')}
+                      sx={{ 
+                        display: 'flex', 
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        gap: 2,
+                        pr: 2
+                      }}
+                    >
+                      <ListItemText 
+                        primary="MIT OpenCourseWare"
+                        sx={{ flex: '1 1 auto', mr: 4 }}
+                      />
+                      <Box sx={{ 
+                        display: 'flex', 
+                        alignItems: 'center',
+                        ml: 3,
+                        flexShrink: 0
+                      }}>
+                        <IconButton 
+                          size="small" 
+                          color="primary"
+                          sx={{
+                            transition: 'all 0.3s ease',
+                            '&:hover': {
+                              transform: 'rotate(360deg)',
+                              backgroundColor: 'rgba(21, 101, 192, 0.1)',
+                            }
+                          }}
+                        >
+                          <LinkIcon />
+                        </IconButton>
+                      </Box>
                      </ListItem>
-                     <ListItem button onClick={() => window.open('https://web.stanford.edu/class/cs205a/', '_blank')}>
-                       <ListItemText primary="Stanford CS 205 Notes" />
-                       <LinkIcon color="primary" />
+                    <ListItem 
+                      button 
+                      onClick={() => window.open('https://web.stanford.edu/class/cs205a/', '_blank')}
+                      sx={{ 
+                        display: 'flex', 
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        gap: 2,
+                        pr: 2
+                      }}
+                    >
+                      <ListItemText 
+                        primary="Stanford CS 205 Notes"
+                        sx={{ flex: '1 1 auto', mr: 4 }}
+                      />
+                      <Box sx={{ 
+                        display: 'flex', 
+                        alignItems: 'center',
+                        ml: 3,
+                        flexShrink: 0
+                      }}>
+                        <IconButton 
+                          size="small" 
+                          color="primary"
+                          sx={{
+                            transition: 'all 0.3s ease',
+                            '&:hover': {
+                              transform: 'rotate(360deg)',
+                              backgroundColor: 'rgba(21, 101, 192, 0.1)',
+                            }
+                          }}
+                        >
+                          <LinkIcon />
+                        </IconButton>
+                      </Box>
                      </ListItem>
-                     <ListItem button onClick={() => window.open('https://math.berkeley.edu/courses/choosing/lowerdivcourses/math128a', '_blank')}>
-                       <ListItemText primary="Berkeley Math 128A" />
-                       <LinkIcon color="primary" />
+                    <ListItem 
+                      button 
+                      onClick={() => window.open('https://math.berkeley.edu/courses/choosing/lowerdivcourses/math128a', '_blank')}
+                      sx={{ 
+                        display: 'flex', 
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        gap: 2,
+                        pr: 2
+                      }}
+                    >
+                      <ListItemText 
+                        primary="Berkeley Math 128A"
+                        sx={{ flex: '1 1 auto', mr: 4 }}
+                      />
+                      <Box sx={{ 
+                        display: 'flex', 
+                        alignItems: 'center',
+                        ml: 3,
+                        flexShrink: 0
+                      }}>
+                        <IconButton 
+                          size="small" 
+                          color="primary"
+                          sx={{
+                            transition: 'all 0.3s ease',
+                            '&:hover': {
+                              transform: 'rotate(360deg)',
+                              backgroundColor: 'rgba(21, 101, 192, 0.1)',
+                            }
+                          }}
+                        >
+                          <LinkIcon />
+                        </IconButton>
+                      </Box>
                      </ListItem>
-                     <ListItem button onClick={() => window.open('https://arxiv.org/list/math.NA/recent', '_blank')}>
-                       <ListItemText primary="ArXiv Numerical Analysis Papers" />
-                       <LinkIcon color="primary" />
+                    <ListItem 
+                      button 
+                      onClick={() => window.open('https://arxiv.org/list/math.NA/recent', '_blank')}
+                      sx={{ 
+                        display: 'flex', 
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        gap: 2,
+                        pr: 2
+                      }}
+                    >
+                      <ListItemText 
+                        primary="ArXiv Numerical Analysis Papers"
+                        sx={{ flex: '1 1 auto', mr: 4 }}
+                      />
+                      <Box sx={{ 
+                        display: 'flex', 
+                        alignItems: 'center',
+                        ml: 3,
+                        flexShrink: 0
+                      }}>
+                        <IconButton 
+                          size="small" 
+                          color="primary"
+                          sx={{
+                            transition: 'all 0.3s ease',
+                            '&:hover': {
+                              transform: 'rotate(360deg)',
+                              backgroundColor: 'rgba(21, 101, 192, 0.1)',
+                            }
+                          }}
+                        >
+                          <LinkIcon />
+                        </IconButton>
+                      </Box>
                      </ListItem>
                    </List>
                 </CardContent>
@@ -1456,35 +2359,103 @@ function LearningCenter() {
 
         {/* Practice Tab */}
         <TabPanel value={activeTab} index={3}>
-          <Typography variant="h5" gutterBottom sx={{ mb: 3 }}>
-            <AssignmentIcon className="icon-pendulum icon-glitch" sx={{ marginRight: '10px' }} />
-            Interactive Exercises
-          </Typography>
-          
-          <Grid container spacing={3} sx={{ mb: 4 }}>
+          <Grid container spacing={3}>
             {interactiveExercises.map((exercise, index) => (
-              <Grid item xs={12} sm={6} md={4} key={index}>
-                <Card sx={{ height: '100%', minHeight: 380, bgcolor: 'background.paper' }}>
-                  <CardContent>
-                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                      <Typography variant="h6" sx={{ flex: 1 }}>{exercise.title}</Typography>
+              <Grid item xs={12} md={6} key={index}>
+                <Card sx={{ 
+                  minHeight: '450px',
+                  bgcolor: 'background.paper',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  transition: 'transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out',
+                  '&:hover': {
+                    transform: 'translateY(-4px)',
+                    boxShadow: '0 8px 20px rgba(0,0,0,0.1)',
+                  }
+                }}>
+                  <CardContent sx={{ 
+                    height: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    p: 3
+                  }}>
+                    <Box sx={{ 
+                      display: 'flex', 
+                      alignItems: 'flex-start', 
+                      gap: 2,
+                      borderBottom: '2px solid',
+                      borderColor: 'primary.light',
+                      pb: 2,
+                      mb: 3
+                    }}>
+                      <Box sx={{ color: 'primary.main', mt: 1 }}>
+                        {index === 0 && <CalculateIcon className="icon-pulse-gentle" sx={{ fontSize: '2.5rem' }} />}
+                        {index === 1 && <TimelineIcon className="icon-float-gentle" sx={{ fontSize: '2.5rem' }} />}
+                        {index === 2 && <ScienceIcon className="icon-spin-slow" sx={{ fontSize: '2.5rem' }} />}
+                      </Box>
+                      <Box sx={{ flex: 1 }}>
+                        <Typography variant="h5" color="primary.main" gutterBottom>
+                          {exercise.title}
+                        </Typography>
+                        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
                       <Chip 
                         label={exercise.difficulty} 
-                        color={exercise.difficulty === 'Beginner' ? 'success' : 
-                               exercise.difficulty === 'Intermediate' ? 'warning' : 'error'}
                         size="small"
+                            color={
+                              exercise.difficulty === 'Beginner' ? 'success' : 
+                              exercise.difficulty === 'Intermediate' ? 'warning' : 
+                              'error'
+                            }
+                          />
+                          <Chip 
+                            icon={<AssignmentIcon />}
+                            label={`${exercise.problems.length} Problems`} 
+                            size="small"
+                            color="primary"
                       />
                     </Box>
-                    <Typography variant="body2" paragraph>
+                      </Box>
+                    </Box>
+
+                    <Typography variant="body1" paragraph sx={{ mb: 3 }}>
                       {exercise.description}
                     </Typography>
-                    <Typography variant="subtitle2" gutterBottom>Sample Problems:</Typography>
-                    <List dense>
+
+                    <Box sx={{ flex: 1 }}>
+                      <Typography variant="subtitle1" color="text.secondary" gutterBottom sx={{ 
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 1,
+                        mb: 2
+                      }}>
+                        <FunctionsIcon />
+                        Sample Problems:
+                      </Typography>
+                      <List sx={{
+                        bgcolor: 'grey.50',
+                        borderRadius: 2,
+                        p: 2,
+                        '& .MuiListItem-root': {
+                          borderLeft: '3px solid',
+                          borderColor: 'primary.light',
+                          mb: 1,
+                          p: 2,
+                          bgcolor: 'background.paper',
+                          borderRadius: '0 8px 8px 0',
+                          '&:last-child': {
+                            mb: 0
+                          }
+                        }
+                      }}>
                       {exercise.problems.map((problem, idx) => (
-                        <ListItem key={idx} sx={{ px: 0 }}>
+                          <ListItem key={idx}>
                           <ListItemText 
                             primary={
-                              <Typography variant="body2" sx={{ fontFamily: 'monospace' }}>
+                                <Typography variant="body1" sx={{ 
+                                  fontFamily: 'monospace', 
+                                  fontWeight: 500,
+                                  color: 'primary.dark'
+                                }}>
                                 {problem}
                               </Typography>
                             }
@@ -1492,19 +2463,20 @@ function LearningCenter() {
                         </ListItem>
                       ))}
                     </List>
+                    </Box>
+
                                          <Button 
-                       variant="outlined" 
+                      variant="contained"
                        fullWidth 
-                       sx={{ mt: 2 }}
                        onClick={() => handleStartPractice(exercise.title, exercise.difficulty)}
-                       className="pulse-button nav-item-hover"
-                       style={{
-                         transition: 'all 0.3s ease',
-                         '&:hover': {
-                           transform: 'scale(1.05)',
-                           boxShadow: '0 6px 20px rgba(21, 101, 192, 0.15)',
-                         }
-                       }}
+                      className="button-breathe"
+                      sx={{
+                        mt: 3,
+                        py: 1.5,
+                        borderRadius: 2,
+                        transition: 'all 0.3s ease'
+                      }}
+                      startIcon={<PlayIcon className="icon-bounce-soft" />}
                      >
                        Start Practice
                      </Button>
@@ -1514,82 +2486,200 @@ function LearningCenter() {
             ))}
           </Grid>
 
-          <Typography variant="h5" gutterBottom sx={{ mb: 3 }}>
-            <QuizIcon className="icon-elastic icon-breathe" sx={{ marginRight: '10px' }} />
-            Self-Assessment Quiz
+          <Box sx={{ mt: 4 }}>
+            <Card>
+              <CardContent>
+                <Typography variant="h5" gutterBottom sx={{ 
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 2,
+                  mb: 3
+                }}>
+                  <QuizIcon className="icon-elastic icon-breathe" />
+                  Self-Assessment Quizzes
           </Typography>
           
-          <Card sx={{ mb: 3, minHeight: 200, bgcolor: 'background.paper' }}>
+                <Grid container spacing={3}>
+                  <Grid item xs={12} sm={6} md={3}>
+                    <Card sx={{
+                      height: '100%',
+                      bgcolor: 'primary.50',
+                      transition: 'all 0.3s ease',
+                      '&:hover': {
+                        transform: 'translateY(-4px)',
+                        boxShadow: '0 6px 20px rgba(21, 101, 192, 0.15)',
+                      }
+                    }}>
             <CardContent>
-              <Typography variant="h6" gutterBottom>
-                Test Your Knowledge
+                        <Box sx={{ textAlign: 'center', mb: 2 }}>
+                          <AssignmentIcon className="icon-jiggle icon-shimmer" color="primary" sx={{ fontSize: '2.5rem' }} />
+                        </Box>
+                        <Typography variant="h6" gutterBottom align="center">
+                          Basic Concepts
               </Typography>
-              <Typography variant="body1" paragraph>
-                Take our comprehensive quiz to assess your understanding of numerical methods for non-linear equations.
+                        <Typography variant="body2" color="text.secondary" align="center" paragraph>
+                          Test your understanding of fundamental principles
               </Typography>
-                             <Grid container spacing={2}>
-                 <Grid item xs={12} sm={6} md={3}>
+                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, alignItems: 'center' }}>
+                          <Chip 
+                            label={`5 questions per quiz (from pool of 35)`}
+                            size="small"
+                            color="primary"
+                            sx={{ mb: 1 }}
+                          />
                    <Button 
                      variant="contained" 
                      fullWidth
-                     sx={{ minHeight: 56 }}
                      onClick={() => handleStartQuiz('basic')}
-                     className="pulse-button nav-item-hover"
+                            className="button-breathe-primary"
+                            color="primary"
                    >
-                     <AssignmentIcon className="icon-jiggle icon-shimmer" sx={{ marginRight: '8px' }} />
-                                           Basic Concepts (50 Questions)
+                            Start Quiz
                    </Button>
+                        </Box>
+                      </CardContent>
+                    </Card>
                  </Grid>
+
                  <Grid item xs={12} sm={6} md={3}>
+                    <Card sx={{
+                      height: '100%',
+                      bgcolor: 'warning.50',
+                      transition: 'all 0.3s ease',
+                      '&:hover': {
+                        transform: 'translateY(-4px)',
+                        boxShadow: '0 6px 20px rgba(255, 152, 0, 0.15)',
+                      }
+                    }}>
+                      <CardContent>
+                        <Box sx={{ textAlign: 'center', mb: 2 }}>
+                          <CalculateIcon className="icon-twist icon-vibrate" color="warning" sx={{ fontSize: '2.5rem' }} />
+                        </Box>
+                        <Typography variant="h6" gutterBottom align="center">
+                          Method Selection
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary" align="center" paragraph>
+                          Learn when to use each method
+                        </Typography>
+                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, alignItems: 'center' }}>
+                          <Chip 
+                            label={`5 questions per quiz (from pool of 35)`}
+                            size="small"
+                            color="warning"
+                            sx={{ mb: 1 }}
+                          />
                    <Button 
                      variant="contained" 
                      fullWidth 
-                     color="warning"
-                     sx={{ minHeight: 56 }}
                      onClick={() => handleStartQuiz('selection')}
-                     className="pulse-button nav-item-hover"
+                            className="button-breathe-warning"
+                            color="warning"
                    >
-                     <CalculateIcon className="icon-twist icon-vibrate" sx={{ marginRight: '8px' }} />
-                                           Method Selection (50 Questions)
+                            Start Quiz
                    </Button>
+                        </Box>
+                      </CardContent>
+                    </Card>
                  </Grid>
+
                  <Grid item xs={12} sm={6} md={3}>
+                    <Card sx={{
+                      height: '100%',
+                      bgcolor: 'success.50',
+                      transition: 'all 0.3s ease',
+                      '&:hover': {
+                        transform: 'translateY(-4px)',
+                        boxShadow: '0 6px 20px rgba(76, 175, 80, 0.15)',
+                      }
+                    }}>
+                      <CardContent>
+                        <Box sx={{ textAlign: 'center', mb: 2 }}>
+                          <CodeIcon className="icon-wave icon-magnetic" color="success" sx={{ fontSize: '2.5rem' }} />
+                        </Box>
+                        <Typography variant="h6" gutterBottom align="center">
+                          Implementation
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary" align="center" paragraph>
+                          Practice coding the methods
+                        </Typography>
+                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, alignItems: 'center' }}>
+                          <Chip 
+                            label={`5 questions per quiz (from pool of 30)`}
+                            size="small"
+                            color="success"
+                            sx={{ mb: 1 }}
+                          />
                    <Button 
                      variant="contained" 
                      fullWidth 
-                     color="success"
-                     sx={{ minHeight: 56 }}
                      onClick={() => handleStartQuiz('implementation')}
-                     className="pulse-button nav-item-hover"
+                            className="button-breathe-success"
+                            color="success"
                    >
-                     <CodeIcon className="icon-wave icon-magnetic" sx={{ marginRight: '8px' }} />
-                                           Implementation (50 Questions)
+                            Start Quiz
                    </Button>
+                        </Box>
+                      </CardContent>
+                    </Card>
                  </Grid>
+
                  <Grid item xs={12} sm={6} md={3}>
+                    <Card sx={{
+                      height: '100%',
+                      bgcolor: 'error.50',
+                      transition: 'all 0.3s ease',
+                      '&:hover': {
+                        transform: 'translateY(-4px)',
+                        boxShadow: '0 6px 20px rgba(211, 47, 47, 0.15)',
+                      }
+                    }}>
+                      <CardContent>
+                        <Box sx={{ textAlign: 'center', mb: 2 }}>
+                          <InsightsIcon className="icon-matrix icon-levitate" color="error" sx={{ fontSize: '2.5rem' }} />
+                        </Box>
+                        <Typography variant="h6" gutterBottom align="center">
+                          Advanced Topics
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary" align="center" paragraph>
+                          Challenge yourself with complex problems
+                        </Typography>
+                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, alignItems: 'center' }}>
+                          <Chip 
+                            label={`5 questions per quiz (from pool of 25)`}
+                            size="small"
+                            color="error"
+                            sx={{ mb: 1 }}
+                          />
                    <Button 
                      variant="contained" 
                      fullWidth 
-                     color="error"
-                     sx={{ minHeight: 56 }}
                      onClick={() => handleStartQuiz('advanced')}
-                     className="pulse-button nav-item-hover"
+                            className="button-breathe-error"
+                            color="error"
                    >
-                     <InsightsIcon className="icon-matrix icon-levitate" sx={{ marginRight: '8px' }} />
-                                           Advanced Topics (40 Questions)
+                            Start Quiz
                    </Button>
+                        </Box>
+                      </CardContent>
+                    </Card>
                  </Grid>
                </Grid>
             </CardContent>
           </Card>
+          </Box>
 
+          <Box sx={{ mt: 4 }}>
           <Alert severity="info">
-            <Typography variant="body2">
-              <LightbulbIcon className="icon-comet icon-breathe" sx={{ marginRight: '8px' }} />
-              <strong>Study Tip:</strong> Practice with our interactive equation solver to understand how different methods 
-              behave with various types of equations. Compare convergence rates and observe how initial conditions affect results.
+              <Typography variant="body1" sx={{ 
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1
+              }}>
+                <LightbulbIcon className="icon-glow-soft" />
+                <strong>Study Tip:</strong> Practice regularly with different types of equations to build intuition for method selection and implementation.
             </Typography>
                      </Alert>
+          </Box>
          </TabPanel>
 
          {/* Quiz Modal */}

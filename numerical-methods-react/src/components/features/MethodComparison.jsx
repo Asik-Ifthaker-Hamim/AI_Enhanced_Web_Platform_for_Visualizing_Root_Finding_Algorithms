@@ -558,8 +558,8 @@ function MethodComparison() {
                                 // Get original error values from results for display
                                 const originalErrors = Object.entries(results)
                                   .filter(([key]) => !['functionName', 'functionExpression'].includes(key))
-                                  .filter(([method, result]) => result && !result.errorMessage && result.finalError !== null && result.finalError !== undefined)
-                                  .map(([method, result]) => result.finalError);
+                                  .filter(([, result]) => result && !result.errorMessage && result.finalError !== null && result.finalError !== undefined)
+                                  .map(([, result]) => result.finalError);
 
                                 if (originalErrors.length === 0) {
                                   throw new Error('No valid final error values');
