@@ -47,7 +47,10 @@ import {
   Person as PersonIcon,
   MenuBook as MenuBookIcon,
   Laptop as LaptopIcon,
-  Rocket as RocketIcon
+  Rocket as RocketIcon,
+  LinkedIn as LinkedInIcon,
+  Facebook as FacebookIcon,
+  Work as WorkIcon
 } from '@mui/icons-material';
 
 
@@ -72,6 +75,8 @@ const teamMembers = [
     avatar: '/leader-image.png',
     email: 'asikifthakerhamim75@gmail.com',
     academicEmail: 'c221012@ugrad.iiuc.ac.bd',
+    linkedIn: 'www.linkedin.com/in/a-m-asik-ifthaker-hamim-154434328',
+    facebook: 'www.facebook.com/asikifthaker.hamim',
     description: 'Computer Science student and AI Engineer specializing',
     contributions: [
       'Project Leadership & Architecture',
@@ -427,7 +432,7 @@ function TeamInfo() {
                               border: '3px solid',
                               borderColor: index === 0 ? 'primary.main' : index === 1 ? 'success.main' : index === 2 ? 'warning.main' : 'secondary.main',
                               boxShadow: `0 0 25px rgba(${index === 0 ? '25, 118, 210' : index === 1 ? '76, 175, 80' : index === 2 ? '255, 152, 0' : '156, 39, 176'}, 0.3)`,
-                              marginBottom: -1.5,
+                              marginBottom: 2, // Increased margin bottom from -1.5 to 2
                               position: 'relative',
                               '& img': {
                                 objectFit: 'cover',
@@ -459,45 +464,85 @@ function TeamInfo() {
                                   transform: 'scale(1.05)',
                                 },
                               },
-                              '@keyframes rotateRing': {
-                                '0%': { transform: 'rotate(0deg)' },
-                                '100%': { transform: 'rotate(360deg)' },
-                              },
                             }}
                             src={member.avatar}
                           />
-                          <Box sx={{ width: '100%', textAlign: 'center', mt: 2 }}>
+                          <Box sx={{ width: '100%', textAlign: 'center', mt: 1 }}>
                             <Typography variant="h6" sx={{ 
                               fontWeight: 700, 
-                              mb: 2,
+                              mb: 0.5, // Reduced margin bottom from 2 to 0.5
                               color: '#000000',
                               textAlign: 'center',
-                              width: '100%'
+                              width: '100%',
+                              fontSize: '1.1rem', // Slightly reduced font size
+                              letterSpacing: '0.5px' // Added letter spacing for better readability
                             }}>
                               {member.name}
                             </Typography>
                             <Typography variant="subtitle1" sx={{ 
                               fontWeight: 500, 
                               mb: 2,
-                              color: '#000000'
+                              color: '#000000',
+                              fontSize: '0.95rem', // Slightly reduced font size
+                              opacity: 0.9 // Added slight transparency
                             }}>
                               {member.role}
                             </Typography>
                             {member.professionalTitle && (
-                              <Typography variant="body2" className="icon-breathe" color="success.main" sx={{ 
-                                fontWeight: 500, 
-                                mb: 1,
-                                padding: '2px 8px',
-                                backgroundColor: 'success.light',
-                                borderRadius: '12px',
-                                display: 'inline-block',
-                                transition: 'all 0.3s ease',
-                                '&:hover': {
-                                  backgroundColor: 'success.main',
-                                  color: 'white',
-                                  transform: 'scale(1.05)',
-                                }
-                              }}>
+                              <Typography 
+                                variant="body2" 
+                                className="icon-breathe" 
+                                sx={{ 
+                                  fontWeight: 600, 
+                                  mb: 1,
+                                  padding: '6px 12px',
+                                  backgroundColor: 'rgba(76, 175, 80, 0.1)',
+                                  color: '#2e7d32',
+                                  borderRadius: '12px',
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '8px',
+                                  border: '1px solid rgba(76, 175, 80, 0.2)',
+                                  boxShadow: '0 2px 8px rgba(76, 175, 80, 0.1)',
+                                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                                  animation: 'glow 2s ease-in-out infinite',
+                                  position: 'relative',
+                                  overflow: 'hidden',
+                                  '&::before': {
+                                    content: '""',
+                                    position: 'absolute',
+                                    top: 0,
+                                    left: '-100%',
+                                    width: '100%',
+                                    height: '100%',
+                                    background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent)',
+                                    animation: 'shimmer 2s infinite',
+                                  },
+                                  '&:hover': {
+                                    backgroundColor: 'rgba(76, 175, 80, 0.15)',
+                                    transform: 'translateY(-2px) scale(1.02)',
+                                    boxShadow: '0 4px 12px rgba(76, 175, 80, 0.2)',
+                                    border: '1px solid rgba(76, 175, 80, 0.3)',
+                                  },
+                                  '@keyframes shimmer': {
+                                    '0%': {
+                                      left: '-100%',
+                                    },
+                                    '100%': {
+                                      left: '100%',
+                                    },
+                                  },
+                                  '@keyframes glow': {
+                                    '0%, 100%': {
+                                      boxShadow: '0 2px 8px rgba(76, 175, 80, 0.1)',
+                                    },
+                                    '50%': {
+                                      boxShadow: '0 2px 12px rgba(76, 175, 80, 0.2)',
+                                    },
+                                  }
+                                }}
+                              >
+                                <WorkIcon className="icon-spin-slow" sx={{ fontSize: '16px', color: '#2e7d32' }} />
                                 {member.professionalTitle}
                               </Typography>
                             )}
@@ -537,6 +582,64 @@ function TeamInfo() {
                               }}>
                                 <SchoolIcon className="icon-wiggle icon-glow-soft" sx={{ fontSize: '16px' }} />
                                 {member.academicEmail}
+                              </Typography>
+                            )}
+                            {member.facebook && (
+                              <Typography variant="body2" className="icon-drift" color="text.secondary" sx={{ 
+                                display: 'flex', 
+                                alignItems: 'center', 
+                                justifyContent: 'center', 
+                                gap: 1,
+                                transition: 'all 0.3s ease',
+                                '&:hover': { 
+                                  color: '#1877F2',  // Facebook brand color
+                                  transform: 'scale(1.02)',
+                                }
+                              }}>
+                                <FacebookIcon className="icon-wiggle icon-glow-soft" sx={{ fontSize: '16px' }} />
+                                <a 
+                                  href={`https://${member.facebook}`} 
+                                  target="_blank" 
+                                  rel="noopener noreferrer"
+                                  style={{
+                                    textDecoration: 'none',
+                                    color: 'inherit',
+                                    transition: 'color 0.3s ease',
+                                  }}
+                                  onMouseOver={(e) => e.target.style.color = '#1877F2'}
+                                  onMouseOut={(e) => e.target.style.color = 'inherit'}
+                                >
+                                  Connect on Facebook
+                                </a>
+                              </Typography>
+                            )}
+                            {member.linkedIn && (
+                              <Typography variant="body2" className="icon-drift" color="text.secondary" sx={{ 
+                                display: 'flex', 
+                                alignItems: 'center', 
+                                justifyContent: 'center', 
+                                gap: 1,
+                                transition: 'all 0.3s ease',
+                                '&:hover': { 
+                                  color: '#0077B5',  // LinkedIn brand color
+                                  transform: 'scale(1.02)',
+                                }
+                              }}>
+                                <LinkedInIcon className="icon-wiggle icon-glow-soft" sx={{ fontSize: '16px' }} />
+                                <a 
+                                  href={`https://${member.linkedIn}`} 
+                                  target="_blank" 
+                                  rel="noopener noreferrer"
+                                  style={{
+                                    textDecoration: 'none',
+                                    color: 'inherit',
+                                    transition: 'color 0.3s ease',
+                                  }}
+                                  onMouseOver={(e) => e.target.style.color = '#0077B5'}
+                                  onMouseOut={(e) => e.target.style.color = 'inherit'}
+                                >
+                                  Connect on LinkedIn
+                                </a>
                               </Typography>
                             )}
                           </Box>
