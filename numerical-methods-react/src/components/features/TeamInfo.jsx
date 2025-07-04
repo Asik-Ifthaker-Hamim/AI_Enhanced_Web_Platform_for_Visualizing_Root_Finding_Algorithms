@@ -91,7 +91,7 @@ const teamMembers = [
     role: 'Algorithm Developer',
     avatar: '/adri.png',
     email: 'c221022@ugrad.iiuc.ac.bd',
-    description: 'Focused on mathematical algorithm implementation and',
+    description: 'Focused on mathematical algorithm implementation',
     contributions: [
       'Algorithm Research',
       'Mathematical Validation',
@@ -466,32 +466,20 @@ function TeamInfo() {
                             }}
                             src={member.avatar}
                           />
-                          <Box sx={{ width: '100%', textAlign: 'center' }}>
-                            <Typography variant="h6" className="icon-shimmer" sx={{ 
+                          <Box sx={{ width: '100%', textAlign: 'center', mt: 2 }}>
+                            <Typography variant="h6" sx={{ 
                               fontWeight: 700, 
-                              mb: 1,
-                              background: index === 0 ? 'linear-gradient(45deg, #1976d2, #42a5f5)' : 
-                                          index === 1 ? 'linear-gradient(45deg, #4caf50, #81c784)' : 
-                                          index === 2 ? 'linear-gradient(45deg, #ff9800, #ffb74d)' : 
-                                          'linear-gradient(45deg, #9c27b0, #ba68c8)',
-                              backgroundClip: 'text',
-                              WebkitBackgroundClip: 'text',
-                              WebkitTextFillColor: 'transparent',
-                              transition: 'all 0.3s ease',
-                              '&:hover': {
-                                transform: 'scale(1.05)',
-                              }
+                              mb: 2,
+                              color: '#000000',
+                              textAlign: 'center',
+                              width: '100%'
                             }}>
                               {member.name}
                             </Typography>
-                            <Typography variant="subtitle1" className="icon-gentle-pulse" color="primary.main" sx={{ 
+                            <Typography variant="subtitle1" sx={{ 
                               fontWeight: 500, 
-                              mb: 1,
-                              transition: 'all 0.3s ease',
-                              '&:hover': {
-                                color: 'primary.dark',
-                                transform: 'scale(1.02)',
-                              }
+                              mb: 2,
+                              color: '#000000'
                             }}>
                               {member.role}
                             </Typography>
@@ -821,6 +809,7 @@ function TeamInfo() {
                 <Box sx={{ textAlign: 'center', mb: 3 }}>
                   <Avatar
                     src="/Sir.jpg"
+                    alt={courseInfo.instructor}
                     className="icon-orbit icon-magnetic"
                     sx={{
                       bgcolor: 'transparent',
@@ -866,89 +855,67 @@ function TeamInfo() {
                         '0%': { transform: 'rotate(0deg)' },
                         '100%': { transform: 'rotate(360deg)' },
                       },
-                    }}
-                  />
-                  <Typography variant="h6" className="icon-shimmer" sx={{ 
-                    fontWeight: 700, 
-                    mb: 1,
-                    background: 'linear-gradient(45deg, #4caf50, #81c784)',
-                    backgroundClip: 'text',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                    transition: 'all 0.3s ease',
-                    '&:hover': {
-                      transform: 'scale(1.05)',
-                    }
-                  }}>
-                    {courseInfo.instructor}
-                  </Typography>
-                  <Typography variant="subtitle1" className="icon-gentle-pulse" color="primary.main" sx={{ 
-                    fontWeight: 500, 
-                    mb: 1,
-                    transition: 'all 0.3s ease',
-                    '&:hover': {
-                      color: 'primary.dark',
-                      transform: 'scale(1.02)',
-                    }
-                  }}>
-                    Professor of Computer Science
-                  </Typography>
-                  <Typography variant="subtitle2" className="icon-breathe" color="secondary.main" sx={{ 
-                    fontWeight: 500, 
-                    mb: 2,
-                    padding: '2px 8px',
-                    backgroundColor: 'secondary.light',
-                    borderRadius: '12px',
-                    display: 'inline-block',
-                    transition: 'all 0.3s ease',
-                    '&:hover': {
-                      backgroundColor: 'secondary.main',
-                      color: 'white',
-                      transform: 'scale(1.05)',
-                    }
-                  }}>
-                    Dean, Faculty of Science & Engineering, IIUC
-                  </Typography>
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, alignItems: 'center', mb: 2 }}>
-                    <Typography 
-                      variant="body2" 
-                      className="icon-float"
-                      sx={{ 
-                        display: 'flex', 
-                        alignItems: 'center', 
-                        justifyContent: 'center', 
-                        gap: 1, 
-                        mb: 0.5,
-                        transition: 'all 0.3s ease',
-                        '&:hover': { 
-                          color: 'primary.main',
-                          transform: 'scale(1.02)',
-                        }
-                      }}
-                    >
-                      <EmailIcon className="icon-spin-slow icon-magnetic" fontSize="small" />
-                      alam_cse@yahoo.com
-                    </Typography>
-                    <Typography 
-                      variant="body2"
-                      className="icon-drift" 
-                      sx={{ 
-                        display: 'flex', 
-                        alignItems: 'center', 
-                        justifyContent: 'center', 
-                        gap: 1,
-                        transition: 'all 0.3s ease',
-                        '&:hover': { 
-                          color: 'secondary.main',
-                          transform: 'scale(1.02)',
-                        }
-                      }}
-                    >
-                      <EmailIcon className="icon-spin-slow icon-magnetic" fontSize="small" color="secondary" />
-                      msa@iiuc.ac.bd
-                    </Typography>
+                    }}>
+                      {courseInfo.instructor.split(' ').map(n => n[0]).join('')}
+                    </Avatar>
+                    <Box sx={{ width: '100%', textAlign: 'center', mt: 3 }}>
+                      <Typography variant="h6" sx={{ 
+                        fontWeight: 700, 
+                        mb: 2,
+                        color: '#000000',
+                        textAlign: 'center',
+                        width: '100%'
+                      }}>
+                        {courseInfo.instructor}
+                      </Typography>
+                      <Typography variant="subtitle1" sx={{ 
+                        fontWeight: 500, 
+                        mb: 2,
+                        color: '#000000'
+                      }}>
+                        Professor of Computer Science
+                      </Typography>
+                    </Box>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, alignItems: 'center', mb: 2 }}>
+                      <Typography 
+                        variant="body2" 
+                        className="icon-float"
+                        sx={{ 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          justifyContent: 'center', 
+                          gap: 1, 
+                          mb: 0.5,
+                          transition: 'all 0.3s ease',
+                          '&:hover': { 
+                            color: 'primary.main',
+                            transform: 'scale(1.02)',
+                          }
+                        }}
+                      >
+                        <EmailIcon className="icon-spin-slow icon-magnetic" fontSize="small" />
+                        alam_cse@yahoo.com
+                      </Typography>
+                      <Typography 
+                        variant="body2"
+                        className="icon-drift" 
+                        sx={{ 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          justifyContent: 'center', 
+                          gap: 1,
+                          transition: 'all 0.3s ease',
+                          '&:hover': { 
+                            color: 'secondary.main',
+                            transform: 'scale(1.02)',
+                          }
+                        }}
+                      >
+                        <EmailIcon className="icon-spin-slow icon-magnetic" fontSize="small" color="secondary" />
+                        msa@iiuc.ac.bd
+                      </Typography>
+                    </Box>
                   </Box>
-                </Box>
 
                 <Divider sx={{ my: 2 }} />
 
