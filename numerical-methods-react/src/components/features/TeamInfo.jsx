@@ -121,7 +121,7 @@ const teamMembers = [
     name: 'Tousif Ahmed Farayzi',
     studentId: 'C223128',
     role: 'Development Team Member',
-    avatar: '/alex-avatar.png',
+    avatar: '/Tousif.jpg',
     email: 'c223128@ugrad.iiuc.ac.bd',
     description: 'Contributing to development and testing processes',
     contributions: [

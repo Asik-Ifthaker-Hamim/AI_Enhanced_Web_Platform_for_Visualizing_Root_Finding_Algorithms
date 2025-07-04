@@ -114,6 +114,22 @@ const teamMembers = [
       'User Experience Testing'
     ],
     skills: ['Software Testing', 'Quality Assurance', 'Documentation', 'User Testing']
+  },
+  {
+    name: 'Tousif Ahmed Farayzi',
+    studentId: 'C223128',
+    role: 'Development Team Member',
+    avatar: '/Tousif.jpg',
+    email: 'c223128@ugrad.iiuc.ac.bd',
+    description: 'Focused on mathematical algorithm implementation and optimization',
+    contributions: [
+      'Algorithm Research',
+      'Mathematical Validation',
+      'Performance Optimization',
+      'Code Review',
+      'Testing Support'
+    ],
+    skills: ['Mathematics', 'Algorithm Design', 'Python', 'Numerical Analysis']
   }
 ];
 
