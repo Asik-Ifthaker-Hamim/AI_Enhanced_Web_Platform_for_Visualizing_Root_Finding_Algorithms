@@ -36,7 +36,7 @@ import {
   TextSnippet as TextSnippetIcon
 } from '@mui/icons-material';
 
-import { initializeGemini, isGeminiInitialized, getChatResponse } from '../../services/geminiService';
+import { initializeGemini, isGeminiInitialized, getChatResponseStream } from '../../services/geminiService';
 import { DEFAULT_API_KEY, DEBUG_MODE } from '../../config/config';
 
 // Study buddy persona prompt - Peer Learning Approach
@@ -158,8 +158,30 @@ const StudyBuddyChat = () => {
         fullPrompt += `\n\n[User has attached a file: ${currentFile.name} (${currentFile.type})]`;
       }
 
-      // Get response from Gemini
-      const response = await getChatResponse(fullPrompt, currentFile);
+      // Create streaming message placeholder
+      const streamingMessageId = messages.length + 2;
+      const assistantMessage = {
+        id: streamingMessageId,
+        sender: 'alex',
+        content: '',
+        timestamp: new Date(),
+        isStreaming: true
+      };
+      setMessages(prev => [...prev, assistantMessage]);
+
+      // Get streaming response from Gemini
+      const response = await getChatResponseStream(
+        fullPrompt, 
+        currentFile,
+        (chunkText, fullText) => {
+          // Update the streaming message with new content
+          setMessages(prev => prev.map(msg => 
+            msg.id === streamingMessageId 
+              ? { ...msg, content: fullText }
+              : msg
+          ));
+        }
+      );
       
       if (response && response.error) {
         if (response.error === 'UNSUPPORTED_FILE_TYPE') {
@@ -177,14 +199,12 @@ const StudyBuddyChat = () => {
         throw new Error('Invalid response received from AI service');
       }
 
-      // Add assistant's response to chat
-      const assistantMessage = {
-        id: messages.length + 2,
-        sender: 'alex',
-        content: response,
-        timestamp: new Date()
-      };
-      setMessages(prev => [...prev, assistantMessage]);
+      // Finalize the streaming message
+      setMessages(prev => prev.map(msg => 
+        msg.id === streamingMessageId 
+          ? { ...msg, content: response, isStreaming: false }
+          : msg
+      ));
       
     } catch (error) {
       console.error('Error getting chat response:', error);

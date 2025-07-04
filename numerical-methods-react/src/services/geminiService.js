@@ -323,6 +323,84 @@ export const getChatResponse = async (prompt, file = null) => {
   }
 };
 
+// Streaming version of getChatResponse
+export const getChatResponseStream = async (prompt, file = null, onChunk = null) => {
+  if (!isGeminiInitialized()) {
+    throw new Error('Gemini is not initialized. Please check your API key.');
+  }
+
+  try {
+    let response;
+    
+    // Try primary model first
+    try {
+      if (file) {
+        const content = await fileToGenerativePart(file);
+        
+        if (typeof content === 'string') {
+          // For text content (PDF/TXT files)
+          response = await primaryModel.generateContentStream(`${prompt}\n\nContent from uploaded file:\n${content}`);
+        } else {
+          // For images
+          response = await primaryModel.generateContentStream([prompt, content]);
+        }
+      } else {
+        response = await primaryModel.generateContentStream(prompt);
+      }
+    } catch (primaryError) {
+      console.warn('Primary model failed, trying fallback:', primaryError.message);
+      
+      // Try fallback model
+      if (file) {
+        const content = await fileToGenerativePart(file);
+        if (typeof content === 'string') {
+          // For text content (PDF/TXT files)
+          response = await fallbackModel.generateContentStream(`${prompt}\n\nContent from uploaded file:\n${content}`);
+        } else {
+          // For images
+          response = await fallbackModel.generateContentStream([prompt, content]);
+        }
+      } else {
+        response = await fallbackModel.generateContentStream(prompt);
+      }
+    }
+
+    let fullText = '';
+    
+    for await (const chunk of response.stream) {
+      const chunkText = chunk.text();
+      
+      // Stream character by character with a natural delay
+      for (let i = 0; i < chunkText.length; i++) {
+        const char = chunkText[i];
+        fullText += char;
+        
+        // Call the onChunk callback with the new character and full text so far
+        if (onChunk) {
+          onChunk(char, fullText);
+        }
+        
+        // Add a small delay for natural typing effect (20-50ms per character)
+        await new Promise(resolve => setTimeout(resolve, Math.random() * 30 + 20));
+      }
+    }
+    
+    return fullText;
+  } catch (error) {
+    console.error('Both models failed:', error);
+    if (error.message.includes('quota')) {
+      return { error: 'QUOTA_EXCEEDED' };
+    }
+    if (error.message.includes('API key')) {
+      return { error: 'API_KEY_ERROR' };
+    }
+    if (error.message.includes('Unsupported file type') || error.message.includes('Failed to parse')) {
+      return { error: 'UNSUPPORTED_FILE_TYPE', message: error.message };
+    }
+    throw error;
+  }
+};
+
 export const validateSolutionWithGemini = async (equation, userSolution, expectedSolution) => {
   if (!isGeminiInitialized()) {
     throw new Error('Gemini is not initialized. Please check your API key.');

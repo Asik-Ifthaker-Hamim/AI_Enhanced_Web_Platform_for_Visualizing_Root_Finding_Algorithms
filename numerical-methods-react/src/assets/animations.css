@@ -1687,4 +1687,14 @@
     transform: scale(1.02);
     box-shadow: 0 6px 20px rgba(211, 47, 47, 0.3);
   }
+}
+
+/* Streaming cursor blink animation */
+@keyframes blink {
+  0%, 50% {
+    opacity: 1;
+  }
+  51%, 100% {
+    opacity: 0;
+  }
 } 
