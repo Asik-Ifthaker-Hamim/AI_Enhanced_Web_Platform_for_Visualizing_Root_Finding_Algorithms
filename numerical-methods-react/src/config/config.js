@@ -9,4 +9,4 @@ export const GEMINI_MODELS = {
 };
 
 // Debug mode for logging
-export const DEBUG_MODE = true; 
+export const DEBUG_MODE = false; 

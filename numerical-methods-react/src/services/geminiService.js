@@ -14,22 +14,11 @@ let validationModel = null;
 async function fileToGenerativePart(file) {
   const mimeType = file.type;
   
-  if (DEBUG_MODE) {
-    console.log('Converting file to generative part:', {
-      name: file.name,
-      type: mimeType,
-      size: file.size
-    });
-  }
-  
   // Handle different file types
   if (mimeType.startsWith('image/')) {
     // Handle images
     try {
       const base64Data = await fileToBase64(file);
-      if (DEBUG_MODE) {
-        console.log('Image converted to base64, length:', base64Data.length);
-      }
       return {
         inlineData: {
           data: base64Data,
@@ -44,9 +33,6 @@ async function fileToGenerativePart(file) {
     // Handle PDF and text files
     try {
       const textContent = await fileToText(file);
-      if (DEBUG_MODE) {
-        console.log('File converted to text, length:', textContent.length);
-      }
       return textContent;
     } catch (error) {
       console.error('Error converting file to text:', error);
@@ -75,10 +61,6 @@ async function fileToText(file) {
   if (file.type === 'application/pdf') {
     // Handle PDF files with @opendocsg/pdf2md
     try {
-      if (DEBUG_MODE) {
-        console.log('Processing PDF with @opendocsg/pdf2md, size:', file.size);
-      }
-      
       // Dynamically import the pdf2md library
       const { default: pdf2md } = await import('@opendocsg/pdf2md');
       
@@ -87,10 +69,6 @@ async function fileToText(file) {
       
       // Convert PDF to markdown using pdf2md
       const markdown = await pdf2md(arrayBuffer);
-      
-      if (DEBUG_MODE) {
-        console.log('PDF successfully converted to markdown, length:', markdown.length);
-      }
       
       // Convert markdown to plain text (remove markdown formatting)
       const plainText = markdown
@@ -145,14 +123,6 @@ async function fileToText(file) {
 }
 
 export const initializeGemini = async (apiKey = DEFAULT_API_KEY) => {
-  if (DEBUG_MODE) {
-    console.log('Initializing Gemini with key:', {
-      hasKey: !!apiKey,
-      keyLength: apiKey ? apiKey.length : 0,
-      usingDefault: apiKey === DEFAULT_API_KEY
-    });
-  }
-
   if (!apiKey) {
     console.warn('Gemini API key is missing. Please provide it in .env as VITE_GEMINI_API_KEY or via the UI.');
     return false;
@@ -250,14 +220,13 @@ export const initializeGemini = async (apiKey = DEFAULT_API_KEY) => {
 };
 
 // Auto-initialize with default API key
-try {
-  const initialized = initializeGemini();
-  if (DEBUG_MODE) {
-    console.log('Auto-initialization result:', initialized);
+(async () => {
+  try {
+    await initializeGemini();
+  } catch (error) {
+    console.warn('Failed to auto-initialize Gemini with default API key:', error);
   }
-} catch (error) {
-  console.warn('Failed to auto-initialize Gemini with default API key:', error);
-}
+})();
 
 // Basic fallback validation when AI fails
 const basicValidation = (equation, userSolution) => {
@@ -299,122 +268,48 @@ export const getChatResponse = async (prompt, file = null) => {
     throw new Error('Gemini is not initialized. Please check your API key.');
   }
 
-  const studyBuddyPrompt = `You are Alex, a fellow student studying numerical methods and computational mathematics. You approach learning as a peer collaborator, not a teacher.
-
-Peer Learning Style:
-1. Collaborative Thinking:
-   - Think out loud with the user: "Hmm, I think..." or "Wait, what if..."
-   - Share insights as discoveries: "Oh! I just realized..."
-   - Learn together rather than explain
-
-2. Peer Communication:
-   - Use casual, friendly language
-   - Keep responses SHORT (2-3 sentences max for chat)
-   - Ask questions that spark thinking: "Have you tried...?" or "What do you think about...?"
-   - Admit when things are tricky: "This one gets me too!"
-
-3. Knowledge Sharing:
-   - Know numerical methods well but share as a peer
-   - Relate to common struggles: "I used to mess this up..."
-   - Celebrate discoveries together: "Nice! That's exactly what I was thinking!"
-
-4. Response Style:
-   - Be conversational and brief
-   - Think collaboratively, not instructionally
-   - Ask follow-up questions to engage thinking
-   - Share genuine reactions and insights
-
-Current conversation: ${prompt}`;
-
   try {
     let response;
-    
-    if (DEBUG_MODE) {
-      console.log('🔍 Processing chat request:', {
-        hasFile: !!file,
-        fileType: file ? file.type : 'none',
-        fileName: file ? file.name : 'none',
-        promptLength: prompt.length
-      });
-    }
     
     // Try primary model first
     try {
       if (file) {
-        if (DEBUG_MODE) {
-          console.log('📁 Processing file for primary model...');
-        }
-        
         const content = await fileToGenerativePart(file);
-        
-        if (DEBUG_MODE) {
-          console.log('✅ File processed successfully, content type:', typeof content);
-        }
         
         if (typeof content === 'string') {
           // For text content (PDF/TXT files)
-          if (DEBUG_MODE) {
-            console.log('📝 Sending text content to primary model, length:', content.length);
-          }
-          response = await primaryModel.generateContent(`${studyBuddyPrompt}\n\nContent from uploaded file:\n${content}`);
+          response = await primaryModel.generateContent(`${prompt}\n\nContent from uploaded file:\n${content}`);
         } else {
           // For images
-          if (DEBUG_MODE) {
-            console.log('🖼️ Sending image content to primary model');
-          }
-          response = await primaryModel.generateContent([studyBuddyPrompt, content]);
+          response = await primaryModel.generateContent([prompt, content]);
         }
       } else {
-        if (DEBUG_MODE) {
-          console.log('💬 Sending text-only message to primary model');
-        }
-        response = await primaryModel.generateContent(studyBuddyPrompt);
-      }
-      
-      if (DEBUG_MODE) {
-        console.log('✅ Primary model responded successfully');
+        response = await primaryModel.generateContent(prompt);
       }
     } catch (primaryError) {
-      console.warn('⚠️ Primary model failed, trying fallback:', primaryError.message);
+      console.warn('Primary model failed, trying fallback:', primaryError.message);
       
       // Try fallback model
       if (file) {
-        if (DEBUG_MODE) {
-          console.log('📁 Processing file for fallback model...');
-        }
         const content = await fileToGenerativePart(file);
         if (typeof content === 'string') {
           // For text content (PDF/TXT files)
-          if (DEBUG_MODE) {
-            console.log('📝 Sending text content to fallback model, length:', content.length);
-          }
-          response = await fallbackModel.generateContent(`${studyBuddyPrompt}\n\nContent from uploaded file:\n${content}`);
+          response = await fallbackModel.generateContent(`${prompt}\n\nContent from uploaded file:\n${content}`);
         } else {
           // For images
-          if (DEBUG_MODE) {
-            console.log('🖼️ Sending image content to fallback model');
-          }
-          response = await fallbackModel.generateContent([studyBuddyPrompt, content]);
+          response = await fallbackModel.generateContent([prompt, content]);
         }
       } else {
-        response = await fallbackModel.generateContent(studyBuddyPrompt);
-      }
-      
-      if (DEBUG_MODE) {
-        console.log('✅ Fallback model responded successfully');
+        response = await fallbackModel.generateContent(prompt);
       }
     }
 
     const result = await response.response;
     const resultText = result.text();
     
-    if (DEBUG_MODE) {
-      console.log('📤 Chat response received, length:', resultText.length);
-    }
-    
     return resultText;
   } catch (error) {
-    console.error('❌ Both models failed:', error);
+    console.error('Both models failed:', error);
     if (error.message.includes('quota')) {
       return { error: 'QUOTA_EXCEEDED' };
     }
@@ -469,4 +364,78 @@ FORMAT YOUR RESPONSE AS A JSON OBJECT:
 
 export const isGeminiInitialized = () => {
   return !!genAI && !!primaryModel && !!fallbackModel && !!validationModel;
-}; 
+};
+
+// Test network connectivity to Google's servers
+export const testNetworkConnectivity = async () => {
+  console.log('🌐 Testing network connectivity...');
+  
+  // Test basic internet connectivity
+  try {
+    await fetch('https://www.google.com', { 
+      method: 'HEAD',
+      mode: 'no-cors'
+    });
+    console.log('✅ Basic internet connectivity: OK');
+  } catch (error) {
+    console.error('❌ Basic internet connectivity: FAILED', error);
+    return false;
+  }
+  
+  // Test DNS resolution for Google's AI API
+  try {
+    await fetch('https://generativelanguage.googleapis.com', {
+      method: 'HEAD',
+      mode: 'no-cors'
+    });
+    console.log('✅ DNS resolution for Google AI API: OK');
+    return true;
+  } catch (error) {
+    console.error('❌ DNS resolution for Google AI API: FAILED', error);
+    console.log('🔧 Possible solutions:');
+    console.log('1. Check your internet connection');
+    console.log('2. Try a different DNS server (8.8.8.8, 1.1.1.1)');
+    console.log('3. Disable VPN/proxy if using one');
+    console.log('4. Check firewall settings');
+    console.log('5. Try from a different network');
+    return false;
+  }
+};
+
+// Debug function to test API key and connection
+export const debugGemini = async (testApiKey = null) => {
+  console.log('🔧 Gemini Debug Information:');
+  console.log('Environment:', {
+    envKey: import.meta.env.VITE_GEMINI_API_KEY,
+    storedKey: localStorage.getItem('gemini_api_key'),
+    defaultKey: DEFAULT_API_KEY,
+    isInitialized: isGeminiInitialized()
+  });
+  
+  // Test network connectivity first
+  const networkOk = await testNetworkConnectivity();
+  if (!networkOk) {
+    console.log('❌ Network connectivity issues detected. Please fix network issues before testing API key.');
+    return;
+  }
+  
+  if (testApiKey) {
+    console.log('🧪 Testing provided API key...');
+    try {
+      const success = await initializeGemini(testApiKey);
+      console.log('Test result:', success);
+      if (success) {
+        const testResponse = await getChatResponse("Hello, just testing!");
+        console.log('Test response:', testResponse);
+      }
+    } catch (error) {
+      console.error('Test failed:', error);
+    }
+  }
+};
+
+// Make debug functions available globally for console testing
+if (typeof window !== 'undefined') {
+  window.debugGemini = debugGemini;
+  window.testNetworkConnectivity = testNetworkConnectivity;
+} 

@@ -40,23 +40,26 @@ import { initializeGemini, isGeminiInitialized, getChatResponse } from '../../se
 import { DEFAULT_API_KEY, DEBUG_MODE } from '../../config/config';
 
 // Study buddy persona prompt - Peer Learning Approach
-const STUDY_BUDDY_PROMPT = `You are Alex, a fellow student studying numerical methods for solving non-linear equations. You're smart and know the material well, but you approach learning as a peer, not a teacher. 
+const STUDY_BUDDY_PROMPT = `You are Alex, a friendly classmate studying numerical methods for solving non-linear equations. You're knowledgeable but approach learning as a peer, not a teacher. You believe in helping friends discover answers through hints and guided discussion.
 
-Your peer learning style:
-1. Collaborative Explorer: You learn alongside the user, saying things like "I think this works because..." or "Wait, let me think about this with you..."
-2. Knowledge Sharing: You know methods like Bisection, Newton-Raphson, Secant, False Position, Fixed Point, and Muller's, but you share insights as discoveries, not lectures
-3. Question Asker: You ask genuine questions that help both of you think deeper: "What if we tried...?" or "I'm curious about..."
-4. Peer Supporter: You're encouraging but as an equal: "Nice thinking!" or "Hmm, I got confused there too..."
+Your peer learning philosophy:
+1. **Hint-Based Helper**: You know the answers but won't give them directly. Instead, you drop hints like "Have you thought about what happens when the function changes sign?" or "Remember what we learned about convergence rates?"
+
+2. **Friendly Discusser**: When someone struggles, you engage in friendly discussion like "Hmm, I was stuck on this too... what helped me was thinking about..." or "Wait, let's break this down together step by step."
+
+3. **Encouraging Classmate**: You're supportive like a good friend: "You're on the right track!" or "That's a great start, but what about..." or "I made that same mistake before!"
+
+4. **Patient Guide**: If they can't get the satisfactory answer after hints, you gradually become more helpful through friendly conversation, never lecturing but discussing like equals.
 
 Chat Guidelines:
-- Keep responses SHORT (2-3 sentences max for a chat)
-- Think out loud together: "Oh wait, I see..." or "That reminds me of..."
-- Ask follow-up questions that spark thinking
-- Share your own "aha moments" and insights
-- Admit when something is tricky: "This one always trips me up too!"
-- Use casual language like peers would
+- Keep responses SHORT (2-3 sentences max)
+- Use hints first, direct help only if really needed
+- Ask guiding questions: "What do you think happens when...?" 
+- Share relatable struggles: "I remember being confused about this too..."
+- Use casual, friendly language like talking to a classmate
+- Celebrate small wins: "Yes! That's exactly it!" or "Now you're getting it!"
 
-Remember: You're a study partner, not a tutor. Learn together!`;
+Remember: You're a helpful classmate who guides through hints and friendly discussion, not a teacher who lectures!`;
 
 const StudyBuddyChat = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -88,12 +91,6 @@ const StudyBuddyChat = () => {
       
       if (!isGeminiInitialized()) {
         try {
-          console.log('Initializing with key:', { 
-            hasEnvKey: !!envApiKey,
-            hasStoredKey: !!storedKey,
-            usingDefault: currentKey === DEFAULT_API_KEY 
-          });
-          
           const success = await initializeGemini(currentKey);
           if (success) {
             setInitializationError(null);
@@ -209,6 +206,14 @@ const StudyBuddyChat = () => {
       } else if (currentFile) {
         // If there was a file involved, provide file-specific guidance
         errorContent = `I had trouble processing your file "${currentFile.name}". Try uploading a different file or just send a message without attachments. 📎`;
+      } else if (error.message.includes('Failed to fetch') || error.message.includes('ERR_NAME_NOT_RESOLVED')) {
+        errorContent = `I can't reach the servers right now. This might be a network issue. Try checking your internet connection or run 'testNetworkConnectivity()' in the console for diagnostics. 🌐`;
+      } else {
+        // Show more specific error information in development
+        const isDev = import.meta.env.DEV;
+        if (isDev) {
+          errorContent = `Debug info: ${error.message}. Check the console for more details. 🔧`;
+        }
       }
       
       // Add error message to chat
@@ -228,7 +233,7 @@ const StudyBuddyChat = () => {
   // Handle API key submission
   const handleApiKeySubmit = async () => {
     if (!apiKeyInput.trim()) return;
-
+    
     try {
       const success = await initializeGemini(apiKeyInput.trim());
       if (success) {
@@ -249,6 +254,7 @@ const StudyBuddyChat = () => {
         throw new Error('Failed to initialize with provided key');
       }
     } catch (error) {
+      console.error('API key submission error:', error);
       setInitializationError({
         type: 'error',
         message: 'Invalid API key. Please check and try again.',
