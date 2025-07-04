@@ -237,19 +237,19 @@ const practicalExamples = [
   },
   {
     title: 'Physics: Orbital Mechanics',
-    equation: 'x - e×sin(x) - M = 0',
+    equation: 'x - esin(x) - M = 0',
     context: 'Kepler\'s equation for determining satellite positions in elliptical orbits.',
     realWorld: 'Essential for GPS satellite positioning and space mission planning.'
   },
   {
     title: 'Economics: Market Equilibrium',
-    equation: 'e^x - 3x - 2 = 0',
+    equation: 'eˣ - 3x - 2 = 0',
     context: 'Finding equilibrium points where supply equals demand.',
     realWorld: 'Used in pricing strategies and market analysis.'
   },
   {
     title: 'Biology: Population Growth',
-    equation: 'x×e^(-x) - 0.5 = 0',
+    equation: 'xe⁻ˣ - 0.5 = 0',
     context: 'Logistic growth model for population dynamics with resource constraints.',
     realWorld: 'Predicting population trends and resource planning.'
   },
@@ -258,6 +258,66 @@ const practicalExamples = [
     equation: 'ln(x) + x - 3 = 0',
     context: 'Determining reaction rates and equilibrium concentrations.',
     realWorld: 'Optimizing chemical processes and drug development.'
+  },
+  {
+    title: 'Aerospace: Trajectory Optimization',
+    equation: 'x⁷ - 15x⁶ + 85x⁵ - 225x⁴ + 274x³ - 120x² + 16x - 0.5 = 0',
+    context: 'Complex polynomial arising in spacecraft trajectory calculations with multiple gravitational assists.',
+    realWorld: 'Critical for mission planning in deep space exploration and interplanetary travel.'
+  },
+  {
+    title: 'Materials Science: Crystal Structure',
+    equation: '2x⁵ - 7x⁴ + 3x³ + 8x² - 5x + 1.2 = 0',
+    context: 'High-degree polynomial modeling atomic arrangements in advanced nanomaterials.',
+    realWorld: 'Used in designing new materials for electronics, solar cells, and quantum computing.'
+  },
+  {
+    title: 'Environmental Science: Climate Modeling',
+    equation: 'x⁶ - 12x⁵ + 47x⁴ - 72x³ + 31x² - 2x + 0.8 = 0',
+    context: 'Complex equation modeling atmospheric CO₂ absorption rates with multiple feedback loops.',
+    realWorld: 'Essential for accurate climate change predictions and environmental policy decisions.'
+  },
+  {
+    title: 'Finance: Risk Assessment',
+    equation: 'x⁸ - 3.2x⁷ + 4.1x⁶ - 2.7x⁵ + 1.8x⁴ - 0.9x³ + 0.3x² - 0.05x + 0.001 = 0',
+    context: 'High-order polynomial for modeling complex derivative pricing with multiple risk factors.',
+    realWorld: 'Used by banks and investment firms for portfolio optimization and risk management.'
+  },
+  {
+    title: 'Biomedical: Drug Interaction',
+    equation: '3x⁴ - 8.5x³ + 12.2x² - 6.8x + 1.4 = 0',
+    context: 'Fourth-degree equation modeling multi-drug interactions in personalized medicine.',
+    realWorld: 'Critical for determining safe dosage combinations in complex treatment protocols.'
+  },
+  {
+    title: 'Robotics: Path Planning',
+    equation: 'x⁵ - 4.3x⁴ + 7.1x³ - 5.9x² + 2.2x - 0.3 = 0',
+    context: 'Quintic polynomial for smooth robot trajectory generation with multiple constraints.',
+    realWorld: 'Used in autonomous vehicles and industrial robots for collision-free path planning.'
+  },
+  {
+    title: 'Quantum Physics: Wave Function',
+    equation: 'x⁶sin(x) - e⁻ˣcos(x) + x²ln(x) - 1 = 0',
+    context: 'Complex transcendental equation modeling quantum wave function interactions.',
+    realWorld: 'Used in quantum computing and particle physics research.'
+  },
+  {
+    title: 'Fluid Dynamics: Turbulent Flow',
+    equation: 'x⁴sin(x²) + x³cos(x) - e⁻ˣ²x - 2 = 0',
+    context: 'Non-linear equation describing turbulent fluid flow patterns.',
+    realWorld: 'Applied in aircraft design and weather prediction models.'
+  },
+  {
+    title: 'Electrical Engineering: Circuit Analysis',
+    equation: 'x⁵ + x⁴sin(x) - x³eˣ + x²cos(x) - 3x + 1 = 0',
+    context: 'Complex equation modeling non-linear circuit behavior with multiple components.',
+    realWorld: 'Essential for designing advanced electronic systems and power grids.'
+  },
+  {
+    title: 'Thermodynamics: Heat Transfer',
+    equation: 'x⁴ln(x) - x³sin(x) + x²e⁻ˣ - 4x + 2 = 0',
+    context: 'Non-linear equation describing heat transfer in complex systems.',
+    realWorld: 'Used in designing efficient cooling systems and heat exchangers.'
   }
 ];
 
@@ -315,7 +375,7 @@ const interactiveExercises = [
     title: 'Method Comparison',
     difficulty: 'Intermediate',
     description: 'Compare convergence rates of different methods',
-    problems: ['x³ - 2x - 5 = 0', 'e^x - 3x = 0', 'x·ln(x) - 1 = 0']
+    problems: ['x³ - 2x - 5 = 0', 'eˣ - 3x = 0', 'x·ln(x) - 1 = 0']
   },
   {
     title: 'Advanced Applications',
@@ -539,7 +599,7 @@ function PracticeModal({ exercise, onClose }) {
         method: 'Compare Bisection, Newton-Raphson, and Secant methods'
       },
       {
-        equation: 'e^x - 3x = 0',
+        equation: 'eˣ - 3x = 0',
         hint: 'This transcendental equation requires numerical methods. Try different initial guesses to compare methods.',
         solution: 'x ≈ 1.5121',
         method: 'Compare Newton-Raphson vs Secant method convergence'
@@ -1447,15 +1507,15 @@ function LearningCenter() {
             justifyContent: 'center'
           }}>
             {practicalExamples.map((example, index) => (
-              <Grid item xs={12} md={6} key={index} sx={{ 
+              <Grid item xs={12} sm={6} lg={4} key={index} sx={{ 
                 display: 'flex', 
                 justifyContent: 'center'
               }}>
                 <Card sx={{ 
                   height: '100%',
-                  minHeight: 300,
+                  minHeight: 350,
                   width: '100%',
-                  maxWidth: '500px',
+                  maxWidth: '420px',
                   bgcolor: 'background.paper',
                   transition: 'all 0.3s ease',
                   display: 'flex',
@@ -1491,6 +1551,16 @@ function LearningCenter() {
                         {index === 2 && <TrendingUpIcon className="icon-float-gentle" />}
                         {index === 3 && <FunctionsIcon className="icon-bounce-soft" />}
                         {index === 4 && <ScienceIcon className="icon-spin-slow" />}
+                        {index === 5 && <SpeedIcon className="icon-orbit" />}
+                        {index === 6 && <AutoFixHighIcon className="icon-quantum" />}
+                        {index === 7 && <PsychologyIcon className="icon-matrix" />}
+                        {index === 8 && <InsightsIcon className="icon-elastic" />}
+                        {index === 9 && <VerifiedIcon className="icon-wave" />}
+                        {index === 10 && <GpsFixedIcon className="icon-magnetic" />}
+                        {index === 11 && <BlurOnIcon className="icon-quantum" />}
+                        {index === 12 && <TimelineIcon className="icon-wave" />}
+                        {index === 13 && <LoopIcon className="icon-orbit" />}
+                        {index === 14 && <SpeedIcon className="icon-matrix" />}
                       {example.title}
                     </Typography>
                     </Box>
@@ -1574,10 +1644,10 @@ function LearningCenter() {
             justifyContent: 'center',
             mb: 4
           }}>
-            <Grid item xs={12} md={6} sx={{ display: 'flex', justifyContent: 'center' }}>
+            <Grid item xs={12} md={6} lg={4} sx={{ display: 'flex', justifyContent: 'center' }}>
               <Card sx={{ 
                 height: '100%',
-                minHeight: 300,
+                minHeight: 400,
                 width: '100%',
                 maxWidth: '500px',
                 bgcolor: 'background.paper',
@@ -1611,12 +1681,11 @@ function LearningCenter() {
                       flex: 1
                     }}>
                       <PsychologyIcon className="icon-quantum icon-shimmer" />
-                    What are Non-linear Equations?
+                    Types of Non-linear Equations
                   </Typography>
                   </Box>
                   <Typography variant="body1" paragraph>
-                    Non-linear equations are mathematical expressions where the unknown variable appears with powers other than one, 
-                    or in functions like sin, cos, exp, log, etc. Examples include:
+                    Non-linear equations come in various forms, each with unique characteristics:
                   </Typography>
                   <List sx={{
                     bgcolor: 'grey.50',
@@ -1639,15 +1708,17 @@ function LearningCenter() {
                             Polynomial: x³ - 2x² + x - 1 = 0
                           </Typography>
                         }
+                        secondary="Equations with integer powers of x"
                       />
                     </ListItem>
                     <ListItem>
                       <ListItemText 
                         primary={
                           <Typography variant="body1" sx={{ fontFamily: 'monospace', fontWeight: 500 }}>
-                            Transcendental: e^x - 3x = 0
+                            Transcendental: eˣ - 3x = 0
                           </Typography>
                         }
+                        secondary="Contains exponential, logarithmic functions"
                       />
                     </ListItem>
                     <ListItem>
@@ -1657,6 +1728,17 @@ function LearningCenter() {
                             Trigonometric: sin(x) - x/2 = 0
                           </Typography>
                         }
+                        secondary="Involves trigonometric functions"
+                      />
+                    </ListItem>
+                    <ListItem>
+                      <ListItemText 
+                        primary={
+                          <Typography variant="body1" sx={{ fontFamily: 'monospace', fontWeight: 500 }}>
+                            Mixed: x²sin(x) + eˣ - 3 = 0
+                          </Typography>
+                        }
+                        secondary="Combination of different function types"
                       />
                     </ListItem>
                   </List>
@@ -1664,10 +1746,10 @@ function LearningCenter() {
               </Card>
             </Grid>
 
-            <Grid item xs={12} md={6} sx={{ display: 'flex', justifyContent: 'center' }}>
+            <Grid item xs={12} md={6} lg={4} sx={{ display: 'flex', justifyContent: 'center' }}>
               <Card sx={{ 
                 height: '100%',
-                minHeight: 300,
+                minHeight: 400,
                 width: '100%',
                 maxWidth: '500px',
                 bgcolor: 'background.paper',
@@ -1701,61 +1783,253 @@ function LearningCenter() {
                       flex: 1
                     }}>
                       <AutoFixHighIcon className="icon-bounce-soft" />
-                      Why Numerical Methods?
+                      Key Mathematical Concepts
                   </Typography>
                   </Box>
                   <Typography variant="body1" paragraph>
-                    Most non-linear equations cannot be solved analytically. Numerical methods provide:
+                    Understanding these concepts is crucial for solving non-linear equations:
                   </Typography>
                   <List sx={{
                     bgcolor: 'grey.50',
                     borderRadius: 2,
                     p: 2,
                     flex: 1,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'space-around'
-                  }}>
-                    <ListItem sx={{
+                    '& .MuiListItem-root': {
+                      borderLeft: '3px solid',
+                      borderColor: 'success.light',
+                      mb: 1,
                       bgcolor: 'background.paper',
-                      borderRadius: 1,
-                      boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
-                      minHeight: '60px'
-                    }}>
+                      borderRadius: '0 8px 8px 0'
+                    }
+                  }}>
+                    <ListItem>
                       <ListItemIcon>
-                        <CalculateIcon color="success" className="icon-pulse-gentle" />
+                        <FunctionsIcon color="success" className="icon-pulse-gentle" />
                       </ListItemIcon>
                       <ListItemText 
-                        primary="Approximate solutions with desired precision"
-                        sx={{ '& .MuiTypography-root': { fontWeight: 500 } }}
+                        primary="Derivatives and Gradients"
+                        secondary="Rate of change, used in Newton's method"
                       />
                     </ListItem>
-                    <ListItem sx={{
-                      bgcolor: 'background.paper',
-                      borderRadius: 1,
-                      boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
-                      minHeight: '60px'
-                    }}>
+                    <ListItem>
                       <ListItemIcon>
                         <TimelineIcon color="success" className="icon-float-gentle" />
                       </ListItemIcon>
                       <ListItemText 
-                        primary="Systematic approach to complex problems"
-                        sx={{ '& .MuiTypography-root': { fontWeight: 500 } }}
+                        primary="Convergence Theory"
+                        secondary="Speed and reliability of solution methods"
                       />
                     </ListItem>
-                    <ListItem sx={{
-                      bgcolor: 'background.paper',
-                      borderRadius: 1,
-                      boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
-                      minHeight: '60px'
-                    }}>
+                    <ListItem>
                       <ListItemIcon>
-                        <CodeIcon color="success" className="icon-wave" />
+                        <CalculateIcon color="success" className="icon-wave" />
                       </ListItemIcon>
                       <ListItemText 
-                        primary="Computer-implementable algorithms"
-                        sx={{ '& .MuiTypography-root': { fontWeight: 500 } }}
+                        primary="Error Analysis"
+                        secondary="Understanding and controlling approximation errors"
+                      />
+                    </ListItem>
+                    <ListItem>
+                      <ListItemIcon>
+                        <BlurOnIcon color="success" className="icon-matrix" />
+                      </ListItemIcon>
+                      <ListItemText 
+                        primary="Function Behavior"
+                        secondary="Continuity, monotonicity, and oscillations"
+                      />
+                    </ListItem>
+                  </List>
+                </CardContent>
+              </Card>
+            </Grid>
+
+            <Grid item xs={12} md={6} lg={4} sx={{ display: 'flex', justifyContent: 'center' }}>
+              <Card sx={{ 
+                height: '100%',
+                minHeight: 400,
+                width: '100%',
+                maxWidth: '500px',
+                bgcolor: 'background.paper',
+                transition: 'all 0.3s ease',
+                display: 'flex',
+                flexDirection: 'column',
+                '&:hover': {
+                  transform: 'translateY(-4px)',
+                  boxShadow: '0 8px 20px rgba(0,0,0,0.1)',
+                }
+              }}>
+                <CardContent sx={{ 
+                  display: 'flex',
+                  flexDirection: 'column',
+                  height: '100%',
+                  gap: 2
+                }}>
+                  <Box sx={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: 2,
+                    borderBottom: '2px solid',
+                    borderColor: 'warning.light',
+                    pb: 1
+                  }}>
+                    <Typography variant="h6" color="warning.main" sx={{ 
+                      fontWeight: 600,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 1,
+                      flex: 1
+                    }}>
+                      <InsightsIcon className="icon-quantum icon-shimmer" />
+                    Solution Characteristics
+                  </Typography>
+                  </Box>
+                  <Typography variant="body1" paragraph>
+                    Key properties that affect the solution process:
+                  </Typography>
+                  <List sx={{
+                    bgcolor: 'grey.50',
+                    borderRadius: 2,
+                    p: 2,
+                    flex: 1,
+                    '& .MuiListItem-root': {
+                      borderLeft: '3px solid',
+                      borderColor: 'warning.light',
+                      mb: 1,
+                      bgcolor: 'background.paper',
+                      borderRadius: '0 8px 8px 0'
+                    }
+                  }}>
+                    <ListItem>
+                      <ListItemIcon>
+                        <GpsFixedIcon color="warning" className="icon-pulse-gentle" />
+                      </ListItemIcon>
+                      <ListItemText 
+                        primary="Multiple Roots"
+                        secondary="Equations can have several solutions"
+                      />
+                    </ListItem>
+                    <ListItem>
+                      <ListItemIcon>
+                        <LoopIcon color="warning" className="icon-float-gentle" />
+                      </ListItemIcon>
+                      <ListItemText 
+                        primary="Iteration Behavior"
+                        secondary="Linear, quadratic, or other convergence rates"
+                      />
+                    </ListItem>
+                    <ListItem>
+                      <ListItemIcon>
+                        <SpeedIcon color="warning" className="icon-wave" />
+                      </ListItemIcon>
+                      <ListItemText 
+                        primary="Initial Guess Sensitivity"
+                        secondary="Impact of starting point on convergence"
+                      />
+                    </ListItem>
+                    <ListItem>
+                      <ListItemIcon>
+                        <TimelineIcon color="warning" className="icon-matrix" />
+                      </ListItemIcon>
+                      <ListItemText 
+                        primary="Stability"
+                        secondary="Robustness of solution methods"
+                      />
+                    </ListItem>
+                  </List>
+                </CardContent>
+              </Card>
+            </Grid>
+
+            <Grid item xs={12} md={6} lg={4} sx={{ display: 'flex', justifyContent: 'center' }}>
+              <Card sx={{ 
+                height: '100%',
+                minHeight: 400,
+                width: '100%',
+                maxWidth: '500px',
+                bgcolor: 'background.paper',
+                transition: 'all 0.3s ease',
+                display: 'flex',
+                flexDirection: 'column',
+                '&:hover': {
+                  transform: 'translateY(-4px)',
+                  boxShadow: '0 8px 20px rgba(0,0,0,0.1)',
+                }
+              }}>
+                <CardContent sx={{ 
+                  display: 'flex',
+                  flexDirection: 'column',
+                  height: '100%',
+                  gap: 2
+                }}>
+                  <Box sx={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: 2,
+                    borderBottom: '2px solid',
+                    borderColor: 'error.light',
+                    pb: 1
+                  }}>
+                    <Typography variant="h6" color="error.main" sx={{ 
+                      fontWeight: 600,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 1,
+                      flex: 1
+                    }}>
+                      <WarningIcon className="icon-bounce-soft" />
+                      Common Challenges
+                  </Typography>
+                  </Box>
+                  <Typography variant="body1" paragraph>
+                    Important considerations when solving non-linear equations:
+                  </Typography>
+                  <List sx={{
+                    bgcolor: 'grey.50',
+                    borderRadius: 2,
+                    p: 2,
+                    flex: 1,
+                    '& .MuiListItem-root': {
+                      borderLeft: '3px solid',
+                      borderColor: 'error.light',
+                      mb: 1,
+                      bgcolor: 'background.paper',
+                      borderRadius: '0 8px 8px 0'
+                    }
+                  }}>
+                    <ListItem>
+                      <ListItemIcon>
+                        <BlurOnIcon color="error" className="icon-pulse-gentle" />
+                      </ListItemIcon>
+                      <ListItemText 
+                        primary="Convergence Issues"
+                        secondary="Methods may fail to reach a solution"
+                      />
+                    </ListItem>
+                    <ListItem>
+                      <ListItemIcon>
+                        <PsychologyIcon color="error" className="icon-float-gentle" />
+                      </ListItemIcon>
+                      <ListItemText 
+                        primary="Local vs Global Solutions"
+                        secondary="Finding all roots vs nearest root"
+                      />
+                    </ListItem>
+                    <ListItem>
+                      <ListItemIcon>
+                        <TimelineIcon color="error" className="icon-wave" />
+                      </ListItemIcon>
+                      <ListItemText 
+                        primary="Numerical Instability"
+                        secondary="Round-off and truncation errors"
+                      />
+                    </ListItem>
+                    <ListItem>
+                      <ListItemIcon>
+                        <SpeedIcon color="error" className="icon-matrix" />
+                      </ListItemIcon>
+                      <ListItemText 
+                        primary="Performance Trade-offs"
+                        secondary="Speed vs accuracy considerations"
                       />
                     </ListItem>
                   </List>
