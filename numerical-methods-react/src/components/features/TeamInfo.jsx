@@ -96,7 +96,7 @@ const teamMembers = [
     role: 'Algorithm Developer',
     avatar: '/adri.png',
     email: 'c221022@ugrad.iiuc.ac.bd',
-    description: 'Focused on mathematical algorithm implementation',
+    description: 'Focused on mathematical algorithm implementation.',
     contributions: [
       'Algorithm Research',
       'Mathematical Validation',
@@ -112,15 +112,16 @@ const teamMembers = [
     role: 'Quality Assurance & Testing',
     avatar: '/rajking.png',
     email: 'c221011@ugrad.iiuc.ac.bd',
-    description: 'Specializes in software testing and quality',
+    description: 'Specializes in software testing and quality.',
     contributions: [
-      'Quality Assurance',
-      'Test Case Development',
-      'Bug Testing & Reporting',
-      'Documentation Review',
-      'User Experience Testing'
+      'Testing & Validation',
+      'Bug Resolution',
+      'Analytical Validation',
+      'Performance Evaluation',
+      'UX & Feature Integration',
+      'Documentation Support'
     ],
-    skills: ['Software Testing', 'Quality Assurance', 'Documentation', 'User Testing']
+    skills: ['Software Testing', 'Quality Assurance', 'Documentation', 'User Testing', 'Performance Assessment', 'Numerical Methods']
   },
   {
     name: 'Tousif Ahmed Farayzi',
