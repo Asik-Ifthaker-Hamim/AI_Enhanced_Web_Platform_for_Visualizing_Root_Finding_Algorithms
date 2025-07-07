@@ -111,7 +111,9 @@ const teamMembers = [
     studentId: 'C221011',
     role: 'Quality Assurance & Testing',
     avatar: '/rajking.png',
-    email: 'c221011@ugrad.iiuc.ac.bd',
+    email: 'smrajking4457@gmail.com',
+    academicEmail: 'c221011@ugrad.iiuc.ac.bd',
+    linkedIn: 'www.linkedin.com/in/smrajking',
     description: 'Specializes in software testing and quality.',
     contributions: [
       'Testing & Validation',
@@ -247,7 +249,7 @@ const features = [
 ];
 
 const courseInfo = {
-  course: 'Numerical Methods',
+  course: 'Numerical Methods Lab',
   code: 'CSE',
   semester: 'Spring',
   academicYear: '2025',
@@ -1015,7 +1017,7 @@ function TeamInfo() {
                           }
                         }}
                       >
-                        <EmailIcon className="icon-spin-slow icon-magnetic" fontSize="small" color="secondary" />
+                        <SchoolIcon className="icon-wiggle icon-glow-soft" fontSize="small" color="secondary" />
                         msa@iiuc.ac.bd
                       </Typography>
                     </Box>
