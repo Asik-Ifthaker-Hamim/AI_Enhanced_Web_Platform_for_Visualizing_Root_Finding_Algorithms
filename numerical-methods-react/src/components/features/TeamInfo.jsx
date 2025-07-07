@@ -121,7 +121,7 @@ const teamMembers = [
       'UX & Feature Integration',
       'Documentation Support'
     ],
-    skills: ['Software Testing', 'Quality Assurance', 'Documentation', 'User Testing', 'Performance Assessment', 'Numerical Methods']
+    skills: ['Python', 'Software Testing','Quality Assurance', 'Documentation', 'Performance Assessment', 'Numerical Methods']
   },
   {
     name: 'Tousif Ahmed Farayzi',
