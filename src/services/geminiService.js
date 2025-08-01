@@ -484,7 +484,6 @@ export const testNetworkConnectivity = async () => {
 export const debugGemini = async (testApiKey = null) => {
   console.log('🔧 Gemini Debug Information:');
   console.log('Environment:', {
-    envKey: import.meta.env.VITE_GEMINI_API_KEY,
     storedKey: localStorage.getItem('gemini_api_key'),
     defaultKey: DEFAULT_API_KEY,
     isInitialized: isGeminiInitialized()

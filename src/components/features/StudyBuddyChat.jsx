@@ -88,10 +88,9 @@ const StudyBuddyChat = () => {
   // Initialize Gemini on component mount
   useEffect(() => {
     const initializeChat = async () => {
-      // Always try to use the environment variable first
-      const envApiKey = import.meta.env.VITE_GEMINI_API_KEY;
+      // Use stored key or default
       const storedKey = localStorage.getItem('gemini_api_key');
-      const currentKey = envApiKey || storedKey || DEFAULT_API_KEY;
+      const currentKey = storedKey || DEFAULT_API_KEY;
       
       if (!isGeminiInitialized()) {
         try {
@@ -99,10 +98,7 @@ const StudyBuddyChat = () => {
           if (success) {
             setInitializationError(null);
             
-            // Only save to localStorage if using env key and no stored key exists
-            if (envApiKey && !storedKey) {
-              localStorage.setItem('gemini_api_key', envApiKey);
-            }
+            // API key is now handled in main.jsx initialization
           } else {
             throw new Error('Failed to initialize with API key');
           }
@@ -234,7 +230,7 @@ const StudyBuddyChat = () => {
         errorContent = `I can't reach the servers right now. This might be a network issue. Try checking your internet connection or run 'testNetworkConnectivity()' in the console for diagnostics. 🌐`;
       } else {
         // Show more specific error information in development
-        const isDev = import.meta.env.DEV;
+        const isDev = __IS_DEV__;
         if (isDev) {
           errorContent = `Debug info: ${error.message}. Check the console for more details. 🔧`;
         }
