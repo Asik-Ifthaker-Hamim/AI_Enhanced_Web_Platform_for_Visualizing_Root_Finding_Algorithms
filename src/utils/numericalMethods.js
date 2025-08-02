@@ -440,7 +440,7 @@ export const predefinedFunctions = {
     guess: 2,
     description: 'Simple quadratic equation'
   },
-  'e^x - 2x - 1 = 0': {
+  'exp(x) - 2x - 1 = 0': {
     expression: 'exp(x) - 2*x - 1',
     derivative: 'exp(x) - 2',
     interval: [1, 2],
@@ -524,4 +524,4 @@ export function compareAllMethods(functionData, tolerance = 1e-6, maxIterations 
   }
   
   return results;
-} 
+}

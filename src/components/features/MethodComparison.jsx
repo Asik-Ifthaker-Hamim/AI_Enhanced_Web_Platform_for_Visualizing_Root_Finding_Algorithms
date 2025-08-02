@@ -53,6 +53,7 @@ import {
   Tooltip,
   Legend,
 } from 'chart.js';
+import { MathJaxContext, MathJax } from 'better-react-mathjax';
 
 import { compareAllMethods, predefinedFunctions } from '../../utils/numericalMethods';
 
@@ -64,6 +65,19 @@ ChartJS.register(
   Tooltip,
   Legend
 );
+
+const formatMathExpression = (expression) => {
+  if (!expression) return '';
+  return expression
+    .replace(/Math\.exp\((.*?)\)/g, '\\exp($1)') // Changed from e^{$1} to \exp($1)
+    .replace(/Math\.sin/g, '\\sin')
+    .replace(/Math\.cos/g, '\\cos')
+    .replace(/Math\.log/g, '\\ln')
+    .replace(/\*\*/g, '^')
+    .replace(/\*/g, '')
+    .replace(/x\^(\d+)/g, 'x^{$1}')
+    .replace(/(\d+)x/g, '$1x');
+};
 
 function TabPanel({ children, value, index, ...other }) {
   return (
@@ -255,6 +269,7 @@ function MethodComparison() {
   };
 
   return (
+    <MathJaxContext>
     <Box sx={{ width: '100%', maxWidth: 'none' }}>
       <Typography variant="h4" gutterBottom className="fade-in-up glow-text" sx={{ mb: 4, fontWeight: 600, textAlign: 'center' }}>
         <CompareIcon className="icon-matrix icon-breathe" sx={{ fontSize: '1.2em', marginRight: '10px' }} />
@@ -414,9 +429,45 @@ function MethodComparison() {
                         Results Summary
                       </Typography>
                       
-                      <Alert severity="info" sx={{ mb: 2 }}>
-                        Function: <strong>{results.functionExpression}</strong>
-                      </Alert>
+                      <Alert 
+  severity="info" 
+  sx={{ 
+    mb: 2,
+    maxWidth: 'none',
+    width: '100%',
+    '& .MuiAlert-message': {
+      width: '100%'
+    }
+  }}
+>
+  <Box sx={{ 
+    display: 'flex', 
+    alignItems: 'center', 
+    gap: 2,
+    flexWrap: 'wrap',
+    width: '100%'
+  }}>
+    <Box sx={{ 
+      display: 'flex', 
+      alignItems: 'center', 
+      gap: 1 
+    }}>
+      <FunctionIcon color="primary" />
+      <Typography component="span">Function:</Typography>
+    </Box>
+    <Box sx={{ 
+      flex: 1,
+      '& .MathJax': {
+        maxWidth: 'none',
+        overflow: 'auto'
+      }
+    }}>
+      <MathJax>
+        {`\\(${formatMathExpression(results.functionExpression)} = 0\\)`}
+      </MathJax>
+    </Box>
+  </Box>
+</Alert>
 
                       <TableContainer component={Paper} elevation={0} sx={{ border: '1px solid rgba(0, 0, 0, 0.12)' }}>
                         <Table size="small">
@@ -692,7 +743,8 @@ function MethodComparison() {
         </Grid>
       </Grid>
     </Box>
+    </MathJaxContext>
   );
 }
 
-export default MethodComparison; 
+export default MethodComparison;

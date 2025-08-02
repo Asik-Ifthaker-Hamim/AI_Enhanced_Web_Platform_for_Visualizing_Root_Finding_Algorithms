@@ -17,6 +17,7 @@
     "@mui/icons-material": "^7.1.2",
     "@mui/material": "^7.1.2",
     "@opendocsg/pdf2md": "^0.2.1",
+    "better-react-mathjax": "^2.0.2",
     "chart.js": "^4.5.0",
     "framer-motion": "^12.19.2",
     "langchain": "^0.3.29",
