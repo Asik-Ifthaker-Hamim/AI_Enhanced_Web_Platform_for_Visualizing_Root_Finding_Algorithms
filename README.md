@@ -240,60 +240,55 @@ sequenceDiagram
 ```mermaid
 graph LR
     subgraph "AI Integration Architecture"
-        Input[User Input/Question]
-        
+        Input["User Input/Question"]
         subgraph "Gemini Service Layer"
-            Init[Initialize Gemini]
-            Primary[Primary Model<br/>gemini-2.0-flash]
-            Fallback[Fallback Model<br/>gemini-1.5-flash]
-            Validation[Validation Model<br/>gemini-2.0-flash]
+            Init["Initialize Gemini"]
+            Primary["Primary Model\ngemini-2.0-flash"]
+            Fallback["Fallback Model\ngemini-1.5-flash"]
+            Validation["Validation Model\ngemini-2.0-flash"]
         end
-        
         subgraph "AI Features"
-            Chat[Study Buddy Chat]
-            Validate[Solution Validation]
-            Context[Context-Aware Learning]
-            Multimodal[File/Image Analysis]
+            Chat["Study Buddy Chat"]
+            Validate["Solution Validation"]
+            Context["Context-Aware Learning"]
+            Multimodal["File/Image Analysis"]
+            Alex["Alex (Peer Learning Agent)"]
         end
-        
         subgraph "Learning Enhancement"
-            Feedback[Personalized Feedback]
-            Hints[Smart Hints]
-            Scoring[AI Scoring System]
-            Peer[Peer Learning Concepts]
+            Feedback["Personalized Feedback"]
+            Hints["Smart Hints"]
+            Scoring["AI Scoring System"]
         end
-        
-        Output[Enhanced Learning Experience]
+        Output["Enhanced Learning Experience"]
     end
-    
     Input --> Init
     Init --> Primary
-    Primary -->|Success| Chat
-    Primary -->|Success| Validate
-    Primary -->|Failure| Fallback
+    Primary -->|"Success"| Chat
+    Primary -->|"Success"| Validate
+    Primary -->|"Success"| Alex
+    Primary -->|"Failure"| Fallback
     Fallback --> Chat
     Fallback --> Validate
-    
+    Fallback --> Alex
     Chat --> Context
     Chat --> Multimodal
+    Alex --> Context
+    Alex --> Feedback
     Validate --> Scoring
-    Context --> Peer
-    
+    Context --> Alex
     Chat --> Feedback
     Validate --> Hints
     Scoring --> Feedback
-    Peer --> Output
+    Alex --> Output
     Feedback --> Output
     Hints --> Output
-    
     classDef ai fill:#f57c00,stroke:#e65100,stroke-width:2px,color:#ffffff
     classDef service fill:#1976d2,stroke:#0d47a1,stroke-width:2px,color:#ffffff
     classDef feature fill:#388e3c,stroke:#1b5e20,stroke-width:2px,color:#ffffff
     classDef output fill:#7b1fa2,stroke:#4a148c,stroke-width:2px,color:#ffffff
-    
     class Init,Primary,Fallback,Validation ai
-    class Chat,Validate,Context,Multimodal service
-    class Feedback,Hints,Scoring,Peer feature
+    class Chat,Validate,Context,Multimodal,Alex service
+    class Feedback,Hints,Scoring feature
     class Output output
 ```
 
@@ -339,12 +334,10 @@ graph LR
   - Automated hint generation for incorrect solutions
   - Progress tracking and adaptive difficulty adjustment
 
-- **Peer Learning Enhancement**:
-  - AI-facilitated collaborative learning environment
-  - Context-aware discussion prompts and questions
-  - Intelligent grouping based on learning patterns and skill levels
-  - Automated peer review suggestions and feedback synthesis
-  - Knowledge gap identification and targeted resource recommendations
+- **Alex – The Peer Learning Chat Agent**: 
+  - Alex is designed to behave like a fellow student who knows the answer but will not reveal it directly.
+  - Instead, Alex provides hints, asks guiding questions, and encourages collaborative problem-solving.
+  - The goal is to foster a "learn together" experience, helping users develop deeper understanding through discussion and exploration rather than direct solutions.
 
 ### 📚 Educational Components
 - **Comprehensive Learning Center**
@@ -770,88 +763,76 @@ Detailed documentation is available in the Learning Center section of the applic
 ```mermaid
 graph TB
     subgraph "Frontend Layer"
-        WebApp[React Web App]
-        MobileApp[Mobile Apps]
-        DesktopApp[Desktop Apps]
-        PWA[Progressive Web App]
+        WebApp["React Web App"]
+        MobileApp["Mobile Apps"]
+        DesktopApp["Desktop Apps"]
+        PWA["Progressive Web App"]
     end
-    
     subgraph "Authentication & User Management"
-        Auth[Authentication Service]
-        UserMgmt[User Management]
-        RBAC[Role-Based Access Control]
-        Social[Social Login]
+        Auth["Authentication Service"]
+        UserMgmt["User Management"]
+        RBAC["Role-Based Access Control"]
+        Social["Social Login"]
     end
-    
     subgraph "Multi-Agent AI System"
-        Orchestrator[Central Orchestrator]
-        
+        Orchestrator["Central Orchestrator"]
         subgraph "Specialized Agents"
-            MethodAgent[Method Selector Agent]
-            ValidatorAgent[Solution Validator Agent]
-            TutorAgent[Learning Companion Agent]
-            CodeAgent[Code Generator Agent]
-            ResearchAgent[Research Assistant Agent]
-            CollabAgent[Peer Collaboration Agent]
+            MethodAgent["Method Selector Agent"]
+            ValidatorAgent["Solution Validator Agent"]
+            TutorAgent["Learning Companion Agent"]
+            CodeAgent["Code Generator Agent"]
+            ResearchAgent["Research Assistant Agent"]
+            CollabAgent["Peer Collaboration Agent"]
+            AlexAgent["Alex (Peer Learning Agent)"]
         end
     end
-    
     subgraph "Core Services Layer"
-        Gateway[API Gateway]
-        
+        Gateway["API Gateway"]
         subgraph "Microservices"
-            AlgorithmService[Algorithm Service]
-            VisualizationService[Visualization Service]
-            LearningService[Learning Management Service]
-            AnalyticsService[Analytics Service]
-            CollaborationService[Collaboration Service]
-            NotificationService[Notification Service]
+            AlgorithmService["Algorithm Service"]
+            VisualizationService["Visualization Service"]
+            LearningService["Learning Management Service"]
+            AnalyticsService["Analytics Service"]
+            CollaborationService["Collaboration Service"]
+            NotificationService["Notification Service"]
         end
     end
-    
     subgraph "Database Layer"
-        PostgreSQL[(PostgreSQL<br/>User Data & Progress)]
-        MongoDB[(MongoDB<br/>Algorithm Results)]
-        Redis[(Redis<br/>Cache & Sessions)]
-        ElasticSearch[(ElasticSearch<br/>Search & Analytics)]
+        PostgreSQL[("PostgreSQL\nUser Data & Progress")]
+        MongoDB[("MongoDB\nAlgorithm Results")]
+        Redis[("Redis\nCache & Sessions")]
+        ElasticSearch[("ElasticSearch\nSearch & Analytics")]
     end
-    
     subgraph "External Integrations"
-        GeminiAI[Google Gemini AI]
-        LMS[Learning Management Systems]
-        CloudStorage[Cloud Storage]
-        EmailService[Email Service]
-        PushNotifications[Push Notifications]
+        GeminiAI["Google Gemini AI"]
+        LMS["Learning Management Systems"]
+        CloudStorage["Cloud Storage"]
+        EmailService["Email Service"]
+        PushNotifications["Push Notifications"]
     end
-    
     subgraph "Infrastructure"
-        LoadBalancer[Load Balancer]
-        CDN[Content Delivery Network]
-        Monitoring[Monitoring & Logging]
-        Backup[Backup & Recovery]
+        LoadBalancer["Load Balancer"]
+        CDN["Content Delivery Network"]
+        Monitoring["Monitoring & Logging"]
+        Backup["Backup & Recovery"]
     end
-    
     WebApp --> Auth
     MobileApp --> Auth
     DesktopApp --> Auth
     PWA --> Auth
-    
     Auth --> UserMgmt
     UserMgmt --> RBAC
     Auth --> Social
-    
     WebApp --> Gateway
     MobileApp --> Gateway
     DesktopApp --> Gateway
     PWA --> Gateway
-    
     Gateway --> AlgorithmService
     Gateway --> VisualizationService
     Gateway --> LearningService
     Gateway --> AnalyticsService
     Gateway --> CollaborationService
     Gateway --> NotificationService
-    
     Gateway --> Orchestrator
     Orchestrator --> MethodAgent
     Orchestrator --> ValidatorAgent
@@ -859,34 +840,28 @@ graph TB
     Orchestrator --> CodeAgent
     Orchestrator --> ResearchAgent
     Orchestrator --> CollabAgent
-    
+    Orchestrator --> AlexAgent
     AlgorithmService --> PostgreSQL
     LearningService --> PostgreSQL
     AnalyticsService --> PostgreSQL
-    
     VisualizationService --> MongoDB
     AlgorithmService --> MongoDB
     CollaborationService --> MongoDB
-    
     Gateway --> Redis
     UserMgmt --> Redis
-    
     AnalyticsService --> ElasticSearch
-    
     MethodAgent --> GeminiAI
     ValidatorAgent --> GeminiAI
     TutorAgent --> GeminiAI
     CodeAgent --> GeminiAI
     ResearchAgent --> GeminiAI
     CollabAgent --> GeminiAI
-    
+    AlexAgent --> GeminiAI
     LearningService --> LMS
     NotificationService --> EmailService
     NotificationService --> PushNotifications
-    
     Gateway --> LoadBalancer
     LoadBalancer --> CDN
-    
     classDef frontend fill:#1976d2,stroke:#0d47a1,stroke-width:2px,color:#ffffff
     classDef auth fill:#7b1fa2,stroke:#4a148c,stroke-width:2px,color:#ffffff
     classDef ai fill:#f57c00,stroke:#e65100,stroke-width:2px,color:#ffffff
@@ -894,10 +869,9 @@ graph TB
     classDef database fill:#d32f2f,stroke:#b71c1c,stroke-width:2px,color:#ffffff
     classDef external fill:#00796b,stroke:#004d40,stroke-width:2px,color:#ffffff
     classDef infrastructure fill:#5d4037,stroke:#3e2723,stroke-width:2px,color:#ffffff
-    
     class WebApp,MobileApp,DesktopApp,PWA frontend
     class Auth,UserMgmt,RBAC,Social auth
-    class Orchestrator,MethodAgent,ValidatorAgent,TutorAgent,CodeAgent,ResearchAgent,CollabAgent ai
+    class Orchestrator,MethodAgent,ValidatorAgent,TutorAgent,CodeAgent,ResearchAgent,CollabAgent,AlexAgent ai
     class Gateway,AlgorithmService,VisualizationService,LearningService,AnalyticsService,CollaborationService,NotificationService services
     class PostgreSQL,MongoDB,Redis,ElasticSearch database
     class GeminiAI,LMS,CloudStorage,EmailService,PushNotifications external
