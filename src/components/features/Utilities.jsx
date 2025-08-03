@@ -45,6 +45,7 @@ import {
   parseCoefficients,
   createPolynomialString
 } from '../../utils/polynomialUtils';
+import { formatPolynomial } from '../../utils/formatPolynomial';
 
 function Utilities() {
   // Incremental Search State
@@ -235,7 +236,8 @@ function Utilities() {
                     label="Function f(x)"
                     value={searchParams.func}
                     onChange={(e) => setSearchParams({...searchParams, func: e.target.value})}
-                    placeholder="e.g., x^3 - 2*x - 5"
+                    placeholder="e.g., x^3 - 2*x - 5 or x³ - 2x - 5"
+                    helperText="You can use either x^3 or x³ notation"
                     sx={{ mb: 2 }}
                   />
                   <Grid container spacing={2}>
@@ -371,7 +373,7 @@ function Utilities() {
                         Evaluation Result
                       </Typography>
                       <Typography variant="body1" sx={{ mb: 2, fontFamily: 'monospace' }}>
-                        {hornerResults.polynomial} = {hornerResults.result}
+                        {formatPolynomial(hornerResults.polynomial)} = {hornerResults.result}
                       </Typography>
                       
                       <Accordion>
@@ -469,14 +471,14 @@ function Utilities() {
                       <Box sx={{ mb: 2 }}>
                         <Typography variant="body2" color="text.secondary">Original:</Typography>
                         <Typography variant="body1" sx={{ fontFamily: 'monospace' }}>
-                          {deflationResults.originalPolynomial}
+                          {formatPolynomial(deflationResults.originalPolynomial)}
                         </Typography>
                       </Box>
 
                       <Box sx={{ mb: 2 }}>
                         <Typography variant="body2" color="text.secondary">Quotient:</Typography>
                         <Typography variant="body1" sx={{ fontFamily: 'monospace' }}>
-                          {deflationResults.quotientPolynomial}
+                          {formatPolynomial(deflationResults.quotientPolynomial)}
                         </Typography>
                       </Box>
 

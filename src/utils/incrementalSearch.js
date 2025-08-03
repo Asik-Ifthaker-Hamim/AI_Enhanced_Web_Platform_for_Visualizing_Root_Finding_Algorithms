@@ -1,6 +1,26 @@
 import { evaluate } from 'mathjs';
 
 /**
+ * Convert superscript numbers to caret notation
+ * @param {string} func - Function string that may contain superscript numbers
+ * @returns {string} - Function with superscript numbers converted to caret notation
+ */
+function convertSuperscriptToCaret(func) {
+  const superscriptMap = {
+    '²': '^2',
+    '³': '^3',
+    '⁴': '^4',
+    '⁵': '^5',
+    '⁶': '^6',
+    '⁷': '^7',
+    '⁸': '^8',
+    '⁹': '^9'
+  };
+
+  return func.replace(/[²³⁴⁵⁶⁷⁸⁹]/g, match => superscriptMap[match] || match);
+}
+
+/**
  * Performs incremental search to find intervals containing roots
  * @param {string} func - Mathematical function as string
  * @param {number} start - Starting point
@@ -21,19 +41,22 @@ export function incrementalSearch(func, start, end, increment) {
     throw new Error('Increment must be positive');
   }
 
+  // Convert superscript numbers to caret notation
+  const processedFunc = convertSuperscriptToCaret(func);
+
   const intervals = [];
   const evaluations = [];
   
   try {
     let x = start;
-    let prevF = evaluate(func, { x: x });
+    let prevF = evaluate(processedFunc, { x: x });
     
     evaluations.push({ x: x, fx: prevF });
     
     x += increment;
     
     while (x <= end) {
-      const currentF = evaluate(func, { x: x });
+      const currentF = evaluate(processedFunc, { x: x });
       evaluations.push({ x: x, fx: currentF });
       
       // Check for sign change (potential root)
