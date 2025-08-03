@@ -1,3 +1,4 @@
+// Interactive function plotting component for visualizing mathematical functions and roots
 import React, { useRef, useMemo } from 'react';
 import { Box, Typography } from '@mui/material';
 import { BarChart as BarChartIcon, Cancel as CancelIcon } from '@mui/icons-material';

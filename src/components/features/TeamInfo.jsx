@@ -1,3 +1,4 @@
+// Team information and about page component with member details and project info
 import React from 'react';
 import '../../assets/animations.css';
 import {

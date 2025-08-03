@@ -1,3 +1,4 @@
+// Performance comparison tool for analyzing different numerical methods
 import React, { useState } from 'react';
 import '../../assets/animations.css';
 import {

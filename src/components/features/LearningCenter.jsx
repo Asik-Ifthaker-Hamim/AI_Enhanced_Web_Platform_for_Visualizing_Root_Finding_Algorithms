@@ -1,3 +1,4 @@
+// Comprehensive learning center with tutorials, quizzes, and educational content
 import React, { useState } from 'react';
 import '../../assets/animations.css';
 import {

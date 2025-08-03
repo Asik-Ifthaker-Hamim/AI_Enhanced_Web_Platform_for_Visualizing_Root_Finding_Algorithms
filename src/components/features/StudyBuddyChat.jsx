@@ -1,3 +1,4 @@
+// AI-powered study buddy chat component for mathematical problem solving assistance
 import React, { useState, useEffect, useRef } from 'react';
 import '../../assets/animations.css';
 import {

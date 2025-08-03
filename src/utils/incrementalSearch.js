@@ -1,14 +1,8 @@
+// Incremental Search utility - finds intervals where function changes sign (potential roots)
 import { evaluate } from 'mathjs';
 import { normalizeExpression } from './numericalMethods.js';
 
-/**
- * Performs incremental search to find intervals containing roots
- * @param {string} func - Mathematical function as string
- * @param {number} start - Starting point
- * @param {number} end - Ending point
- * @param {number} increment - Step size
- * @returns {object} - Object containing intervals and evaluation points
- */
+// Performs incremental search to find intervals containing roots by checking sign changes
 export function incrementalSearch(func, start, end, increment) {
   if (!func || func.trim() === '') {
     throw new Error('Function cannot be empty');

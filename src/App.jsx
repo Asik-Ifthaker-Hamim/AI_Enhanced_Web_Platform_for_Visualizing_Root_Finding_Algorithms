@@ -1,3 +1,4 @@
+// Main App component - root component managing theme, navigation, and page routing
 import React, { useState, useEffect } from 'react';
 import { 
   ThemeProvider, 
@@ -6,7 +7,7 @@ import {
   AppBar, 
   Toolbar, 
   Typography, 
- 
+
   Box, 
   Tabs, 
   Tab,

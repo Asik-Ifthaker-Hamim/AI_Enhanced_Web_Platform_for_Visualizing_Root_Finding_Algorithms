@@ -1,12 +1,6 @@
-// Polynomial utility functions
+// Polynomial utility functions for efficient evaluation and manipulation
 
-/**
- * Horner's Rule for polynomial evaluation
- * Efficiently evaluates a polynomial at a given value using Horner's method
- * @param {number[]} coefficients - Array of coefficients [an, an-1, ..., a1, a0]
- * @param {number} x - Value at which to evaluate the polynomial
- * @returns {number} - The evaluated polynomial value
- */
+// Horner's Rule - efficiently evaluates polynomial using nested multiplication
 export function hornersRule(coefficients, x) {
   if (!coefficients || coefficients.length === 0) {
     throw new Error('Coefficients array cannot be empty');
@@ -20,12 +14,7 @@ export function hornersRule(coefficients, x) {
   return result;
 }
 
-/**
- * Horner's Rule with detailed steps for educational purposes
- * @param {number[]} coefficients - Array of coefficients [an, an-1, ..., a1, a0]
- * @param {number} x - Value at which to evaluate the polynomial
- * @returns {object} - Object containing result and step-by-step calculation
- */
+// Horner's Rule with detailed steps shown for educational purposes
 export function hornersRuleDetailed(coefficients, x) {
   if (!coefficients || coefficients.length === 0) {
     throw new Error('Coefficients array cannot be empty');
@@ -59,13 +48,7 @@ export function hornersRuleDetailed(coefficients, x) {
   };
 }
 
-/**
- * Polynomial deflation using synthetic division
- * Divides a polynomial by (x - root) to get the quotient polynomial
- * @param {number[]} coefficients - Array of coefficients [an, an-1, ..., a1, a0]
- * @param {number} root - Known root for deflation
- * @returns {object} - Object containing quotient coefficients and remainder
- */
+// Polynomial deflation - divides polynomial by (x - root) using synthetic division
 export function polynomialDeflation(coefficients, root) {
   if (!coefficients || coefficients.length === 0) {
     throw new Error('Coefficients array cannot be empty');
@@ -129,11 +112,7 @@ export function polynomialDeflation(coefficients, root) {
   };
 }
 
-/**
- * Create a string representation of a polynomial from coefficients
- * @param {number[]} coefficients - Array of coefficients [an, an-1, ..., a1, a0]
- * @returns {string} - String representation of the polynomial
- */
+// Creates readable string representation of polynomial from coefficient array
 export function createPolynomialString(coefficients) {
   if (!coefficients || coefficients.length === 0) {
     return '0';
@@ -181,11 +160,7 @@ export function createPolynomialString(coefficients) {
   return terms.length > 0 ? terms.join('') : '0';
 }
 
-/**
- * Parse coefficients from a string input
- * @param {string} input - String containing space-separated coefficients
- * @returns {number[]} - Array of parsed coefficients
- */
+// Parses space-separated coefficient string into number array
 export function parseCoefficients(input) {
   if (!input || typeof input !== 'string') {
     throw new Error('Input must be a non-empty string');
@@ -206,12 +181,7 @@ export function parseCoefficients(input) {
   return coefficients;
 }
 
-/**
- * Find all roots of a polynomial using successive deflation
- * @param {number[]} coefficients - Array of coefficients
- * @param {number[]} knownRoots - Array of known roots
- * @returns {object} - Object containing deflation steps and remaining polynomial
- */
+// Applies polynomial deflation successively for multiple known roots
 export function successiveDeflation(coefficients, knownRoots) {
   let currentCoeffs = [...coefficients];
   const deflationSteps = [];

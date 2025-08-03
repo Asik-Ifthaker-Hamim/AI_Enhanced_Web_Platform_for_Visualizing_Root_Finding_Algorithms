@@ -1,3 +1,4 @@
+// Interactive table component for displaying numerical method iteration data
 import React, { useState } from 'react';
 import '../../assets/animations.css';
 import {

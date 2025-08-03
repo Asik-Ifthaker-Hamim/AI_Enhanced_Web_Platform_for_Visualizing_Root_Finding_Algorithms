@@ -1,8 +1,4 @@
-/**
- * Convert a polynomial string from caret notation to superscript notation
- * @param {string} polynomial - Polynomial in caret notation (e.g., "x^3 - 6x^2 + 11x - 6")
- * @returns {string} - Polynomial in superscript notation (e.g., "x³ - 6x² + 11x - 6")
- */
+// Converts polynomial from caret notation (x^3) to superscript notation (x³)
 export function formatPolynomial(polynomial) {
   const superscripts = {
     '^2': '²',

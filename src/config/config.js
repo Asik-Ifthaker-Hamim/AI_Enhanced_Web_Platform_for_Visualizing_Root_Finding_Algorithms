@@ -1,3 +1,5 @@
+// Configuration constants for Gemini AI service integration
+
 // Get API key from localStorage only (no environment variables in production bundle)
 export const DEFAULT_API_KEY = localStorage.getItem('gemini_api_key');
 

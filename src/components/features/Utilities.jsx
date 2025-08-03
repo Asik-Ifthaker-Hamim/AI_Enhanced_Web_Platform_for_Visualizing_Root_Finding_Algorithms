@@ -1,3 +1,4 @@
+// Mathematical utilities component with incremental search and advanced tools
 import React, { useState } from 'react';
 import '../../assets/animations.css';
 import {

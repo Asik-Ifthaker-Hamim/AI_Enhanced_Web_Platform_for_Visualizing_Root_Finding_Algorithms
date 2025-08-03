@@ -1,3 +1,4 @@
+// Quiz questions and answers for numerical methods learning center
 export const quizData = {
   basic: [
     {

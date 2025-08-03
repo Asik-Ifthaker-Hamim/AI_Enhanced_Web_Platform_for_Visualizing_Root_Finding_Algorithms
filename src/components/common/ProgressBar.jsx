@@ -1,3 +1,4 @@
+// Progress bar component for showing calculation progress and completion status
 import React from 'react';
 import PropTypes from 'prop-types';
 

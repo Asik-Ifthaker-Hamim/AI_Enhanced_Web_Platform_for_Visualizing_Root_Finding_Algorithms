@@ -354,7 +354,7 @@ export function bisectionMethod(functionExpr, a, b, tolerance = 1e-6, maxIterati
   return result;
 }
 
-// False Position Method (Regula Falsi)
+// False Position Method - finds root using linear interpolation between interval endpoints
 export function falsePositionMethod(functionExpr, a, b, tolerance = 1e-6, maxIterations = 100) {
   const result = new NumericalResult();
   const startTime = performance.now();
@@ -412,7 +412,7 @@ export function falsePositionMethod(functionExpr, a, b, tolerance = 1e-6, maxIte
   return result;
 }
 
-// Newton-Raphson Method
+// Newton-Raphson Method - fast root finding using tangent line approximation (requires derivative)
 export function newtonRaphsonMethod(functionExpr, derivativeExpr, x0, tolerance = 1e-6, maxIterations = 100) {
   const result = new NumericalResult();
   const startTime = performance.now();
@@ -471,7 +471,7 @@ export function newtonRaphsonMethod(functionExpr, derivativeExpr, x0, tolerance 
   return result;
 }
 
-// Secant Method
+// Secant Method - approximates derivative using two points (no derivative needed)
 export function secantMethod(functionExpr, x0, x1, tolerance = 1e-6, maxIterations = 100) {
   const result = new NumericalResult();
   const startTime = performance.now();
@@ -523,7 +523,7 @@ export function secantMethod(functionExpr, x0, x1, tolerance = 1e-6, maxIteratio
   return result;
 }
 
-// Fixed Point Method
+// Fixed Point Method - solves x = g(x) by iterating x_{n+1} = g(x_n)
 export function fixedPointMethod(gFunctionExpr, x0, tolerance = 1e-6, maxIterations = 100) {
   const result = new NumericalResult();
   const startTime = performance.now();
@@ -570,7 +570,7 @@ export function fixedPointMethod(gFunctionExpr, x0, tolerance = 1e-6, maxIterati
   return result;
 }
 
-// Muller's Method
+// Muller's Method - uses quadratic interpolation through three points to find roots
 export function mullerMethod(functionExpr, x0, x1, x2, tolerance = 1e-6, maxIterations = 100) {
   const result = new NumericalResult();
   const startTime = performance.now();
@@ -708,7 +708,7 @@ export const predefinedFunctions = {
   }
 };
 
-// Utility function to compare all methods
+// Compares performance of all numerical methods on the same function
 export function compareAllMethods(functionData, tolerance = 1e-6, maxIterations = 100) {
   const results = {};
   

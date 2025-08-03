@@ -1,3 +1,4 @@
+// Main equation solver component with multiple numerical methods and visualization
 import React, { useState, useEffect } from 'react';
 import '../../assets/animations.css';
 import {

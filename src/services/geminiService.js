@@ -1,16 +1,13 @@
+// Gemini AI service integration for mathematical problem solving and chat functionality
 import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from "@google/generative-ai";
 import { DEFAULT_API_KEY, GEMINI_MODELS, DEBUG_MODE } from '../config/config.js';
-
-// Remove pdfjs-dist import and worker setup since we're replacing it
-// import * as pdfjsLib from 'pdfjs-dist';
-// pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js`;
 
 let genAI = null;
 let primaryModel = null;
 let fallbackModel = null;
 let validationModel = null;
 
-// Helper function to convert a File object to a GoogleGenerativeAI.Part object
+// Converts file objects to Gemini AI format for multimodal processing
 async function fileToGenerativePart(file) {
   const mimeType = file.type;
   
@@ -122,6 +119,7 @@ async function fileToText(file) {
   }
 }
 
+// Initializes Gemini AI service with API key and sets up models
 export const initializeGemini = async (apiKey = DEFAULT_API_KEY) => {
   if (!apiKey) {
     console.warn('Gemini API key is missing. Please provide it in .env as VITE_GEMINI_API_KEY or via the UI.');
@@ -263,6 +261,7 @@ const basicValidation = (equation, userSolution) => {
   };
 };
 
+// Gets complete chat response from Gemini AI (supports text and file inputs)
 export const getChatResponse = async (prompt, file = null) => {
   if (!isGeminiInitialized()) {
     throw new Error('Gemini is not initialized. Please check your API key.');
@@ -324,6 +323,7 @@ export const getChatResponse = async (prompt, file = null) => {
 };
 
 // Streaming version of getChatResponse
+// Gets streaming chat response from Gemini AI with real-time chunks
 export const getChatResponseStream = async (prompt, file = null, onChunk = null) => {
   if (!isGeminiInitialized()) {
     throw new Error('Gemini is not initialized. Please check your API key.');
@@ -401,6 +401,7 @@ export const getChatResponseStream = async (prompt, file = null, onChunk = null)
   }
 };
 
+// Validates mathematical solutions using Gemini AI for accuracy checking
 export const validateSolutionWithGemini = async (equation, userSolution, expectedSolution) => {
   if (!isGeminiInitialized()) {
     throw new Error('Gemini is not initialized. Please check your API key.');
@@ -440,11 +441,13 @@ FORMAT YOUR RESPONSE AS A JSON OBJECT:
   }
 };
 
+// Checks if Gemini AI service is properly initialized
 export const isGeminiInitialized = () => {
   return !!genAI && !!primaryModel && !!fallbackModel && !!validationModel;
 };
 
 // Test network connectivity to Google's servers
+// Tests network connectivity to Gemini AI services
 export const testNetworkConnectivity = async () => {
   console.log('🌐 Testing network connectivity...');
   
@@ -481,6 +484,7 @@ export const testNetworkConnectivity = async () => {
 };
 
 // Debug function to test API key and connection
+// Debug utility to test Gemini AI service functionality
 export const debugGemini = async (testApiKey = null) => {
   console.log('🔧 Gemini Debug Information:');
   console.log('Environment:', {
