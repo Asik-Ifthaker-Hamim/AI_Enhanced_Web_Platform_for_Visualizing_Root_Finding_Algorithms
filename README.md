@@ -1,4 +1,4 @@
-# 🧮 An AI-Enhanced Web Platform for Visualizing Root-Finding Algorithms
+# 🧮 AI-Enhanced Web Platform for Visualizing Root-Finding Algorithms
 
 A state-of-the-art educational platform revolutionizing the study of numerical methods through interactive learning and AI assistance. This comprehensive web application seamlessly integrates advanced root-finding algorithms with modern web technologies and artificial intelligence to create an immersive learning experience.
 
@@ -10,7 +10,7 @@ This application stands out by combining:
 - **AI-Powered Assistance**: Integration with Google Gemini AI for personalized learning and solution validation
 - **Comprehensive Education**: Rich learning resources, interactive exercises, and performance tracking
 - **Modern Architecture**: Built with React 18, Material-UI, Vite, and cutting-edge web technologies
-- **Peer Learning Agent**: AI-enhanced collaborative learning with personalized assistance
+- **Peer Learning Agent**: AI-enhanced collaborative learning with personalized assistance and adaptive feedback
 
 ### 🌟 Key Highlights
 
