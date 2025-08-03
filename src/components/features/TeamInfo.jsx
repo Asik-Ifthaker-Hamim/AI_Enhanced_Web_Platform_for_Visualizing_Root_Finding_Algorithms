@@ -56,7 +56,7 @@ import {
 
 
 const projectInfo = {
-  title: 'Solution of Non-linear Equations',
+  title: 'AI-Enhanced Web Platform for Visualizing Root-Finding Algorithms',
   version: '2.0.0',
   description: 'A comprehensive AI-enhanced interactive learning platform for numerical root-finding algorithms with modern web technologies, featuring intelligent study assistance and advanced document processing capabilities.',
   developmentTeam: 'The Epsilon Chasers',

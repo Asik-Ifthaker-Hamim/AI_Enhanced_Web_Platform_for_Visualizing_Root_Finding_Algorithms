@@ -718,7 +718,7 @@ function App() {
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent'
                 }}>
-                  Solution of Non-linear Equations
+                  AI-Enhanced Web Platform for Visualizing Root-Finding Algorithms
                 </Typography>
                 <Typography variant="subtitle1" className="subtitle-typing" sx={{ 
                   opacity: 0.95,

@@ -1,4 +1,4 @@
-# 🧮 Solution of Non-linear Equations - WEB Application
+# 🧮 An AI-Enhanced Web Platform for Visualizing Root-Finding Algorithms
 
 A state-of-the-art educational platform revolutionizing the study of numerical methods through interactive learning and AI assistance. This comprehensive web application seamlessly integrates advanced root-finding algorithms with modern web technologies and artificial intelligence to create an immersive learning experience.
 
@@ -381,7 +381,7 @@ graph LR
 
 1. **Clone the repository**
    ```bash
-   gh repo clone Asik-Ifthaker-Hamim/Solution-of-Non-linear-Equations
+   gh repo clone Asik-Ifthaker-Hamim/AI-Enhanced-Root-Finding-Algorithms
    ```
 
 2. **Install dependencies**
@@ -498,7 +498,7 @@ graph LR
 ## 📁 Project Structure
 
 ```
-Solution-of-Non-linear-Equations-Web-Application/
+AI-Enhanced-Root-Finding-Algorithms-Web-Platform/
 ├── public/                          # Static assets
 │   ├── favicon.svg                  # Application icon
 │   └── team-photos/                 # Team member images
