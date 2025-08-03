@@ -10,7 +10,7 @@ This application stands out by combining:
 - **AI-Powered Assistance**: Integration with Google Gemini AI for personalized learning and solution validation
 - **Comprehensive Education**: Rich learning resources, interactive exercises, and performance tracking
 - **Modern Architecture**: Built with React 18, Material-UI, Vite, and cutting-edge web technologies
-- **Peer Learning**: AI-enhanced collaborative learning environment with context-aware assistance
+- **Peer Learning Agent**: AI-enhanced collaborative learning with personalized assistance
 
 ### 🌟 Key Highlights
 
@@ -20,7 +20,7 @@ This application stands out by combining:
 - **Visual Learning Tools**: Dynamic function plotting and real-time iteration visualization
 - **Performance Analytics**: Detailed convergence analysis and comprehensive method comparison
 - **Educational Resources**: Curated collection of textbooks, courses, and research materials
-- **Peer Learning Environment**: AI-enhanced collaborative learning with personalized assistance
+- **Peer Learning Agent**: AI-enhanced collaborative learning with personalized assistance
 
 ### 🔗 Core Integrations
 
