@@ -75,10 +75,12 @@ This application stands out by combining:
 #### Team Members
 - **Adrishikhar Barua** (C221022)
   - Role: Algorithm Developer
+  - Email: c221022@ugrad.iiuc.ac.bd
   - Focus: Mathematical algorithm implementation and optimization
 
 - **Sheikh Mohammad Rajking** (C221011)
   - Role: Quality Assurance & Testing
+  - Email: c221011@ugrad.iiuc.ac.bd
   - Focus: Software testing and quality assurance
 
 - **Tousif Ahmed Farayzi** (C223128)
