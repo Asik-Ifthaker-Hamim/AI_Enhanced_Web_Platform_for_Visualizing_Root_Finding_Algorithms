@@ -131,9 +131,17 @@ function EquationSolver() {
 
   const getCurrentFunction = () => {
     if (useCustom && customFunction.trim()) {
+      // Convert superscript notation to caret notation for processing
+      const processedExpression = customFunction.trim()
+        .replace(/x²/g, 'x^2')
+        .replace(/x³/g, 'x^3');
+      const processedDerivative = customDerivative.trim()
+        .replace(/x²/g, 'x^2')
+        .replace(/x³/g, 'x^3');
+
       return {
-        expression: customFunction.trim(),
-        derivative: customDerivative.trim() || null,
+        expression: processedExpression,
+        derivative: processedDerivative || null,
         name: `Custom: ${customFunction.trim()}`
       };
     }
@@ -279,16 +287,16 @@ function EquationSolver() {
                   <TextField
                     fullWidth
                     label="Function f(x)"
-                    placeholder="e.g., x^3 - 2*x - 5"
+                    placeholder="e.g., x³ - 2x - 1 or x^3 - 2*x - 1"
                     value={customFunction}
                     onChange={(e) => setCustomFunction(e.target.value)}
                     sx={{ mb: 2 }}
-                    helperText="Enter mathematical expression using x as variable"
+                    helperText="Enter using either x³ or x^3 format"
                   />
                   <TextField
                     fullWidth
                     label="Derivative f'(x) (optional)"
-                    placeholder="e.g., 3*x^2 - 2"
+                    placeholder="e.g., 3x² - 2 or 3*x^2 - 2"
                     value={customDerivative}
                     onChange={(e) => setCustomDerivative(e.target.value)}
                     sx={{ mb: 2 }}

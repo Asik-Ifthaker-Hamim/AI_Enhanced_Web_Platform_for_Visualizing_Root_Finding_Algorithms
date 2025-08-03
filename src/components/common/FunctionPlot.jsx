@@ -63,9 +63,25 @@ function FunctionPlot({ functionExpression, interval = [-5, 5], root = null, ite
         }
       }
 
+      const formatExpression = (expr) => {
+        return expr.replace(/\^(\d+)/g, (_, num) => {
+          const superscripts = {
+            '2': '²',
+            '3': '³',
+            '4': '⁴',
+            '5': '⁵',
+            '6': '⁶',
+            '7': '⁷',
+            '8': '⁸',
+            '9': '⁹'
+          };
+          return superscripts[num] || `^${num}`;
+        });
+      };
+
       const datasets = [
         {
-          label: `f(x) = ${functionExpression}`,
+          label: `f(x) = ${formatExpression(functionExpression)}`,
           data: functionPoints,
           borderColor: '#1976d2',
           backgroundColor: 'rgba(25, 118, 210, 0.1)',
