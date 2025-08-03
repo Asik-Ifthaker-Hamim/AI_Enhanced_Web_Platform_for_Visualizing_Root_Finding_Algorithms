@@ -40,6 +40,7 @@ This application stands out by combining:
 ![Google Gemini](https://img.shields.io/badge/Google_Gemini-2.0_Flash-4285F4?logo=google&logoColor=white)
 ![AI Powered](https://img.shields.io/badge/AI_Powered-Multi_Agent-9C27B0?logo=openai&logoColor=white)
 ![Multimodal](https://img.shields.io/badge/Multimodal-Vision_AI-FF9800?logo=google&logoColor=white)
+![File Upload](https://img.shields.io/badge/File_Upload-Images_PDFs-00BCD4?logo=upload&logoColor=white)
 
 **Development Tools:**
 ![ESLint](https://img.shields.io/badge/ESLint-Code_Quality-4B32C3?logo=eslint&logoColor=white)
@@ -79,6 +80,11 @@ This application stands out by combining:
 - **Sheikh Mohammad Rajking** (C221011)
   - Role: Quality Assurance & Testing
   - Focus: Software testing and quality assurance
+
+- **Tousif Ahmed Farayzi** (C223128)
+  - Role: Development Team Member
+  - Email: c223128@ugrad.iiuc.ac.bd
+  - Focus: Frontend development and user interface enhancement
 
 ### 👨‍🏫 Course Information
 - **Course**: Numerical Methods (CSE/MATH)
@@ -169,11 +175,11 @@ graph TB
     LC --> Quiz
     SB --> Local
     
-    classDef frontend fill:#e1f5fe
-    classDef service fill:#f3e5f5
-    classDef ai fill:#fff3e0
-    classDef external fill:#e8f5e8
-    classDef data fill:#fce4ec
+    classDef frontend fill:#1976d2,stroke:#0d47a1,stroke-width:2px,color:#ffffff
+    classDef service fill:#7b1fa2,stroke:#4a148c,stroke-width:2px,color:#ffffff
+    classDef ai fill:#f57c00,stroke:#e65100,stroke-width:2px,color:#ffffff
+    classDef external fill:#388e3c,stroke:#1b5e20,stroke-width:2px,color:#ffffff
+    classDef data fill:#d32f2f,stroke:#b71c1c,stroke-width:2px,color:#ffffff
     
     class UI,Router,State,ES,MC,LC,SB,UT,TI frontend
     class NM,PU,IS,FP service
@@ -278,10 +284,10 @@ graph LR
     Feedback --> Output
     Hints --> Output
     
-    classDef ai fill:#fff3e0
-    classDef service fill:#e3f2fd
-    classDef feature fill:#f1f8e9
-    classDef output fill:#fce4ec
+    classDef ai fill:#f57c00,stroke:#e65100,stroke-width:2px,color:#ffffff
+    classDef service fill:#1976d2,stroke:#0d47a1,stroke-width:2px,color:#ffffff
+    classDef feature fill:#388e3c,stroke:#1b5e20,stroke-width:2px,color:#ffffff
+    classDef output fill:#7b1fa2,stroke:#4a148c,stroke-width:2px,color:#ffffff
     
     class Init,Primary,Fallback,Validation ai
     class Chat,Validate,Context,Multimodal service
@@ -447,8 +453,11 @@ graph LR
 - **Chatbot Capabilities**:
   - **Natural Language Processing**: Understanding mathematical queries in plain English
   - **Code Recognition**: Parsing and explaining mathematical expressions
-  - **Visual Analysis**: Image-to-text conversion for handwritten equations
-  - **Contextual Learning**: Adaptive responses based on user's learning level
+  - **Visual Analysis**: Image-to-text conversion for handwritten equations and mathematical diagrams
+  - **File Input Support**: Upload and analyze PDF documents, images (PNG, JPG, JPEG), and text files
+  - **Image Processing**: OCR for handwritten mathematical expressions and equation recognition
+  - **Document Analysis**: Extract mathematical content from uploaded academic papers and textbooks
+  - **Contextual Learning**: Adaptive responses based on user's learning level and uploaded content
   - **Error Handling**: Graceful degradation with informative error messages
 
 ### 🎓 Peer Learning Architecture
@@ -876,13 +885,13 @@ graph TB
     Gateway --> LoadBalancer
     LoadBalancer --> CDN
     
-    classDef frontend fill:#e3f2fd
-    classDef auth fill:#f3e5f5
-    classDef ai fill:#fff3e0
-    classDef services fill:#e8f5e8
-    classDef database fill:#fce4ec
-    classDef external fill:#f1f8e9
-    classDef infrastructure fill:#efebe9
+    classDef frontend fill:#1976d2,stroke:#0d47a1,stroke-width:2px,color:#ffffff
+    classDef auth fill:#7b1fa2,stroke:#4a148c,stroke-width:2px,color:#ffffff
+    classDef ai fill:#f57c00,stroke:#e65100,stroke-width:2px,color:#ffffff
+    classDef services fill:#388e3c,stroke:#1b5e20,stroke-width:2px,color:#ffffff
+    classDef database fill:#d32f2f,stroke:#b71c1c,stroke-width:2px,color:#ffffff
+    classDef external fill:#00796b,stroke:#004d40,stroke-width:2px,color:#ffffff
+    classDef infrastructure fill:#5d4037,stroke:#3e2723,stroke-width:2px,color:#ffffff
     
     class WebApp,MobileApp,DesktopApp,PWA frontend
     class Auth,UserMgmt,RBAC,Social auth
