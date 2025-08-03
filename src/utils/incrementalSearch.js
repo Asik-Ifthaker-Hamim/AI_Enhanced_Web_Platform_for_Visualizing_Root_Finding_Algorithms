@@ -1,24 +1,5 @@
 import { evaluate } from 'mathjs';
-
-/**
- * Convert superscript numbers to caret notation
- * @param {string} func - Function string that may contain superscript numbers
- * @returns {string} - Function with superscript numbers converted to caret notation
- */
-function convertSuperscriptToCaret(func) {
-  const superscriptMap = {
-    '²': '^2',
-    '³': '^3',
-    '⁴': '^4',
-    '⁵': '^5',
-    '⁶': '^6',
-    '⁷': '^7',
-    '⁸': '^8',
-    '⁹': '^9'
-  };
-
-  return func.replace(/[²³⁴⁵⁶⁷⁸⁹]/g, match => superscriptMap[match] || match);
-}
+import { normalizeExpression } from './numericalMethods.js';
 
 /**
  * Performs incremental search to find intervals containing roots
@@ -41,8 +22,8 @@ export function incrementalSearch(func, start, end, increment) {
     throw new Error('Increment must be positive');
   }
 
-  // Convert superscript numbers to caret notation
-  const processedFunc = convertSuperscriptToCaret(func);
+  // Use comprehensive normalization to handle all expression formats
+  const processedFunc = normalizeExpression(func);
 
   const intervals = [];
   const evaluations = [];

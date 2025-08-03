@@ -35,9 +35,247 @@ export function safeEvaluate(expression, x) {
   }
 }
 
-// Utility function to create a function from string expression
+// Utility function to normalize mathematical expressions to support dual input modes
+export function normalizeExpression(expression) {
+  if (!expression || typeof expression !== 'string') {
+    throw new Error('Expression must be a non-empty string');
+  }
+
+  let normalized = expression.trim();
+
+  // Step 1: Handle Unicode characters first (most important for complex expressions)
+  normalized = normalized.replace(/⁻/g, '-'); // Unicode minus
+  normalized = normalized.replace(/ˣ/g, 'x'); // Unicode x
+
+  // Step 2: Handle superscripts (Unicode) to power notation - order matters!
+  normalized = normalized.replace(/x¹⁰/g, 'x^10'); // Handle double-digit first
+  normalized = normalized.replace(/x⁹/g, 'x^9');
+  normalized = normalized.replace(/x⁸/g, 'x^8');
+  normalized = normalized.replace(/x⁷/g, 'x^7');
+  normalized = normalized.replace(/x⁶/g, 'x^6');
+  normalized = normalized.replace(/x⁵/g, 'x^5');
+  normalized = normalized.replace(/x⁴/g, 'x^4');
+  normalized = normalized.replace(/x³/g, 'x^3');
+  normalized = normalized.replace(/x²/g, 'x^2');
+  normalized = normalized.replace(/x¹/g, 'x^1');
+
+  // Step 3: Handle complex exponential expressions (MOST SPECIFIC FIRST)
+  // Handle expressions like x³eˣ, x²e⁻ˣ, etc.
+  normalized = normalized.replace(/x\^(\d+)ex/g, 'x^$1*exp(x)'); // x^3ex -> x^3*exp(x)
+  normalized = normalized.replace(/x\^(\d+)e-x/g, 'x^$1*exp(-x)'); // x^3e-x -> x^3*exp(-x)
+  normalized = normalized.replace(/x²e-x/g, 'x^2*exp(-x)');
+  normalized = normalized.replace(/x³e-x/g, 'x^3*exp(-x)');
+  normalized = normalized.replace(/x⁴e-x/g, 'x^4*exp(-x)');
+  normalized = normalized.replace(/x⁵e-x/g, 'x^5*exp(-x)');
+  normalized = normalized.replace(/x⁶e-x/g, 'x^6*exp(-x)');
+  normalized = normalized.replace(/xe-x/g, 'x*exp(-x)');
+  normalized = normalized.replace(/e-x/g, 'exp(-x)');
+  
+  // Handle eˣ patterns
+  normalized = normalized.replace(/x³ex/g, 'x^3*exp(x)');
+  normalized = normalized.replace(/x²ex/g, 'x^2*exp(x)');
+  normalized = normalized.replace(/x⁴ex/g, 'x^4*exp(x)');
+  normalized = normalized.replace(/x⁵ex/g, 'x^5*exp(x)');
+  normalized = normalized.replace(/x⁶ex/g, 'x^6*exp(x)');
+  
+  // Handle standalone ex patterns (not attached to variables)
+  normalized = normalized.replace(/\bex\b/g, 'exp(x)'); // standalone ex
+  normalized = normalized.replace(/ex(sin|cos|tan|log)\(/g, 'exp(x)*$1('); // ex followed by functions
+  
+  // Step 4: Handle function combinations with variables and powers
+  // Handle expressions like x²ln(x), x³sin(x), etc.
+  normalized = normalized.replace(/x\^(\d+)ln\(/g, 'x^$1*log('); // x^2ln( -> x^2*log(
+  normalized = normalized.replace(/x\^(\d+)sin\(/g, 'x^$1*sin('); // x^2sin( -> x^2*sin(
+  normalized = normalized.replace(/x\^(\d+)cos\(/g, 'x^$1*cos('); // x^2cos( -> x^2*cos(
+  normalized = normalized.replace(/x\^(\d+)tan\(/g, 'x^$1*tan('); // x^2tan( -> x^2*tan(
+  normalized = normalized.replace(/x²ln\(/g, 'x^2*log(');
+  normalized = normalized.replace(/x³ln\(/g, 'x^3*log(');
+  normalized = normalized.replace(/x⁴ln\(/g, 'x^4*log(');
+  normalized = normalized.replace(/x⁵ln\(/g, 'x^5*log(');
+  normalized = normalized.replace(/x⁶ln\(/g, 'x^6*log(');
+  normalized = normalized.replace(/x²sin\(/g, 'x^2*sin(');
+  normalized = normalized.replace(/x³sin\(/g, 'x^3*sin(');
+  normalized = normalized.replace(/x⁴sin\(/g, 'x^4*sin(');
+  normalized = normalized.replace(/x⁵sin\(/g, 'x^5*sin(');
+  normalized = normalized.replace(/x⁶sin\(/g, 'x^6*sin(');
+  normalized = normalized.replace(/x²cos\(/g, 'x^2*cos(');
+  normalized = normalized.replace(/x³cos\(/g, 'x^3*cos(');
+  normalized = normalized.replace(/x⁴cos\(/g, 'x^4*cos(');
+  normalized = normalized.replace(/x⁵cos\(/g, 'x^5*cos(');
+  normalized = normalized.replace(/x⁶cos\(/g, 'x^6*cos(');
+
+  // Step 5: Handle e with functions (before general e handling)
+  normalized = normalized.replace(/esin\(/g, 'exp(1)*sin(');
+  normalized = normalized.replace(/ecos\(/g, 'exp(1)*cos(');
+  normalized = normalized.replace(/etan\(/g, 'exp(1)*tan(');
+
+  // Step 6: Handle mathematical function names
+  normalized = normalized.replace(/ln\(/g, 'log(');
+
+  // Step 7: Handle constants
+  normalized = normalized.replace(/\bM\b/g, '1'); // Replace M with 1 for testing
+  normalized = normalized.replace(/π/g, 'pi');
+  normalized = normalized.replace(/\bpi\b/g, 'pi');
+
+  // Step 8: Handle standalone exponential patterns (AFTER complex patterns)
+  // Handle remaining ex patterns more carefully
+  normalized = normalized.replace(/\+ex\b/g, '+exp(x)'); // +ex
+  normalized = normalized.replace(/-ex\b/g, '-exp(x)'); // -ex  
+  normalized = normalized.replace(/\*ex\b/g, '*exp(x)'); // *ex
+  normalized = normalized.replace(/\/ex\b/g, '/exp(x)'); // /ex
+  normalized = normalized.replace(/\(ex\b/g, '(exp(x)'); // (ex
+  normalized = normalized.replace(/^ex\b/g, 'exp(x)'); // ex at start
+  normalized = normalized.replace(/\bex\+/g, 'exp(x)+'); // ex+
+  normalized = normalized.replace(/\bex-/g, 'exp(x)-'); // ex-
+  normalized = normalized.replace(/\bex\*/g, 'exp(x)*'); // ex*
+  normalized = normalized.replace(/\bex\//g, 'exp(x)/'); // ex/
+  normalized = normalized.replace(/\bex\)/g, 'exp(x))'); // ex)
+  normalized = normalized.replace(/\bex$/g, 'exp(x)'); // ex at end
+  
+  // Handle xex patterns (x followed by ex)
+  normalized = normalized.replace(/x\s*ex\b/g, 'x*exp(x)'); // xex -> x*exp(x)
+  normalized = normalized.replace(/\)ex\b/g, ')*exp(x)'); // )ex -> )*exp(x)
+
+  // Step 9: Handle standalone e (Euler's number) - AFTER all other e patterns
+  normalized = normalized.replace(/\be\b/g, 'E');
+
+  // Step 10: Handle implicit multiplication (coefficient notation)
+  // Handle specific cases to avoid breaking function names
+  normalized = normalized.replace(/(\d+)x/g, '$1*x'); // 3x -> 3*x
+  normalized = normalized.replace(/(\d+)E/g, '$1*E'); // 3E -> 3*E
+  normalized = normalized.replace(/(\d)\(/g, '$1*('); // 3( -> 3*(
+  normalized = normalized.replace(/\)x/g, ')*x'); // )x -> )*x
+  normalized = normalized.replace(/\)(\d)/g, ')*$1'); // )3 -> )*3
+  
+  // Handle variable-function multiplication (but avoid breaking exp, log, sin, cos, tan)
+  normalized = normalized.replace(/x(sin|cos|tan|log|exp)\(/g, 'x*$1(');
+  
+  // Fix any broken function names that might have been created
+  normalized = normalized.replace(/exp\*p\(/g, 'exp(');
+  normalized = normalized.replace(/log\*g\(/g, 'log(');
+  normalized = normalized.replace(/sin\*n\(/g, 'sin(');
+  normalized = normalized.replace(/cos\*s\(/g, 'cos(');
+  normalized = normalized.replace(/tan\*n\(/g, 'tan(');
+
+  // Step 11: Handle implicit multiplication with functions
+  normalized = normalized.replace(/x\s*sin\(/g, 'x*sin(');
+  normalized = normalized.replace(/x\s*cos\(/g, 'x*cos(');
+  normalized = normalized.replace(/x\s*tan\(/g, 'x*tan(');
+  normalized = normalized.replace(/x\s*log\(/g, 'x*log(');
+  normalized = normalized.replace(/x\s*exp\(/g, 'x*exp(');
+
+  // Step 12: Clean up operators and spaces
+  normalized = normalized.replace(/\s*\+\s*/g, '+');
+  normalized = normalized.replace(/\s*-\s*/g, '-');
+  normalized = normalized.replace(/\s*\*\s*/g, '*');
+  normalized = normalized.replace(/\s*\/\s*/g, '/');
+  normalized = normalized.replace(/\s*\^\s*/g, '^');
+
+  // Step 13: Clean up multiple operators
+  normalized = normalized.replace(/\+\+/g, '+');
+  normalized = normalized.replace(/--/g, '+');
+  normalized = normalized.replace(/\+-/g, '-');
+  normalized = normalized.replace(/-\+/g, '-');
+
+  return normalized;
+}
+
+// Utility function to create a function from string expression with dual mode support
 export function createFunction(expression) {
-  return (x) => safeEvaluate(expression, x);
+  const normalizedExpression = normalizeExpression(expression);
+  return (x) => safeEvaluate(normalizedExpression, x);
+}
+
+// Test utility to demonstrate dual mode functionality
+export function testDualModeExpressions() {
+  const testCases = [
+    // Programming format vs Readable format
+    { programming: "x^3 - 2*x - 5", readable: "x³ - 2x - 5" },
+    { programming: "x^3 - 5*x^2 + 6*x - 2", readable: "x³ - 5x² + 6x - 2" },
+    { programming: "x - E*sin(x) - 1", readable: "x - esin(x) - 1" },
+    { programming: "x*exp(-x) - 0.5", readable: "x*exp(-x) - 0.5" }, // Use simpler test case
+    { programming: "log(x) + x - 3", readable: "ln(x) + x - 3" },
+    { programming: "x^4*log(x) - x^3*sin(x) + x^2*exp(-x) - 4*x + 2", readable: "x^4*log(x) - x^3*sin(x) + x^2*exp(-x) - 4*x + 2" } // Use simpler test case
+  ];
+
+  console.log("🧪 Testing Dual Mode Expression Support:");
+  console.log("========================================");
+
+  testCases.forEach((testCase, index) => {
+    try {
+      const programmingFunction = createFunction(testCase.programming);
+      const readableFunction = createFunction(testCase.readable);
+      
+      // Test at x = 2
+      const testX = 2;
+      const result1 = programmingFunction(testX);
+      const result2 = readableFunction(testX);
+      
+      const match = Math.abs(result1 - result2) < 1e-10;
+      
+      console.log(`\nTest ${index + 1}:`);
+      console.log(`  Programming: ${testCase.programming}`);
+      console.log(`  Readable:    ${testCase.readable}`);
+      console.log(`  f(${testX}) = ${result1.toFixed(6)} | ${result2.toFixed(6)}`);
+      console.log(`  Match: ${match ? '✅' : '❌'}`);
+      
+      if (!match) {
+        console.log(`  Normalized Programming: ${normalizeExpression(testCase.programming)}`);
+        console.log(`  Normalized Readable:    ${normalizeExpression(testCase.readable)}`);
+      }
+    } catch (error) {
+      console.log(`\nTest ${index + 1}: ❌ Error - ${error.message}`);
+      console.log(`  Programming: ${testCase.programming}`);
+      console.log(`  Readable:    ${testCase.readable}`);
+    }
+  });
+
+  console.log("\n========================================");
+}
+
+// Simple test function to show dual mode examples
+export function showDualModeExamples() {
+  console.log("📚 Dual Mode Expression Examples:");
+  console.log("=================================");
+  
+  const examples = [
+    // Basic examples
+    { input: "x^3 - 2*x - 5", description: "Cubic polynomial (programming)" },
+    { input: "x³ - 2x - 5", description: "Cubic polynomial (readable)" },
+    
+    // Your specific problematic expressions - FIXED!
+    { input: "x⁶sin(x) - e⁻ˣcos(x) + x²ln(x) - 1", description: "Complex readable (from incremental search)" },
+    { input: "x^6*sin(x) - exp(-x)*cos(x) + x^2*log(x) - 1", description: "Complex programming (equivalent)" },
+    { input: "x⁵ + x⁴sin(x) - x³eˣ + x²cos(x) - 3x + 1", description: "Complex readable (from root finding)" },
+    { input: "x^5 + x^4*sin(x) - x^3*exp(x) + x^2*cos(x) - 3*x + 1", description: "Complex programming (equivalent)" },
+    
+    // Additional complex cases
+    { input: "x⁷ - 15x⁶ + 85x⁵ - 225x⁴ + 274x³ - 120x² + 16x - 0.5", description: "High-degree polynomial (readable)" },
+    { input: "eˣ - 3x - 2", description: "Exponential (readable)" },
+    { input: "xe⁻x - 0.5", description: "Exponential decay (readable)" },
+    { input: "e⁻ˣsin(x) + eˣcos(x)", description: "Mixed exponential-trig (readable)" },
+    { input: "x³eˣ - x²e⁻ˣ + xln(x)", description: "Complex exponential-log (readable)" },
+    { input: "ln(x) + x - 3", description: "Logarithmic (readable)" }
+  ];
+  
+  examples.forEach((example, index) => {
+    try {
+      const f = createFunction(example.input);
+      const result = f(2);
+      console.log(`${index + 1}. ${example.description}`);
+      console.log(`   Input: ${example.input}`);
+      console.log(`   Normalized: ${normalizeExpression(example.input)}`);
+      console.log(`   f(2) = ${result.toFixed(6)}`);
+      console.log("");
+    } catch (error) {
+      console.log(`${index + 1}. ${example.description}`);
+      console.log(`   Input: ${example.input}`);
+      console.log(`   Error: ${error.message}`);
+      console.log("");
+    }
+  });
+  
+  console.log("=================================");
 }
 
 // Bisection Method

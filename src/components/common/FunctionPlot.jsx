@@ -64,7 +64,10 @@ function FunctionPlot({ functionExpression, interval = [-5, 5], root = null, ite
       }
 
       const formatExpression = (expr) => {
-        return expr.replace(/\^(\d+)/g, (_, num) => {
+        let formatted = expr;
+        
+        // Convert power notation to superscripts
+        formatted = formatted.replace(/\^(\d+)/g, (_, num) => {
           const superscripts = {
             '2': '²',
             '3': '³',
@@ -77,6 +80,24 @@ function FunctionPlot({ functionExpression, interval = [-5, 5], root = null, ite
           };
           return superscripts[num] || `^${num}`;
         });
+        
+        // Convert mathematical functions to more readable format
+        formatted = formatted.replace(/\*exp\(/g, 'e^(');
+        formatted = formatted.replace(/exp\(/g, 'e^(');
+        formatted = formatted.replace(/\*log\(/g, 'ln(');
+        formatted = formatted.replace(/log\(/g, 'ln(');
+        formatted = formatted.replace(/\*sin\(/g, 'sin(');
+        formatted = formatted.replace(/\*cos\(/g, 'cos(');
+        formatted = formatted.replace(/\*tan\(/g, 'tan(');
+        
+        // Clean up multiplication signs where appropriate
+        formatted = formatted.replace(/\*x/g, 'x');
+        formatted = formatted.replace(/x\*/g, 'x');
+        
+        // Handle Euler's number display
+        formatted = formatted.replace(/\bE\b/g, 'e');
+        
+        return formatted;
       };
 
       const datasets = [
